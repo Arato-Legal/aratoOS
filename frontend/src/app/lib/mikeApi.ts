@@ -2644,6 +2644,8 @@ export async function addDocumentToProject(
     );
 }
 
+export type DocumentVersionReviewState = "draft" | "in_review" | "approved";
+
 export interface DocumentVersion {
     id: string;
     version_number: number | null;
@@ -2656,6 +2658,11 @@ export interface DocumentVersion {
     textless_page_count?: number | null;
     deleted_at?: string | null;
     deleted_by?: string | null;
+    /** Draft until someone sends these bytes into review or approves them. */
+    review_state?: DocumentVersionReviewState | null;
+    reviewed_by?: string | null;
+    reviewed_at?: string | null;
+    review_note?: string | null;
 }
 
 export async function listDocumentVersions(documentId: string): Promise<{
@@ -2748,6 +2755,22 @@ export async function renameDocumentVersion(
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ filename }),
+        },
+    );
+}
+
+export async function setDocumentVersionReview(
+    documentId: string,
+    versionId: string,
+    state: DocumentVersionReviewState,
+    note?: string | null,
+): Promise<DocumentVersion> {
+    return apiRequest<DocumentVersion>(
+        `/single-documents/${documentId}/versions/${versionId}/review`,
+        {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(note == null ? { state } : { state, note }),
         },
     );
 }
