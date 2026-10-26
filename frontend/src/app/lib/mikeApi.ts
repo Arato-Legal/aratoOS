@@ -80,6 +80,7 @@ import type {
     MatterDashboard,
     MatterWorkspace,
     WorkspaceFile,
+    DriveSyncStatus,
     Workflow,
     WorkflowAddon,
     WorkflowContributor,
@@ -4802,4 +4803,45 @@ export async function browseDriveFolders(options?: {
     if (options?.workspace) params.set("workspace", options.workspace);
     const qs = params.toString();
     return apiRequest(`/clients/drive/folders${qs ? `?${qs}` : ""}`);
+}
+
+// ---------------------------------------------------------------------------
+// Editing Drive files in Mike
+// ---------------------------------------------------------------------------
+
+/** Pull a Drive Word file or Google Doc into the matter as an editable document. */
+export async function openDriveFileForEditing(
+    projectId: string,
+    fileId: string,
+): Promise<{ document_id: string; project_id: string; created: boolean }> {
+    return apiRequest(
+        `/clients/matters/${projectId}/drive-files/${encodeURIComponent(fileId)}/edit`,
+        { method: "POST" },
+    );
+}
+
+export async function getDriveSyncStatus(
+    documentId: string,
+): Promise<DriveSyncStatus> {
+    return apiRequest<DriveSyncStatus>(`/clients/documents/${documentId}/drive`);
+}
+
+/** Write the document back to its Drive file. `overwrite` ignores newer Drive changes. */
+export async function saveDocumentToDrive(
+    documentId: string,
+    options?: { overwrite?: boolean },
+): Promise<{ synced_at: string }> {
+    return apiRequest(
+        `/clients/documents/${documentId}/drive/save`,
+        jsonInit("POST", { overwrite: options?.overwrite === true }),
+    );
+}
+
+/** Bring Drive's current content in as a new version of the document. */
+export async function pullDocumentFromDrive(
+    documentId: string,
+): Promise<{ version_id: string; synced_at: string }> {
+    return apiRequest(`/clients/documents/${documentId}/drive/pull`, {
+        method: "POST",
+    });
 }

@@ -18,7 +18,11 @@ import {
   deleteContact,
   getClient,
   getMatterDashboard,
+  getDriveSyncStatus,
   getMatterWorkspace,
+  openDriveFileForEditing,
+  pullDocumentFromDrive,
+  saveDocumentToDrive,
   linkMatterDriveFolder,
   listClients,
   setProjectClient,
@@ -98,6 +102,61 @@ clientsRouter.get(
     });
     if (!result.ok) return void sendServiceFailure(res, result);
     res.setHeader("Cache-Control", "no-store");
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.post(
+  "/matters/:projectId/drive-files/:fileId/edit",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await openDriveFileForEditing(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+      fileId: req.params.fileId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/documents/:documentId/drive",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await getDriveSyncStatus(createServerSupabase(), {
+      ...caller(res),
+      documentId: req.params.documentId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.post(
+  "/documents/:documentId/drive/save",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await saveDocumentToDrive(createServerSupabase(), {
+      ...caller(res),
+      documentId: req.params.documentId,
+      overwrite: req.body?.overwrite === true,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.post(
+  "/documents/:documentId/drive/pull",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await pullDocumentFromDrive(createServerSupabase(), {
+      ...caller(res),
+      documentId: req.params.documentId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
     res.json(result.data);
   }),
 );

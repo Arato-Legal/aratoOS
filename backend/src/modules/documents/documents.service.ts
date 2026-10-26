@@ -49,6 +49,11 @@ export {
 } from "./documents.trackedEdits";
 
 export { renameDocument } from "./documents.rename";
+export {
+    addDocxVersionToDocument,
+    createDocumentFromDocxBytes,
+    type ImportedDocument,
+} from "./documents.import";
 export { deleteCollectionDocuments } from "./documents.cleanup";
 
 export { handleDocumentPrecomputeText } from "./documents.textJobs";

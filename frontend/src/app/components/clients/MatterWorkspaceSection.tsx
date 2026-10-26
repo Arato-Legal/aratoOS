@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getMatterWorkspace, setMatterDriveFolder } from "@/app/lib/mikeApi";
+import { useRouter } from "next/navigation";
+import {
+    getMatterWorkspace,
+    openDriveFileForEditing,
+    setMatterDriveFolder,
+} from "@/app/lib/mikeApi";
 import { notifyError } from "@/app/lib/userFacingError";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import type { DriveFileKind, MatterWorkspace } from "../shared/types";
@@ -25,7 +30,9 @@ export function MatterWorkspaceSection({
     orgId: string | null;
     canEdit: boolean;
 }) {
+    const router = useRouter();
     const [data, setData] = useState<MatterWorkspace | null>(null);
+    const [opening, setOpening] = useState<string | null>(null);
     const [attempt, setAttempt] = useState(0);
     const [picking, setPicking] = useState(false);
     const reload = useCallback(() => setAttempt((n) => n + 1), []);
@@ -54,6 +61,17 @@ export function MatterWorkspaceSection({
             setData(await setMatterDriveFolder(projectId, folderId));
         } catch (error) {
             notifyError(error, { action: "link the Drive folder" });
+        }
+    };
+
+    const edit = async (fileId: string) => {
+        setOpening(fileId);
+        try {
+            const { document_id } = await openDriveFileForEditing(projectId, fileId);
+            router.push(`/matters/${projectId}/edit/${document_id}`);
+        } catch (error) {
+            notifyError(error, { action: "open the file for editing" });
+            setOpening(null);
         }
     };
 
@@ -101,17 +119,30 @@ export function MatterWorkspaceSection({
                                 {file.name}
                             </span>
                             <span className="text-xs text-gray-500">{KIND_LABEL[file.kind]}</span>
+                            <span className="flex-1" />
                             {file.modified_time && (
                                 <span className="text-xs text-gray-400">
                                     Edited {formatDate(file.modified_time)}
                                 </span>
+                            )}
+                            {canEdit && (file.kind === "docx" || file.kind === "gdoc") && (
+                                <PillButtonUI
+                                    tone="black"
+                                    size="xs"
+                                    loading={opening === file.id}
+                                    disabled={opening !== null}
+                                    onClick={() => void edit(file.id)}
+                                    aria-label={`Edit ${file.name} in Mike`}
+                                >
+                                    Edit in Mike
+                                </PillButtonUI>
                             )}
                             {file.web_view_link && (
                                 <a
                                     href={file.web_view_link}
                                     target="_blank"
                                     rel="noreferrer noopener"
-                                    className="ml-auto rounded text-xs text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+                                    className="rounded text-xs text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
                                 >
                                     Open in Drive
                                 </a>

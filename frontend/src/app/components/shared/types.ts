@@ -996,3 +996,22 @@ export interface MatterWorkspace {
   /** A fixed, user-safe reason Drive could not be read (not connected, scope…). */
   drive_error: { code: string; message: string } | null;
 }
+
+export type DriveSyncState =
+  | "in_sync"
+  | "local_changes"
+  | "drive_changes"
+  | "both_changed"
+  | "unknown";
+
+export interface DriveSyncStatus {
+  document_id: string;
+  project_id: string;
+  drive_file_id: string;
+  drive_name: string | null;
+  kind: "gdoc" | "docx";
+  web_view_link: string | null;
+  state: DriveSyncState;
+  synced_at: string;
+  drive_error: { code: string; message: string } | null;
+}

@@ -21,6 +21,7 @@
 import crypto from "crypto";
 import { z } from "zod";
 import { createReadStream } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { googleDriveLimits } from "./googleDriveLimits";
 import { createServerSupabase } from "../supabase";
 import {
@@ -1511,4 +1512,205 @@ export async function findWorkInProgressFolder(
     return (
         folders.find((f) => f.name.trim().toLowerCase() === wanted) ?? null
     );
+}
+
+// ---------------------------------------------------------------------------
+// Editing Word and Google Docs files from a matter's workspace
+// ---------------------------------------------------------------------------
+// A Drive file is pulled into Mike as .docx (a Google Doc is exported to it),
+// edited in Mike's editor, and written back to the SAME Drive file so its id,
+// link and sharing stay put. Drive keeps its own version history, which is the
+// recovery path if a write-back is not what was wanted.
+
+export const GOOGLE_DOC_MIME = "application/vnd.google-apps.document";
+export const DOCX_CONTENT_TYPE = DOCX_MIME;
+const UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
+const EDIT_FIELDS = "id,name,mimeType,modifiedTime,etag,size,webViewLink,trashed";
+
+export class GoogleDriveConflictError extends GoogleDriveUserError {
+    code = "google_drive_changed";
+    constructor() {
+        super(
+            "This file was changed in Google Drive since Mike last synced it. Update from Drive first, or save anyway to overwrite it.",
+        );
+    }
+}
+
+export type DriveEditableFile = {
+    id: string;
+    name: string;
+    mimeType: string;
+    modifiedTime: string | null;
+    etag: string | null;
+    webViewLink: string | null;
+};
+
+/** Whether a Drive file can be edited as Word: a .docx or a Google Doc. */
+export function isDriveEditableMime(mimeType: string, name: string): boolean {
+    return (
+        mimeType === GOOGLE_DOC_MIME ||
+        mimeType === DOCX_MIME ||
+        (/\.docx$/i.test(name) && !mimeType.startsWith("application/vnd.google-apps."))
+    );
+}
+
+async function fileToken(
+    owner: ConnectorOwner,
+    db: Db,
+    access: "read" | "write",
+): Promise<string> {
+    const row = await loadTokenRow(owner, db);
+    if (!row?.encrypted_access_token) throw new GoogleDriveAuthRequiredError();
+    if (row.enabled === false)
+        throw new GoogleDriveUserError(
+            "Google Drive is switched off for this workspace.",
+        );
+    if (!driveScopeGrants(row.scope, access))
+        throw new GoogleDriveScopeError();
+    if (access === "write") {
+        if (!hasDriveWriteAccess(row))
+            throw new GoogleDriveUserError(
+                "Google Drive write access is missing. Reconnect Google Drive.",
+            );
+        if (row.read_only === true)
+            throw new GoogleDriveUserError(
+                "Google Drive is set to read-only in Settings, so Mike cannot save to it.",
+            );
+    }
+    return getAccessToken(owner, db);
+}
+
+async function fetchEditableMeta(
+    token: string,
+    fileId: string,
+): Promise<DriveEditableFile> {
+    const response = await driveFetch(
+        token,
+        `/files/${encodeURIComponent(fileId)}`,
+        { fields: EDIT_FIELDS, supportsAllDrives: "true" },
+    );
+    if (!response.ok) throw googleDriveHttpError(response.status);
+    const file = (await response.json()) as DriveFile & {
+        etag?: string;
+        trashed?: boolean;
+    };
+    if (!file.id || !file.name || file.trashed)
+        throw new GoogleDriveUserError(
+            "This Google Drive file is unavailable or access is not permitted.",
+        );
+    const mimeType = file.mimeType ?? "";
+    if (!isDriveEditableMime(mimeType, file.name))
+        throw new GoogleDriveUserError(
+            "Only Word documents and Google Docs can be edited here.",
+        );
+    return {
+        id: file.id,
+        name: file.name,
+        mimeType,
+        modifiedTime: file.modifiedTime ?? null,
+        etag: file.etag ?? null,
+        webViewLink: file.webViewLink ?? null,
+    };
+}
+
+export async function getDriveEditableFile(
+    owner: ConnectorOwner,
+    db: Db,
+    fileId: string,
+): Promise<DriveEditableFile> {
+    if (!isDriveId(fileId))
+        throw new GoogleDriveUserError("That Google Drive file is not valid.");
+    return fetchEditableMeta(await fileToken(owner, db, "read"), fileId);
+}
+
+/** The file as .docx bytes (a Google Doc is exported) with its metadata. */
+export async function downloadDriveFileAsDocx(
+    owner: ConnectorOwner,
+    db: Db,
+    fileId: string,
+): Promise<{ bytes: Buffer; file: DriveEditableFile }> {
+    if (!isDriveId(fileId))
+        throw new GoogleDriveUserError("That Google Drive file is not valid.");
+    const token = await fileToken(owner, db, "read");
+    const file = await fetchEditableMeta(token, fileId);
+    const isDoc = file.mimeType === GOOGLE_DOC_MIME;
+    const url = new URL(
+        `${DRIVE_API}/files/${encodeURIComponent(fileId)}${isDoc ? "/export" : ""}`,
+    );
+    if (isDoc) url.searchParams.set("mimeType", DOCX_MIME);
+    else {
+        url.searchParams.set("alt", "media");
+        url.searchParams.set("supportsAllDrives", "true");
+    }
+    const download = await downloadGoogleDriveFile(url, token);
+    try {
+        return { bytes: await readFile(download.filename), file };
+    } finally {
+        await download.cleanup();
+    }
+}
+
+/**
+ * Replace the Drive file's content with .docx bytes, in place. Unless
+ * `overwrite`, the write is refused when Drive's copy changed since
+ * `expectedModifiedTime` (checked up front, and again by Drive through the
+ * file's etag so a change between the check and the write is also caught).
+ */
+export async function uploadDocxToDriveFile(
+    owner: ConnectorOwner,
+    db: Db,
+    fileId: string,
+    bytes: Buffer,
+    options: { expectedModifiedTime: string | null; overwrite?: boolean },
+): Promise<{ modifiedTime: string | null; file: DriveEditableFile }> {
+    if (!isDriveId(fileId))
+        throw new GoogleDriveUserError("That Google Drive file is not valid.");
+    const token = await fileToken(owner, db, "write");
+    const current = await fetchEditableMeta(token, fileId);
+    if (
+        !options.overwrite &&
+        options.expectedModifiedTime &&
+        current.modifiedTime &&
+        Date.parse(current.modifiedTime) !== Date.parse(options.expectedModifiedTime)
+    )
+        throw new GoogleDriveConflictError();
+
+    const boundary = `mike_${crypto.randomUUID()}`;
+    // A Google Doc is told to stay a Google Doc so Drive converts the Word
+    // content into it; a Word file keeps its type.
+    const metadata =
+        current.mimeType === GOOGLE_DOC_MIME ? { mimeType: GOOGLE_DOC_MIME } : {};
+    const body = Buffer.concat([
+        Buffer.from(
+            `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+                `--${boundary}\r\nContent-Type: ${DOCX_MIME}\r\n\r\n`,
+        ),
+        bytes,
+        Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+    const url = new URL(`${UPLOAD_API}/files/${encodeURIComponent(fileId)}`);
+    url.searchParams.set("uploadType", "multipart");
+    url.searchParams.set("supportsAllDrives", "true");
+    url.searchParams.set("fields", EDIT_FIELDS);
+    const headers: Record<string, string> = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": `multipart/related; boundary=${boundary}`,
+    };
+    if (!options.overwrite && current.etag) headers["If-Match"] = current.etag;
+    let response: Response;
+    try {
+        response = await googleDriveRequest(url, { method: "PATCH", headers, body });
+    } catch {
+        // A timeout may follow a completed write; never repeat it automatically.
+        throw new GoogleDriveUserError(
+            "The outcome is uncertain. Check Google Drive before trying again; Mike will not retry this save.",
+        );
+    }
+    if (response.status === 412) throw new GoogleDriveConflictError();
+    if (!response.ok) throw googleDriveHttpError(response.status);
+    const saved = (await response.json()) as DriveFile;
+    return {
+        modifiedTime: saved.modifiedTime ?? null,
+        file: { ...current, modifiedTime: saved.modifiedTime ?? current.modifiedTime },
+    };
 }

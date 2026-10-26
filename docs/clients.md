@@ -58,9 +58,40 @@ Word, Google Doc or file with an Open in Drive link.
 | `GET /clients/matters/:projectId/workspace` | Linked folder and Work in progress files |
 | `PUT /clients/matters/:projectId/drive-folder` | Link or unlink (`folder_id`) |
 
+## Editing Word and Google Docs files in Mike
+
+Each Word file or Google Doc in the Work in progress list has **Edit in Mike**.
+It pulls the Drive file into the matter's project as a `.docx` document (a
+Google Doc is exported to Word) and opens it at
+`/matters/:projectId/edit/:documentId`, in the same editor as every other Mike
+document, with autosave and version history. The link is remembered, so
+opening the same Drive file again reuses the document.
+
+- **Save to Drive** writes the current version back to the same Drive file, so
+  its id, link and sharing stay put. It is refused when the file changed in
+  Drive after the last sync; the page then offers an explicit overwrite.
+- **Update from Drive** brings Drive's content in as a new Mike version, so
+  nothing in Mike is overwritten. The previous version stays in the version
+  menu.
+- The page shows whether the file is in sync, edited in Mike, changed in Drive,
+  or changed in both.
+- A Google Doc is edited as Word and written back by converting that Word file,
+  so comments, suggestions and some formatting in the Doc may not carry over.
+  Drive keeps its own version history. Saving needs write access on the
+  Google connection and is refused when the connector is set to read-only.
+- Everything uses the editor's own Google connection and needs edit access to
+  the matter. Existing deployments must apply
+  `backend/migrations/20261026_03_document_drive_links.sql`.
+
+| Route | Purpose |
+| --- | --- |
+| `POST /clients/matters/:projectId/drive-files/:fileId/edit` | Import (or reopen) a Drive file as a document |
+| `GET /clients/documents/:documentId/drive` | Sync state |
+| `POST /clients/documents/:documentId/drive/save` | Write back (`overwrite` to force) |
+| `POST /clients/documents/:documentId/drive/pull` | Update from Drive as a new version |
+
 ## Planned
 
-Mike for Mac reading the synced Drive folder, one editor for Word and Google
-Docs files in the Work in progress folder, manual links per matter, Hubflo
+Mike for Mac reading the synced Drive folder, manual links per matter, Hubflo
 sync (matter data is pushed from Hubflo), AI write-in through an MCP server
 and scoped tokens, and matter-wide queries.
