@@ -99,3 +99,8 @@ create unique index if not exists projects_external_personal_uniq
 create unique index if not exists client_contacts_external_uniq
   on public.client_contacts(client_id, external_id)
   where external_id is not null;
+
+-- The backend reaches these tables as service_role. A fresh install gets that
+-- from schema.sql's blanket grant; an upgraded database needs it spelled out.
+grant select, insert, update, delete
+  on public.crm_sync_endpoints, public.crm_sync_events to service_role;
