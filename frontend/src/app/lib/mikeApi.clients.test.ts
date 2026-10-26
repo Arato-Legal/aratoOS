@@ -1,0 +1,139 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  addClientContact,
+  browseDriveFolders,
+  createClient,
+  deleteClient,
+  deleteClientContact,
+  getClient,
+  getMatterWorkspace,
+  getMatterDashboard,
+  listClients,
+  setMatterClient,
+  setMatterDriveFolder,
+  updateClient,
+} from "./mikeApi";
+
+const fetchMock = vi.fn();
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+beforeEach(() => {
+  fetchMock.mockReset();
+  fetchMock.mockImplementation(async () => json({ ok: true }));
+  vi.stubGlobal("fetch", fetchMock);
+});
+afterEach(() => vi.unstubAllGlobals());
+
+describe("Clients API requests", () => {
+  it.each([
+    { name: "list", call: () => listClients(), url: "/api/clients", method: "GET" },
+    {
+      name: "list with filters",
+      call: () => listClients({ workspace: "org/a", status: "lead", q: "ac me" }),
+      url: "/api/clients?workspace=org%2Fa&status=lead&q=ac+me",
+      method: "GET",
+    },
+    {
+      name: "create",
+      call: () => createClient({ name: "Acme", status: "lead" }),
+      url: "/api/clients",
+      method: "POST",
+      body: { name: "Acme", status: "lead" },
+    },
+    {
+      name: "create in a workspace",
+      call: () => createClient({ name: "Acme" }, "org/a"),
+      url: "/api/clients?workspace=org%2Fa",
+      method: "POST",
+      body: { name: "Acme" },
+    },
+    { name: "get", call: () => getClient("c1"), url: "/api/clients/c1", method: "GET" },
+    {
+      name: "update",
+      call: () => updateClient("c1", { email: null }),
+      url: "/api/clients/c1",
+      method: "PATCH",
+      body: { email: null },
+    },
+    { name: "delete", call: () => deleteClient("c1"), url: "/api/clients/c1", method: "DELETE" },
+    {
+      name: "add contact",
+      call: () => addClientContact("c1", { name: "Jo", role: "CFO" }),
+      url: "/api/clients/c1/contacts",
+      method: "POST",
+      body: { name: "Jo", role: "CFO" },
+    },
+    {
+      name: "delete contact",
+      call: () => deleteClientContact("c1", "k1"),
+      url: "/api/clients/c1/contacts/k1",
+      method: "DELETE",
+    },
+    {
+      name: "matter dashboard",
+      call: () => getMatterDashboard("p1"),
+      url: "/api/clients/matters/p1",
+      method: "GET",
+    },
+    {
+      name: "attach a matter",
+      call: () => setMatterClient("p1", "c1"),
+      url: "/api/clients/matters/p1",
+      method: "PUT",
+      body: { client_id: "c1" },
+    },
+    {
+      name: "detach a matter",
+      call: () => setMatterClient("p1", null),
+      url: "/api/clients/matters/p1",
+      method: "PUT",
+      body: { client_id: null },
+    },
+    {
+      name: "matter workspace",
+      call: () => getMatterWorkspace("p1"),
+      url: "/api/clients/matters/p1/workspace",
+      method: "GET",
+    },
+    {
+      name: "link a Drive folder",
+      call: () => setMatterDriveFolder("p1", "folder-1"),
+      url: "/api/clients/matters/p1/drive-folder",
+      method: "PUT",
+      body: { folder_id: "folder-1" },
+    },
+    {
+      name: "unlink the Drive folder",
+      call: () => setMatterDriveFolder("p1", null),
+      url: "/api/clients/matters/p1/drive-folder",
+      method: "PUT",
+      body: { folder_id: null },
+    },
+    {
+      name: "browse Drive folders",
+      call: () => browseDriveFolders(),
+      url: "/api/clients/drive/folders",
+      method: "GET",
+    },
+    {
+      name: "browse a folder in a workspace",
+      call: () => browseDriveFolders({ parent: "f/1", workspace: "personal" }),
+      url: "/api/clients/drive/folders?parent=f%2F1&workspace=personal",
+      method: "GET",
+    },
+  ])("$name", async ({ call, url, method, body }) => {
+    await call();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [calledUrl, init] = fetchMock.mock.calls[0];
+    expect(String(calledUrl)).toBe(url);
+    expect(init.method ?? "GET").toBe(method);
+    if (body === undefined) expect(init.body).toBeUndefined();
+    else expect(JSON.parse(init.body)).toEqual(body);
+  });
+});
