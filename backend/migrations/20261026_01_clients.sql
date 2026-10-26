@@ -57,3 +57,9 @@ alter table public.projects
 create index if not exists idx_projects_client
   on public.projects(client_id) where client_id is not null;
 
+-- The backend reaches these tables as service_role. A fresh install gets that
+-- from schema.sql's blanket grant; an upgraded database needs it spelled out.
+revoke all privileges on table public.clients, public.client_contacts
+  from anon, authenticated;
+grant select, insert, update, delete on public.clients, public.client_contacts
+  to service_role;
