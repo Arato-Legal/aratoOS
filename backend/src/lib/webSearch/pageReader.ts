@@ -1,4 +1,9 @@
 import { isBlockedDestinationError } from "../blockedDestination";
+import {
+    isOfficialCanadianUrl,
+    isReadableCanadianUrl,
+    type WebSearchSources,
+} from "./canadaSources";
 import { guardedFetch, validateRemoteMcpUrl } from "../mcp/client";
 import { extractPdfTextForModel } from "../pdfText";
 import { withTimeout } from "./http";
@@ -164,7 +169,21 @@ async function readDirectly(
 type ReadOptions = {
     signal?: AbortSignal;
     account?: WebSearchAccount | null;
+    /** "canada" opens official Canadian pages only, and never CanLII's. */
+    sources?: WebSearchSources;
 };
+
+const NOT_OFFICIAL = "That page is not on an official Canadian source, so it cannot be read here.";
+const CANLII_NOT_READABLE =
+    "CanLII's terms do not allow Mike to open its pages. Give the user the link and the search snippet, and tell them to open the case on CanLII to confirm the text.";
+
+// A page's address, before and after any redirect, must stay in scope.
+function assertInScope(url: string) {
+    if (isReadableCanadianUrl(url)) return;
+    throw new WebPageUnreadableError(
+        isOfficialCanadianUrl(url) ? CANLII_NOT_READABLE : NOT_OFFICIAL,
+    );
+}
 
 async function assertPublicAddress(url: string): Promise<void> {
     try {
@@ -210,11 +229,15 @@ export async function readWebPage(
     url: string,
     options: ReadOptions = {},
 ): Promise<WebPage> {
+    const canada = options.sources === "canada";
+    if (canada) assertInScope(url);
     // Search services cannot read every page, so one they could not read is
     // read here instead.
     const page =
         (await readThroughSearchService(url, options)) ??
         (await readDirectly(url, options.signal));
+    // A redirect off the allowlist is discarded unread by the model.
+    if (canada) assertInScope(page.url);
     const text = page.text.trim();
     if (!text) {
         throw new WebPageUnreadableError("The page has no readable text.");

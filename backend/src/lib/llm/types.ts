@@ -173,7 +173,7 @@ export type StreamChatParams = {
      * Offer the provider's own web search tool, when the adapter has one, for
      * at most `maxSearches` searches in each request.
      */
-    providerWebSearch?: { maxSearches: number } | null;
+    providerWebSearch?: { maxSearches: number; allowedDomains?: string[] } | null;
     /**
      * Withdraw every tool on the last step, so a run that reaches its step
      * limit ends with an answer instead of an unanswered tool call.

@@ -10,6 +10,7 @@ import {
     type WebSearchAccount,
     type WebSearchPlan,
     type WebSearchResult,
+    type WebSearchSources,
 } from "../../../../lib/webSearch";
 import { spotlight } from "../contextBuilders";
 
@@ -237,6 +238,8 @@ type WebToolContext = {
     state: WebTurnState;
     /** Mike's search service, or null when the model searches by itself. */
     account: WebSearchAccount | null;
+    /** "canada": official Canadian sources only. */
+    sources?: WebSearchSources;
     nonce?: string;
     signal?: AbortSignal;
     write: (chunk: string) => void;
@@ -276,6 +279,7 @@ async function runSearch(
         results = await searchWeb(query, {
             account: ctx.account,
             signal: ctx.signal,
+            sources: ctx.sources,
         });
     } catch (error) {
         if (ctx.signal?.aborted) throw error;
@@ -318,7 +322,11 @@ function positionNote(offset: number, end: number, total: number): string {
 }
 
 async function openPage(url: string, ctx: WebToolContext): Promise<WebPage> {
-    const page = await readWebPage(url, { signal: ctx.signal, account: ctx.account });
+    const page = await readWebPage(url, {
+        signal: ctx.signal,
+        account: ctx.account,
+        sources: ctx.sources,
+    });
     const redirectedKey = pageKey(page.url);
     if (redirectedKey) {
         ctx.state.readable.add(redirectedKey);

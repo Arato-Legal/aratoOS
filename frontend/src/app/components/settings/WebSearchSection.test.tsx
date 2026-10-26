@@ -40,6 +40,7 @@ vi.mock("@/app/contexts/UserProfileContext", () => ({
 
 const OFF = {
   enabled: false,
+  sources: "web",
   claude: "provider",
   openai: "provider",
   other: "off",
@@ -48,6 +49,15 @@ const OFF = {
 const toggle = () => screen.getByRole("switch", { name: "Enable web search" });
 
 const trigger = (name: string) => screen.getByRole("button", { name });
+
+// Radix opens its menu on pointerdown, not click.
+async function choose(setting: string, option: string) {
+  fireEvent.pointerDown(
+    trigger(setting),
+    new MouseEvent("pointerdown", { bubbles: true, cancelable: true }),
+  );
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: new RegExp(option) }));
+}
 
 describe("WebSearchSection", () => {
   beforeEach(() => {
@@ -84,6 +94,62 @@ describe("WebSearchSection", () => {
     expect(screen.getByLabelText("Tavily API Key")).toBeInTheDocument();
     expect(screen.queryByLabelText("DeepSeek API Key")).toBeNull();
     expect(trigger("Other models")).toHaveTextContent("Tavily");
+  });
+
+  it("lets the user limit search to Canadian official sources", async () => {
+    vi.mocked(getWebSearchSettings).mockResolvedValue({ ...OFF, enabled: true });
+    vi.mocked(updateWebSearchSettings).mockResolvedValue({
+      ...OFF,
+      enabled: true,
+      sources: "canada",
+    });
+    render(<WebSearchSection />);
+    expect(await screen.findByRole("button", { name: "Sources" })).toHaveTextContent("Any website");
+
+    await choose("Sources", "Canadian official sources only");
+
+    await waitFor(() =>
+      expect(updateWebSearchSettings).toHaveBeenCalledWith({ sources: "canada" }),
+    );
+    await waitFor(() =>
+      expect(trigger("Sources")).toHaveTextContent("Canadian official sources only"),
+    );
+  });
+
+  it("says CanLII is searched but not opened when Canadian sources are chosen", async () => {
+    vi.mocked(getWebSearchSettings).mockResolvedValue({
+      ...OFF,
+      enabled: true,
+      sources: "canada",
+    });
+    render(<WebSearchSection />);
+
+    expect(await screen.findByText(/open the case on CanLII to read it/)).toBeInTheDocument();
+    expect(trigger("Sources")).toHaveTextContent("Canadian official sources only");
+  });
+
+  it("hides the source choice while web search is off", async () => {
+    render(<WebSearchSection />);
+    await waitFor(() => expect(toggle()).toBeInTheDocument());
+
+    expect(screen.queryByRole("button", { name: "Sources" })).toBeNull();
+  });
+
+  it("puts the source choice back and raises a notice when saving it fails", async () => {
+    vi.mocked(getWebSearchSettings).mockResolvedValue({ ...OFF, enabled: true });
+    const failure = new Error("boom");
+    vi.mocked(updateWebSearchSettings).mockRejectedValue(failure);
+    render(<WebSearchSection />);
+    await screen.findByRole("button", { name: "Sources" });
+    await choose("Sources", "Canadian official sources only");
+
+    await waitFor(() =>
+      expect(notifyError).toHaveBeenCalledWith(
+        failure,
+        expect.objectContaining({ action: "change which sources web search uses" }),
+      ),
+    );
+    expect(trigger("Sources")).toHaveTextContent("Any website");
   });
 
   it("puts the switch back and raises a notice when the save fails", async () => {

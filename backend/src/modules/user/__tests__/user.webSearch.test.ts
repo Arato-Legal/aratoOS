@@ -36,6 +36,22 @@ describe("validateWebSearchPayload", () => {
         expect(validateWebSearchPayload({ enabled: "true" })).toMatchObject({ ok: false });
         expect(validateWebSearchPayload({ other: "provider" })).toMatchObject({ ok: false });
     });
+
+    it("accepts the two source modes and nothing else", () => {
+        expect(validateWebSearchPayload({ sources: "canada" })).toEqual({
+            ok: true,
+            update: { sources: "canada" },
+        });
+        expect(validateWebSearchPayload({ sources: "web", enabled: true })).toEqual({
+            ok: true,
+            update: { enabled: true, sources: "web" },
+        });
+        expect(validateWebSearchPayload({ sources: "everywhere" })).toMatchObject({
+            ok: false,
+            detail: "sources must be one of: web, canada",
+        });
+        expect(validateWebSearchPayload({ sources: true })).toMatchObject({ ok: false });
+    });
 });
 
 describe("web search settings storage", () => {
@@ -49,6 +65,30 @@ describe("web search settings storage", () => {
                 "u",
             ),
         ).resolves.toEqual({ ...DEFAULT_WEB_SEARCH_SETTINGS, enabled: true, openai: "off" });
+    });
+
+    it("reads the stored source mode, and falls back to the web for an unknown one", async () => {
+        await expect(
+            loadWebSearchSettings(db({ data: { web_search: { sources: "canada" } }, error: null }), "u"),
+        ).resolves.toMatchObject({ sources: "canada" });
+        await expect(
+            loadWebSearchSettings(db({ data: { web_search: { sources: "mars" } }, error: null }), "u"),
+        ).resolves.toMatchObject({ sources: "web" });
+    });
+
+    it("stores the Canadian mode, and removes the key when it goes back to the default", async () => {
+        const on = db({ data: { sources: "canada" }, error: null });
+        await saveWebSearchSettings(on, "u", { sources: "canada" });
+        expect(rpcOf(on)).toHaveBeenCalledWith("merge_user_web_search", {
+            p_user_id: "u",
+            p_patch: { sources: "canada" },
+        });
+        const off = db({ data: {}, error: null });
+        await saveWebSearchSettings(off, "u", { sources: "web" });
+        expect(rpcOf(off)).toHaveBeenCalledWith("merge_user_web_search", {
+            p_user_id: "u",
+            p_patch: { sources: null },
+        });
     });
 
     it("merges only the changed setting and returns the full settings", async () => {
