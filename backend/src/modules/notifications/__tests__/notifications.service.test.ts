@@ -185,26 +185,34 @@ describe("notify", () => {
     });
 
     it("holds back a repeat about the same subject within the window", async () => {
-        const { db, tables } = makeDb({ profiles });
-        const first = await notify(db, {
-            userId: "u3",
-            kind: "task.due",
-            title: "Due soon",
-            subjectType: "task",
-            subjectId: "t1",
-            once: true,
-        });
-        const repeat = await notify(db, {
-            userId: "u3",
-            kind: "task.due",
-            title: "Due soon",
-            subjectType: "task",
-            subjectId: "t1",
-            once: true,
-        });
-        expect(first).not.toBeNull();
-        expect(repeat).toBeNull();
-        expect(tables.notifications).toHaveLength(1);
+        // The fake database stamps rows at a fixed instant, so the window is
+        // measured from that instant rather than from the real clock.
+        vi.useFakeTimers({ toFake: ["Date"] });
+        vi.setSystemTime(new Date("2026-10-23T16:00:10Z"));
+        try {
+            const { db, tables } = makeDb({ profiles });
+            const first = await notify(db, {
+                userId: "u3",
+                kind: "task.due",
+                title: "Due soon",
+                subjectType: "task",
+                subjectId: "t1",
+                once: true,
+            });
+            const repeat = await notify(db, {
+                userId: "u3",
+                kind: "task.due",
+                title: "Due soon",
+                subjectType: "task",
+                subjectId: "t1",
+                once: true,
+            });
+            expect(first).not.toBeNull();
+            expect(repeat).toBeNull();
+            expect(tables.notifications).toHaveLength(1);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it("never throws into the caller", async () => {

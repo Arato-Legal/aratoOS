@@ -11198,7 +11198,7 @@ insert into public.schema_migrations (filename) values
   ('20261024_02_workspace_scoped_data_deletion.sql'),
   ('20261024_03_backfill_project_child_org_id.sql'),
   ('20261024_04_org_member_data_policy.sql'),
-  ('20261023_02_document_version_review_state.sql'),
-  ('20261023_03_project_tasks.sql'),
-  ('20261023_04_notifications.sql')
+  ('20261025_01_document_version_review_state.sql'),
+  ('20261025_02_project_tasks.sql'),
+  ('20261025_03_notifications.sql')
 on conflict (filename) do nothing;
