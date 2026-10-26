@@ -1092,8 +1092,12 @@ export type ProviderFamilyChoice = "provider" | WebSearchBackend | "off";
 
 export type OtherFamilyChoice = WebSearchBackend | "off";
 
+/** "canada" limits search and reading to CanLII and official Canadian sites. */
+export type WebSearchSources = "web" | "canada";
+
 export type WebSearchSettings = {
     enabled: boolean;
+    sources: WebSearchSources;
     claude: ProviderFamilyChoice;
     openai: ProviderFamilyChoice;
     other: OtherFamilyChoice;

@@ -17,6 +17,7 @@ import { type Db } from "../../lib/supabase";
 import {
     webSearchPlanFor,
     type WebSearchPlan,
+    type WebSearchSources,
 } from "../../lib/webSearch";
 import { resolveRequestTimeZone } from "../../lib/userTime";
 import { attachPriorReasoning, buildDocContext, buildMessages, buildUserPersonalisationPrompt, devLog, enrichWithPriorEvents, loadUserMessageSentTimes, buildWorkflowStore, appendAskInputsResponseToAssistantMessage, runApprovedConnectorActions, generateSpotlightNonce, type AskInputsResponseRequest, type ChatMessage, type SubagentDefaults } from "./engine/index";
@@ -80,6 +81,7 @@ export type PreparedChatStream = {
     workflowStore: Awaited<ReturnType<typeof buildWorkflowStore>>;
     legalResearchUs: boolean;
     webSearch: WebSearchPlan | null;
+    webSources: WebSearchSources;
     apiKeys: Awaited<ReturnType<typeof getUserModelSettings>>["api_keys"];
     /** The organization the chat belongs to, whose keys and model lists apply. */
     orgId: string | null;
@@ -547,6 +549,7 @@ export async function prepareChatStream(
                     selectedModel,
                     apiKeys,
                 ),
+                webSources: modelSettings.web_search.sources,
                 apiKeys,
                 orgId: contentOrgId,
                 titleModel,

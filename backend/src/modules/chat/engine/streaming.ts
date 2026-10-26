@@ -1,5 +1,11 @@
 import { teamOrgIdOf } from "../../../lib/personalOrgs";
-import { webSearchAccountFor, type WebSearchPlan } from "../../../lib/webSearch";
+import {
+  CANADA_SOURCES_PROMPT,
+  canadianDomains,
+  webSearchAccountFor,
+  type WebSearchPlan,
+  type WebSearchSources,
+} from "../../../lib/webSearch";
 import { buildGoogleWorkspaceTools } from "../../../lib/integrations/googleWorkspace";
 import {
   streamChatWithTools,
@@ -254,6 +260,8 @@ export async function runLLMStream(params: {
   includeResearchTools?: boolean;
   /** How this turn may search the web; null or omitted means it may not. */
   webSearch?: WebSearchPlan | null;
+  /** "canada" limits web search and reading to official Canadian sources. */
+  webSources?: WebSearchSources;
   /** Expose ask_inputs only to clients that can render and answer it. */
   includeAskInputs?: boolean;
   /**
@@ -349,6 +357,7 @@ export async function runLLMStream(params: {
     extraTools,
     includeResearchTools = true,
     webSearch = null,
+    webSources = "web",
     includeAskInputs = true,
     connectorApprovals = false,
     allowDocumentMutation = true,
@@ -454,6 +463,7 @@ export async function runLLMStream(params: {
           webSearch === "provider"
             ? PROVIDER_WEB_READ_SYSTEM_PROMPT
             : MIKE_WEB_SEARCH_SYSTEM_PROMPT,
+          ...(webSources === "canada" ? [CANADA_SOURCES_PROMPT] : []),
         ]
       : []),
     ...(subagentRuns ? [delegateSystemPrompt(subagentDefaults)] : []),
@@ -674,6 +684,7 @@ export async function runLLMStream(params: {
         apiKeys,
         nonce,
         webSearch,
+        webSources,
         includeResearchTools,
         onActivity: params.onActivity,
         write: () => {},
@@ -771,7 +782,14 @@ export async function runLLMStream(params: {
       abortSignal: signal,
       conversationId,
       providerWebSearch:
-        providerSearches > 0 ? { maxSearches: providerSearches } : null,
+        providerSearches > 0
+          ? {
+              maxSearches: providerSearches,
+              ...(webSources === "canada"
+                ? { allowedDomains: canadianDomains() }
+                : {}),
+            }
+          : null,
       finishWithoutToolsOnLastStep: isSubagent,
       callbacks: {
         onActivity: params.onActivity,
@@ -873,6 +891,7 @@ export async function runLLMStream(params: {
             runWebToolCall(call, {
               state: webTurnState,
               account: webSearchAccount,
+              sources: webSources,
               nonce,
               signal,
               write,

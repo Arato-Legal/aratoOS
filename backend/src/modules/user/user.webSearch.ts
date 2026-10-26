@@ -12,6 +12,8 @@ import {
 import {
     DEFAULT_WEB_SEARCH_SETTINGS,
     WEB_SEARCH_FAMILY_CHOICES,
+    WEB_SEARCH_SOURCES,
+    isWebSearchSources,
     type WebSearchFamily,
     type WebSearchSettings,
 } from "../../lib/webSearch";
@@ -22,7 +24,7 @@ const MERGE_FUNCTION = "merge_user_web_search";
 
 const FAMILIES = Object.keys(WEB_SEARCH_FAMILY_CHOICES) as WebSearchFamily[];
 
-const FIELDS = ["enabled", ...FAMILIES] as const;
+const FIELDS = ["enabled", "sources", ...FAMILIES] as const;
 
 function isChoice<F extends WebSearchFamily>(
     family: F,
@@ -61,6 +63,9 @@ function toWebSearchSettings(stored: unknown): WebSearchSettings {
             typeof record.enabled === "boolean"
                 ? record.enabled
                 : DEFAULT_WEB_SEARCH_SETTINGS.enabled,
+        sources: isWebSearchSources(record.sources)
+            ? record.sources
+            : DEFAULT_WEB_SEARCH_SETTINGS.sources,
         claude: choice("claude"),
         openai: choice("openai"),
         other: choice("other"),
@@ -124,8 +129,15 @@ export function validateWebSearchPayload(
     if (raw.enabled !== undefined && typeof raw.enabled !== "boolean") {
         return { ok: false, detail: "enabled must be a boolean" };
     }
+    if (raw.sources !== undefined && !isWebSearchSources(raw.sources)) {
+        return {
+            ok: false,
+            detail: `sources must be one of: ${WEB_SEARCH_SOURCES.join(", ")}`,
+        };
+    }
     const update: Partial<WebSearchSettings> =
         raw.enabled !== undefined ? { enabled: raw.enabled } : {};
+    if (raw.sources !== undefined) update.sources = raw.sources;
     for (const family of FAMILIES) {
         const value = raw[family];
         if (value === undefined) continue;
