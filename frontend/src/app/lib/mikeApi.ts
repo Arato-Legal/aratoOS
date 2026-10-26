@@ -81,6 +81,8 @@ import type {
     MatterWorkspace,
     WorkspaceFile,
     DriveSyncStatus,
+    CrmSyncEndpoint,
+    CrmSyncEvent,
     Workflow,
     WorkflowAddon,
     WorkflowContributor,
@@ -4988,4 +4990,65 @@ export async function pullDocumentFromDrive(
     return apiRequest(`/clients/documents/${documentId}/drive/pull`, {
         method: "POST",
     });
+}
+
+// ---------------------------------------------------------------------------
+// Inbound CRM sync (Hubflo)
+// ---------------------------------------------------------------------------
+
+function workspaceQuery(workspace?: string) {
+    return workspace ? `?workspace=${encodeURIComponent(workspace)}` : "";
+}
+
+export async function listCrmSyncEndpoints(
+    workspace?: string,
+): Promise<CrmSyncEndpoint[]> {
+    return apiRequest<CrmSyncEndpoint[]>(
+        `/crm-sync/endpoints${workspaceQuery(workspace)}`,
+    );
+}
+
+/** The secret is returned only here and by `rotateCrmSyncSecret`. */
+export async function createCrmSyncEndpoint(
+    payload: {
+        name: string;
+        provider?: CrmSyncEndpoint["provider"];
+        matter_visibility?: CrmSyncEndpoint["matter_visibility"];
+    },
+    workspace?: string,
+): Promise<{ endpoint: CrmSyncEndpoint; secret: string }> {
+    return apiRequest(
+        `/crm-sync/endpoints${workspaceQuery(workspace)}`,
+        jsonInit("POST", payload),
+    );
+}
+
+export async function updateCrmSyncEndpoint(
+    endpointId: string,
+    payload: Partial<
+        Pick<CrmSyncEndpoint, "name" | "enabled" | "matter_visibility">
+    >,
+): Promise<CrmSyncEndpoint> {
+    return apiRequest(
+        `/crm-sync/endpoints/${endpointId}`,
+        jsonInit("PATCH", payload),
+    );
+}
+
+export async function rotateCrmSyncSecret(
+    endpointId: string,
+): Promise<{ endpoint: CrmSyncEndpoint; secret: string }> {
+    return apiRequest(`/crm-sync/endpoints/${endpointId}/rotate-secret`, {
+        method: "POST",
+    });
+}
+
+export async function deleteCrmSyncEndpoint(endpointId: string): Promise<void> {
+    await apiRequest(`/crm-sync/endpoints/${endpointId}`, { method: "DELETE" });
+}
+
+export async function listCrmSyncEvents(
+    endpointId: string,
+): Promise<CrmSyncEvent[]> {
+    return apiRequest<CrmSyncEvent[]>(`/crm-sync/endpoints/${endpointId}/events`);
 }

@@ -1015,3 +1015,25 @@ export interface DriveSyncStatus {
   synced_at: string;
   drive_error: { code: string; message: string } | null;
 }
+
+export interface CrmSyncEndpoint {
+  id: string;
+  org_id: string | null;
+  name: string;
+  provider: "hubflo" | "generic";
+  enabled: boolean;
+  matter_visibility: "private" | "organization";
+  last_received_at: string | null;
+  created_at: string;
+  /** Path of the webhook on the API; it carries the endpoint's secret token. */
+  webhook_path: string;
+}
+
+export interface CrmSyncEvent {
+  id: string;
+  received_at: string;
+  event_type: string | null;
+  external_id: string | null;
+  outcome: "created" | "updated" | "unchanged" | "stale" | "rejected";
+  error_code: string | null;
+}

@@ -16,6 +16,7 @@ import { tabularRouter } from "./modules/tabular/tabular.routes";
 import { workflowsRouter } from "./modules/workflows/workflows.routes";
 import { quickActionsRouter } from "./modules/quick-actions/quickActions.routes";
 import { clientsRouter } from "./modules/clients/clients.routes";
+import { crmSyncRouter, crmWebhookRouter } from "./modules/crm-sync/crmSync.routes";
 import { workflowAddonsRouter } from "./modules/workflows/workflowAddons.routes";
 import { userRouter } from "./modules/user/user.routes";
 import { modelsRouter } from "./modules/models/models.routes";
@@ -156,6 +157,14 @@ const dataDeleteLimiter = makeLimiter({
   windowMs: hours(envInt("RATE_LIMIT_DATA_DELETE_WINDOW_HOURS", 1)),
   max: envInt("RATE_LIMIT_DATA_DELETE_MAX", 20),
   message: "Too many data deletion requests. Please try again later.",
+});
+
+// Inbound CRM webhooks arrive in bursts from one sender (a bulk export is a
+// run of pushes), so the lane is generous but still bounded per IP.
+const crmWebhookLimiter = makeLimiter({
+  windowMs: minutes(envInt("RATE_LIMIT_CRM_WEBHOOK_WINDOW_MINUTES", 15)),
+  max: envInt("RATE_LIMIT_CRM_WEBHOOK_MAX", 300),
+  message: "Too many CRM webhook requests. Please try again later.",
 });
 
 const authLoginIpLimiter = makeLimiter({
@@ -328,6 +337,10 @@ app.delete("/user/tabular-reviews", dataDeleteLimiter);
 // no body parser may consume it first — a .json upload otherwise would be.
 app.put("/download/signed/:token", blobUploadLimiter, blobUploadHandler);
 
+// A webhook body is a short list of records: parse it here under a small cap,
+// before the general parser's far larger one.
+app.use("/webhooks/crm", crmWebhookLimiter, express.json({ limit: "512kb" }), crmWebhookRouter);
+
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
 // Body-aware account throttling complements the per-IP login limiter. The key
@@ -349,6 +362,7 @@ app.use("/tabular-review", tabularRouter);
 app.use("/workflows", workflowsRouter);
 app.use("/quick-actions", quickActionsRouter);
 app.use("/clients", clientsRouter);
+app.use("/crm-sync", crmSyncRouter);
 app.use("/workflow-addons", workflowAddonsRouter);
 app.use("/user/memory", userMemoryRouter);
 app.use("/user/notifications", notificationsRouter);

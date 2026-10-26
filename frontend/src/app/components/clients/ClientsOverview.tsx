@@ -68,6 +68,11 @@ export function ClientsOverview() {
                         placeholder: "Search clients…",
                     },
                     {
+                        label: "Hubflo sync",
+                        title: "Receive clients and matters from Hubflo",
+                        onClick: () => router.push("/clients/sync"),
+                    },
+                    {
                         type: "new",
                         onClick: () => setModalOpen(true),
                         title: "New client",

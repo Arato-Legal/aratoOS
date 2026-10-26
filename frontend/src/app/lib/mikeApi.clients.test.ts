@@ -3,6 +3,8 @@ import {
   addClientContact,
   browseDriveFolders,
   createClient,
+  createCrmSyncEndpoint,
+  deleteCrmSyncEndpoint,
   deleteClient,
   deleteClientContact,
   getClient,
@@ -10,12 +12,16 @@ import {
   getMatterWorkspace,
   getMatterDashboard,
   listClients,
+  listCrmSyncEndpoints,
+  listCrmSyncEvents,
   openDriveFileForEditing,
   pullDocumentFromDrive,
   saveDocumentToDrive,
   setMatterClient,
   setMatterDriveFolder,
+  rotateCrmSyncSecret,
   updateClient,
+  updateCrmSyncEndpoint,
 } from "./mikeApi";
 
 const fetchMock = vi.fn();
@@ -162,6 +168,50 @@ describe("Clients API requests", () => {
       call: () => pullDocumentFromDrive("d1"),
       url: "/api/clients/documents/d1/drive/pull",
       method: "POST",
+    },
+    {
+      name: "list CRM sync endpoints",
+      call: () => listCrmSyncEndpoints("org/a"),
+      url: "/api/crm-sync/endpoints?workspace=org%2Fa",
+      method: "GET",
+    },
+    {
+      name: "list CRM sync endpoints without a workspace",
+      call: () => listCrmSyncEndpoints(),
+      url: "/api/crm-sync/endpoints",
+      method: "GET",
+    },
+    {
+      name: "create a CRM sync endpoint",
+      call: () => createCrmSyncEndpoint({ name: "Hubflo", provider: "hubflo" }, "personal"),
+      url: "/api/crm-sync/endpoints?workspace=personal",
+      method: "POST",
+      body: { name: "Hubflo", provider: "hubflo" },
+    },
+    {
+      name: "update a CRM sync endpoint",
+      call: () => updateCrmSyncEndpoint("e1", { enabled: false }),
+      url: "/api/crm-sync/endpoints/e1",
+      method: "PATCH",
+      body: { enabled: false },
+    },
+    {
+      name: "replace a CRM sync secret",
+      call: () => rotateCrmSyncSecret("e1"),
+      url: "/api/crm-sync/endpoints/e1/rotate-secret",
+      method: "POST",
+    },
+    {
+      name: "delete a CRM sync endpoint",
+      call: () => deleteCrmSyncEndpoint("e1"),
+      url: "/api/crm-sync/endpoints/e1",
+      method: "DELETE",
+    },
+    {
+      name: "list CRM sync events",
+      call: () => listCrmSyncEvents("e1"),
+      url: "/api/crm-sync/endpoints/e1/events",
+      method: "GET",
     },
   ])("$name", async ({ call, url, method, body }) => {
     await call();
