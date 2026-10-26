@@ -14,7 +14,7 @@ import { EmptyState } from "@/app/components/ui/empty-state";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { cn } from "@/app/lib/utils";
 import { LIQUID_GLASS_HOVER_CLASS } from "@/app/components/ui/liquid-surface";
-import type { Client } from "../shared/types";
+import type { Client, ClientStatus } from "../shared/types";
 import { NewClientModal } from "./NewClientModal";
 import {
     DashboardPage,
@@ -30,6 +30,7 @@ export function ClientsOverview() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
+    const [status, setStatus] = useState<ClientStatus | "all">("all");
     const [attempt, setAttempt] = useState(0);
     const q = useDebouncedValue(search.trim(), 250);
 
@@ -38,7 +39,11 @@ export function ClientsOverview() {
     useEffect(() => {
         if (authLoading || !isAuthenticated) return;
         const controller = new AbortController();
-        listClients({ workspace, q: q || undefined })
+        listClients({
+            workspace,
+            q: q || undefined,
+            status: status === "all" ? undefined : status,
+        })
             .then((rows) => {
                 if (!controller.signal.aborted) setClients(rows);
             })
@@ -54,7 +59,7 @@ export function ClientsOverview() {
                 if (!controller.signal.aborted) setLoading(false);
             });
         return () => controller.abort();
-    }, [authLoading, isAuthenticated, workspace, q, attempt, retry]);
+    }, [authLoading, isAuthenticated, workspace, q, status, attempt, retry]);
 
     return (
         <div className="flex h-full min-h-0 flex-col">
@@ -68,6 +73,11 @@ export function ClientsOverview() {
                         placeholder: "Search clients…",
                     },
                     {
+                        label: "Intake",
+                        title: "Intake forms and new submissions",
+                        onClick: () => router.push("/clients/intake"),
+                    },
+                    {
                         type: "new",
                         onClick: () => setModalOpen(true),
                         title: "New client",
@@ -78,6 +88,25 @@ export function ClientsOverview() {
             </PageHeader>
 
             <DashboardPage>
+                <div role="tablist" aria-label="Filter by status" className="flex flex-wrap gap-1">
+                    {(["all", "lead", "active", "closed"] as const).map((value) => (
+                        <button
+                            key={value}
+                            type="button"
+                            role="tab"
+                            aria-selected={status === value}
+                            onClick={() => setStatus(value)}
+                            className={cn(
+                                "rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
+                                status === value
+                                    ? "bg-gray-900 text-white"
+                                    : "text-gray-600 hover:bg-gray-100",
+                            )}
+                        >
+                            {value === "all" ? "All" : value === "lead" ? "Leads" : STATUS_LABELS[value]}
+                        </button>
+                    ))}
+                </div>
                 {loading ? (
                     <div className="animate-pulse space-y-2" aria-busy="true">
                         {[0, 1, 2, 3].map((i) => (

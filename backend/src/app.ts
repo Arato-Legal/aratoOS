@@ -16,6 +16,7 @@ import { tabularRouter } from "./modules/tabular/tabular.routes";
 import { workflowsRouter } from "./modules/workflows/workflows.routes";
 import { quickActionsRouter } from "./modules/quick-actions/quickActions.routes";
 import { clientsRouter } from "./modules/clients/clients.routes";
+import { intakeFormsRouter, intakePublicRouter } from "./modules/intake/intake.routes";
 import { workflowAddonsRouter } from "./modules/workflows/workflowAddons.routes";
 import { userRouter } from "./modules/user/user.routes";
 import { modelsRouter } from "./modules/models/models.routes";
@@ -156,6 +157,14 @@ const dataDeleteLimiter = makeLimiter({
   message: "Too many data deletion requests. Please try again later.",
 });
 
+// The public intake form takes anonymous POSTs, so it gets a tight lane of its
+// own per IP on top of the shared budget.
+const intakeSubmitLimiter = makeLimiter({
+  windowMs: hours(envInt("RATE_LIMIT_INTAKE_WINDOW_HOURS", 1)),
+  max: envInt("RATE_LIMIT_INTAKE_MAX", 10),
+  message: "Too many submissions. Please try again later.",
+});
+
 const authLoginIpLimiter = makeLimiter({
   windowMs: minutes(envInt("RATE_LIMIT_AUTH_LOGIN_WINDOW_MINUTES", 15)),
   max: envInt("RATE_LIMIT_AUTH_LOGIN_MAX", 30),
@@ -269,6 +278,7 @@ app.post(
   authMfaLimiter,
 );
 
+app.post("/intake/:token", intakeSubmitLimiter);
 app.post("/chat", chatLimiter);
 app.post("/word-chat", chatLimiter);
 // Own limiter lane plus a tight body cap: the largest legitimate payload is
@@ -346,6 +356,8 @@ app.use("/tabular-review", tabularRouter);
 app.use("/workflows", workflowsRouter);
 app.use("/quick-actions", quickActionsRouter);
 app.use("/clients", clientsRouter);
+app.use("/intake-forms", intakeFormsRouter);
+app.use("/intake", intakePublicRouter);
 app.use("/workflow-addons", workflowAddonsRouter);
 app.use("/user/memory", userMemoryRouter);
 app.use("/user", userRouter);

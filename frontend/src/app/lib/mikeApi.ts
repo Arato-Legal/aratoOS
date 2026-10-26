@@ -78,6 +78,8 @@ import type {
     ClientContact,
     ClientDetail,
     MatterDashboard,
+    IntakeForm,
+    IntakeSubmission,
     Workflow,
     WorkflowAddon,
     WorkflowContributor,
@@ -4768,4 +4770,120 @@ export async function setMatterClient(
         `/clients/matters/${projectId}`,
         jsonInit("PUT", { client_id: clientId }),
     );
+}
+
+// ---------------------------------------------------------------------------
+// Intake forms and submissions
+// ---------------------------------------------------------------------------
+
+function workspaceQuery(workspace?: string, extra?: Record<string, string>) {
+    const params = new URLSearchParams(extra);
+    if (workspace) params.set("workspace", workspace);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "";
+}
+
+export async function listIntakeForms(workspace?: string): Promise<IntakeForm[]> {
+    return apiRequest<IntakeForm[]>(`/intake-forms${workspaceQuery(workspace)}`);
+}
+
+export async function createIntakeForm(
+    payload: { name: string; title: string; description?: string | null },
+    workspace?: string,
+): Promise<IntakeForm> {
+    return apiRequest<IntakeForm>(
+        `/intake-forms${workspaceQuery(workspace)}`,
+        jsonInit("POST", payload),
+    );
+}
+
+export async function updateIntakeForm(
+    formId: string,
+    payload: Partial<Pick<IntakeForm, "name" | "title" | "description" | "enabled">>,
+): Promise<IntakeForm> {
+    return apiRequest<IntakeForm>(`/intake-forms/${formId}`, jsonInit("PATCH", payload));
+}
+
+export async function deleteIntakeForm(formId: string): Promise<void> {
+    await apiRequest(`/intake-forms/${formId}`, { method: "DELETE" });
+}
+
+export async function listIntakeSubmissions(
+    workspace?: string,
+    status: IntakeSubmission["status"] | "all" = "pending",
+): Promise<IntakeSubmission[]> {
+    return apiRequest<IntakeSubmission[]>(
+        `/intake-forms/submissions${workspaceQuery(workspace, { status })}`,
+    );
+}
+
+export async function approveIntakeSubmission(
+    submissionId: string,
+): Promise<{ client: Client }> {
+    return apiRequest(
+        `/intake-forms/submissions/${submissionId}/approve`,
+        { method: "POST" },
+    );
+}
+
+export async function rejectIntakeSubmission(submissionId: string): Promise<void> {
+    await apiRequest(`/intake-forms/submissions/${submissionId}/reject`, {
+        method: "POST",
+    });
+}
+
+// The public intake page has no session, so it talks to the API directly.
+export type PublicIntakeForm = { title: string; description: string | null };
+
+export async function getPublicIntakeForm(
+    token: string,
+): Promise<PublicIntakeForm | null> {
+    const response = await fetch(`${API_BASE}/intake/${encodeURIComponent(token)}`, {
+        cache: "no-store",
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error("Could not load the form");
+    return response.json();
+}
+
+export type IntakeSubmitResult =
+    | { ok: true }
+    | { ok: false; message: string };
+
+export async function submitPublicIntakeForm(
+    token: string,
+    payload: {
+        name: string;
+        email: string;
+        phone: string;
+        message: string;
+        website: string;
+    },
+): Promise<IntakeSubmitResult> {
+    try {
+        const response = await fetch(
+            `${API_BASE}/intake/${encodeURIComponent(token)}`,
+            jsonInit("POST", payload),
+        );
+        if (response.ok) return { ok: true };
+        if (response.status === 429)
+            return {
+                ok: false,
+                message: "Too many submissions. Please try again later.",
+            };
+        if (response.status === 400) {
+            const body = await response.json().catch(() => null);
+            if (typeof body?.detail === "string")
+                return { ok: false, message: body.detail };
+        }
+        return {
+            ok: false,
+            message: "We could not send this right now. Please try again later.",
+        };
+    } catch {
+        return {
+            ok: false,
+            message: "We could not reach the server. Check your connection and try again.",
+        };
+    }
 }

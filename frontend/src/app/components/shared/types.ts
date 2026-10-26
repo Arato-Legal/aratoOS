@@ -973,3 +973,27 @@ export interface MatterDashboard {
   project: ClientMatter & { client_id: string | null; access_role: string };
   client: (Client & { contacts: ClientContact[] }) | null;
 }
+
+export interface IntakeForm {
+  id: string;
+  org_id: string | null;
+  name: string;
+  title: string;
+  description: string | null;
+  token: string;
+  enabled: boolean;
+  created_at: string;
+}
+
+export interface IntakeSubmission {
+  id: string;
+  form_id: string;
+  form_name: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  message: string | null;
+  status: "pending" | "approved" | "rejected";
+  client_id: string | null;
+  created_at: string;
+}
