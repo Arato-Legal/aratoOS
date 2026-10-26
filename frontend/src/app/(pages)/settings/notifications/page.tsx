@@ -28,7 +28,7 @@ const EMAIL_MODE_OPTIONS: { value: NotificationEmailMode; label: string }[] = [
     { value: "off", label: "Never" },
 ];
 
-export function notificationTime(iso: string): string {
+function notificationTime(iso: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "";
     return date.toLocaleString(undefined, {
