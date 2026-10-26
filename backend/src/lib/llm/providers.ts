@@ -174,8 +174,17 @@ async function createAnthropicAdapter(args: {
     // Only Anthropic itself runs the search; compatible gateways do not.
     ...(args.provider === "claude"
       ? {
-          webSearchTool: ({ maxUses }: { maxUses: number }) =>
-            anthropic.tools.webSearch_20250305({ maxUses }),
+          webSearchTool: ({
+            maxUses,
+            allowedDomains,
+          }: {
+            maxUses: number;
+            allowedDomains?: string[];
+          }) =>
+            anthropic.tools.webSearch_20250305({
+              maxUses,
+              ...(allowedDomains?.length ? { allowedDomains } : {}),
+            }),
         }
       : {}),
   };
@@ -604,7 +613,10 @@ async function createProviderAdapter(
       model: openai.responses(model),
       modelId: model,
       courtlistenerCitationReminder: true,
-      webSearchTool: () => openai.tools.webSearch({}),
+      webSearchTool: ({ allowedDomains }: { allowedDomains?: string[] }) =>
+        openai.tools.webSearch(
+          allowedDomains?.length ? { filters: { allowedDomains } } : {},
+        ),
     };
   }
 

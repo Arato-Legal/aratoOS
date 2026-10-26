@@ -14,6 +14,8 @@ export type WebSearchAccount = { backend: WebSearchBackend; apiKey: string };
 export type SearchApiDeps = {
     fetch: typeof fetch;
     signal?: AbortSignal;
+    /** Restrict results to these domains, where the service can scope a query. */
+    domains?: readonly string[];
 };
 
 export type SearchService = {

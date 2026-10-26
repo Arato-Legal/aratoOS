@@ -1,5 +1,6 @@
 import { setTimeout as sleep } from "node:timers/promises";
 
+import { canadianDomains, isOfficialCanadianUrl, type WebSearchSources } from "./canadaSources";
 import { SearchApiError } from "./http";
 import { SEARCH_SERVICES } from "./services";
 import type { WebSearchAccount, WebSearchResult } from "./types";
@@ -43,9 +44,15 @@ export function createWebSearch(deps: Deps) {
 
     return async function searchWeb(
         query: string,
-        options: { account: WebSearchAccount | null; signal?: AbortSignal },
+        options: {
+            account: WebSearchAccount | null;
+            signal?: AbortSignal;
+            /** "canada" keeps only official Canadian sources, however the service answers. */
+            sources?: WebSearchSources;
+        },
     ): Promise<WebSearchResult[]> {
         const { account, signal } = options;
+        const canada = options.sources === "canada";
         if (!account) throw new WebSearchUnavailableError("not_configured");
         const { apiKey } = account;
         const service = SEARCH_SERVICES[account.backend];
@@ -54,11 +61,19 @@ export function createWebSearch(deps: Deps) {
             await waitForSlot(apiKey, service.requestSpacingMs, signal);
         }
         try {
-            return await service.search(
+            const results = await service.search(
                 query.slice(0, service.maxQueryChars),
                 apiKey,
-                { fetch: deps.fetch, signal },
+                {
+                    fetch: deps.fetch,
+                    signal,
+                    ...(canada ? { domains: canadianDomains() } : {}),
+                },
             );
+            // Scoping a query is the service's best effort; this is the rule.
+            return canada
+                ? results.filter((result) => isOfficialCanadianUrl(result.url))
+                : results;
         } catch (error) {
             if (signal?.aborted) throw error;
             const rejected =
