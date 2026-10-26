@@ -177,3 +177,59 @@ describe("readWebPage", () => {
         );
     });
 });
+
+describe("readWebPage in Canadian official sources mode", () => {
+    const canada = { sources: "canada" } as const;
+
+    it("reads an official page", async () => {
+        guardedFetch.mockResolvedValue({
+            ...page("The Act.", "text/plain"),
+            ok: true,
+            headers: new Headers({ "content-type": "text/plain" }),
+            url: "https://laws-lois.justice.gc.ca/eng/acts/c-46/",
+            body: new Response("The Act.").body,
+        });
+
+        const result = await readWebPage("https://laws-lois.justice.gc.ca/eng/acts/c-46/", canada);
+
+        expect(result.text).toBe("The Act.");
+    });
+
+    it("refuses a page outside the allowlist before fetching it", async () => {
+        const message = await unreadable(readWebPage("https://example.com/law", canada));
+
+        expect(message).toMatch(/not on an official Canadian source/);
+        expect(guardedFetch).not.toHaveBeenCalled();
+    });
+
+    it("never opens CanLII, and says why", async () => {
+        const message = await unreadable(
+            readWebPage("https://www.canlii.org/en/on/onca/doc/2020/2020onca1/2020onca1.html", canada),
+        );
+
+        expect(message).toMatch(/CanLII's terms do not allow/);
+        expect(guardedFetch).not.toHaveBeenCalled();
+    });
+
+    it("discards a page that redirected off the allowlist", async () => {
+        guardedFetch.mockResolvedValue({
+            ...page("Elsewhere.", "text/plain"),
+            ok: true,
+            headers: new Headers({ "content-type": "text/plain" }),
+            url: "https://example.com/landing",
+            body: new Response("Elsewhere.").body,
+        });
+
+        const message = await unreadable(
+            readWebPage("https://www.canada.ca/en/redirect.html", canada),
+        );
+
+        expect(message).toMatch(/not on an official Canadian source/);
+    });
+
+    it("does not restrict anything in the default mode", async () => {
+        guardedFetch.mockResolvedValue(page("Anywhere.", "text/plain"));
+
+        expect((await readWebPage("https://example.com/law")).text).toBe("Anywhere.");
+    });
+});

@@ -226,7 +226,10 @@ export type AiSdkAdapterConfig = {
   /** OpenAI's CourtListener tools require an extra instruction after use. */
   courtlistenerCitationReminder?: boolean;
   /** The provider's own web search tool. */
-  webSearchTool?: (options: { maxUses: number }) => ToolSet[string];
+  webSearchTool?: (options: {
+    maxUses: number;
+    allowedDomains?: string[];
+  }) => ToolSet[string];
   /** Send stored reasoning on earlier assistant turns; see ConfiguredModel. */
   replayReasoning?: boolean;
   /** Mark the prefix-cache breakpoint with a Bedrock cache point as well. */
@@ -505,6 +508,7 @@ export async function streamAiSdk(
       ? {
           tool: config.webSearchTool({
             maxUses: params.providerWebSearch.maxSearches,
+            allowedDomains: params.providerWebSearch.allowedDomains,
           }),
         }
       : null;

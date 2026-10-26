@@ -57,7 +57,7 @@ const SEARCH_SERVICE_OPTIONS: SettingsSelectOption[] = WEB_SEARCH_BACKENDS.map(
 
 type Field = keyof WebSearchSettings;
 
-type Family = Exclude<Field, "enabled">;
+type Family = Exclude<Field, "enabled" | "sources">;
 
 const PROVIDER_FAMILIES: Array<{
   family: "claude" | "openai";
@@ -82,6 +82,20 @@ const PROVIDER_FAMILIES: Array<{
   },
 ];
 
+const SOURCE_OPTIONS: SettingsSelectOption[] = [
+  {
+    value: "web",
+    label: "Any website",
+    description: "Mike may use any public web page.",
+  },
+  {
+    value: "canada",
+    label: "Canadian official sources only",
+    description:
+      "CanLII and the official sites of Canadian courts, legislatures and governments. Other sites are never searched or opened. CanLII results show a link and snippet; open the case on CanLII to read it.",
+  },
+];
+
 const OFF_OPTION = {
   value: "off",
   label: "Off",
@@ -92,6 +106,7 @@ function saveAction(field: Field, next: WebSearchSettings[Field]): string {
   if (field === "enabled") {
     return next ? "turn on web search" : "turn off web search";
   }
+  if (field === "sources") return "change which sources web search uses";
   const family = PROVIDER_FAMILIES.find((entry) => entry.family === field);
   return `change web search for ${family?.label ?? "other models"}`;
 }
@@ -106,6 +121,7 @@ export function WebSearchSection() {
   // that resolves late must not overwrite it.
   const latestRequestRef = useRef<Record<Field, number>>({
     enabled: 0,
+    sources: 0,
     claude: 0,
     openai: 0,
     other: 0,
@@ -231,6 +247,17 @@ export function WebSearchSection() {
                 />
               )}
             </SettingsRow>
+            {settings?.enabled && (
+              <SettingsSelectRow
+                id="web-search-sources"
+                label="Sources"
+                options={SOURCE_OPTIONS}
+                value={settings.sources}
+                onChange={(next) =>
+                  void save("sources", next as WebSearchSettings["sources"])
+                }
+              />
+            )}
             {settings?.enabled &&
               profile &&
               families.map(({ family, label, options }) => (
