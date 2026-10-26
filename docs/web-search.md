@@ -60,6 +60,49 @@ pages each), and together an answer's subagents make at most 150 searches and
 open at most 250 pages. A page already opened in the answer is not fetched
 again. At most, one answer makes 158 searches and opens 262 pages.
 
+## Canadian official sources only
+
+For Canadian research, **Settings > Features > Web Search > Sources** can be
+set to **Canadian official sources only** (the default is **Any website**).
+Search and page reading are then limited to CanLII and the official websites of
+Canadian courts, legislatures and governments:
+
+- **In scope:** CanLII; the Supreme Court of Canada; the Government of Canada
+  (`canada.ca` and `gc.ca`, which includes Justice Laws and the federal courts
+  and tribunals); the House of Commons, Senate and Parliament; and each
+  province's and territory's government, legislature and courts, including
+  Quebec's government sites. The curated list is in
+  `backend/src/lib/webSearch/canadaSources.ts`. A page must be on one of those
+  domains or a subdomain of one, over https, so lookalike addresses such as
+  `canlii.org.example.com` are refused. An operator can add domains with
+  `WEB_SEARCH_CANADA_EXTRA_DOMAINS` (comma-separated).
+- **How it is enforced:** Mike's own search (Brave, Tavily, DeepSeek) scopes the
+  query where the service allows it (Tavily by domain list, Brave by `site:`
+  operators) and then drops every result off the list, so DeepSeek, which
+  cannot scope a query, still returns only in-scope pages. Anthropic and OpenAI
+  search are given the domain list. The page reader refuses anything off the
+  list, before fetching it and again after any redirect, including a link the
+  user pasted. Subagents follow the same rule.
+- **CanLII is searchable, not readable.** CanLII's terms limit automated access,
+  so Mike never fetches a CanLII page. A CanLII result shows its title, link and
+  snippet; the assistant says so and sends the user to CanLII to confirm the
+  text. Reading CanLII properly would need CanLII's own API and a key from them,
+  which is not part of this.
+- The assistant is told to cite by neutral citation and statute section with a
+  link to the official page, to name the date of an online consolidation and
+  say it should be confirmed as current, and to say plainly when the official
+  sources do not answer the question rather than filling the gap from memory or
+  non-Canadian law.
+- The setting is stored in the existing `user_profiles.web_search` column (key
+  `sources`), so it needs no migration. Provider search is a best effort on the
+  provider's side: it reads pages itself, so CanLII text can reach the model
+  that way.
+
+Web search still has to be turned on, and a search service key or a provider
+search must be available, as above. This is search of the open web restricted to
+official sites, not a legal database: coverage depends on what the search
+service indexes.
+
 ## Search service keys
 
 Keys come from the same places as model API keys, chosen the same way:

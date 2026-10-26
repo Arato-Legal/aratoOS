@@ -91,6 +91,7 @@ describe("getUserModelSettings router-model allowlist", () => {
         });
         expect(settings.web_search).toEqual({
             enabled: true,
+            sources: "web",
             claude: "provider",
             openai: "provider",
             other: "brave",

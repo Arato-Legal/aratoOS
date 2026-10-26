@@ -7,6 +7,7 @@ import { app } from "./app";
 import { enforceDocumentLifecycleMigration } from "./lib/dbq/lifecycleGuard";
 import { manifestPublicKey } from "./lib/manifestSigning";
 import { validateRuntimeConfiguration } from "./lib/runtimeConfig";
+import { validateMailConfiguration } from "./lib/mail/mail";
 import { startAllWorkers, stopAllWorkers } from "./workerRuntime";
 import { reportError } from "./lib/observability/sentry";
 import {
@@ -32,6 +33,8 @@ async function validateBootConfiguration(): Promise<void> {
   let stage = "runtime-config";
   try {
     validateRuntimeConfiguration();
+    stage = "mail-config";
+    validateMailConfiguration();
     stage = "manifest-key";
     const signingKey = manifestPublicKey();
     if (signingKey) {

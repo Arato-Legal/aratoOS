@@ -121,6 +121,101 @@ describe("runLLMStream web search", () => {
     });
   });
 
+  describe("Canadian official sources only", () => {
+    const CANADA_MARKER = "CANADIAN OFFICIAL SOURCES ONLY";
+    const call = () => streamChatWithTools.mock.calls[0]![0] as StreamChatCall & {
+      systemPrompt: string;
+      providerWebSearch?: { maxSearches: number; allowedDomains?: string[] } | null;
+    };
+
+    it("adds the Canadian research rules to the prompt only in that mode", async () => {
+      await runLLMStream({ ...baseParams(), webSearch: "tavily", webSources: "canada" });
+      expect(call().systemPrompt).toContain(CANADA_MARKER);
+      expect(call().systemPrompt).toContain("CanLII results show a title, link and snippet only");
+
+      streamChatWithTools.mockClear();
+      await runLLMStream({ ...baseParams(), webSearch: "tavily" });
+      expect(call().systemPrompt).not.toContain(CANADA_MARKER);
+
+      streamChatWithTools.mockClear();
+      await runLLMStream({ ...baseParams(), webSearch: null, webSources: "canada" });
+      expect(call().systemPrompt).not.toContain(CANADA_MARKER);
+    });
+
+    it("tells Mike's search to keep official Canadian sources only", async () => {
+      searchWeb.mockResolvedValue([]);
+      streamChatWithTools.mockImplementationOnce(async (params) => {
+        await params.runTools?.([
+          { id: "s", name: "web_search", input: { query: "duty to accommodate" } },
+        ]);
+        return { fullText: "" };
+      });
+
+      await runLLMStream({
+        ...baseParams(),
+        webSearch: "tavily",
+        webSources: "canada",
+        apiKeys: { tavily: "k" },
+      });
+
+      expect(searchWeb).toHaveBeenCalledWith(
+        "duty to accommodate",
+        expect.objectContaining({ sources: "canada" }),
+      );
+    });
+
+    it("limits the provider's own search to the allowed domains", async () => {
+      await runLLMStream({ ...baseParams(), webSearch: PROVIDER, webSources: "canada" });
+      const domains = call().providerWebSearch?.allowedDomains;
+      expect(domains?.[0]).toBe("canlii.org");
+      expect(domains).toContain("scc-csc.ca");
+
+      streamChatWithTools.mockClear();
+      await runLLMStream({ ...baseParams(), webSearch: PROVIDER });
+      expect(call().providerWebSearch).not.toHaveProperty("allowedDomains");
+    });
+
+    it("refuses to read a page the user linked that is not an official source", async () => {
+      let content = "";
+      streamChatWithTools.mockImplementationOnce(async (params) => {
+        const [result] = (await params.runTools?.([
+          { id: "r", name: "read_webpage", input: { url: "https://example.com/law" } },
+        ])) ?? [];
+        content = result?.content ?? "";
+        return { fullText: "" };
+      });
+
+      await runLLMStream({
+        ...baseParams(),
+        apiMessages: [{ role: "user", content: "Summarise https://example.com/law" }],
+        webSearch: PROVIDER,
+        webSources: "canada",
+      });
+
+      expect(content).toMatch(/not on an official Canadian source/);
+    });
+
+    it("refuses to open CanLII even when the user links it", async () => {
+      let content = "";
+      streamChatWithTools.mockImplementationOnce(async (params) => {
+        const [result] = (await params.runTools?.([
+          { id: "r", name: "read_webpage", input: { url: "https://www.canlii.org/en/ca/scc/" } },
+        ])) ?? [];
+        content = result?.content ?? "";
+        return { fullText: "" };
+      });
+
+      await runLLMStream({
+        ...baseParams(),
+        apiMessages: [{ role: "user", content: "Read https://www.canlii.org/en/ca/scc/" }],
+        webSearch: PROVIDER,
+        webSources: "canada",
+      });
+
+      expect(content).toMatch(/CanLII's terms do not allow/);
+    });
+  });
+
   it("rebuilds a web event's error from its code without the raw message", () => {
     const chunk = sanitizeAssistantSseChunk(
       `data: ${JSON.stringify({

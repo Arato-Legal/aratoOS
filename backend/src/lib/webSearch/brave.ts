@@ -1,3 +1,4 @@
+import { siteScope } from "./canadaSources";
 import { fetchJson } from "./http";
 import { MAX_SEARCH_RESULTS, text, webResults } from "./results";
 import type { SearchService } from "./types";
@@ -43,7 +44,12 @@ export const brave: SearchService = {
 
     async search(query, apiKey, deps) {
         const url = new URL(BRAVE_SEARCH_URL);
-        url.searchParams.set("q", query);
+        // Brave scopes a query with site: operators, inside the query limit.
+        const scope = deps.domains?.length ? siteScope(deps.domains, 240) : "";
+        url.searchParams.set(
+            "q",
+            scope ? `${query.slice(0, 400 - scope.length - 1)} ${scope}` : query,
+        );
         url.searchParams.set("count", String(MAX_SEARCH_RESULTS));
         url.searchParams.set("extra_snippets", "true");
         url.searchParams.set("text_decorations", "false");
