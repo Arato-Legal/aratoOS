@@ -90,8 +90,64 @@ opening the same Drive file again reuses the document.
 | `POST /clients/documents/:documentId/drive/save` | Write back (`overwrite` to force) |
 | `POST /clients/documents/:documentId/drive/pull` | Update from Drive as a new version |
 
+## Hubflo sync (inbound webhook)
+
+Matter data is pushed from Hubflo rather than typed into Mike. An organization
+admin (or the owner of a personal workspace) creates an **endpoint** at
+`/clients/sync`. It has a secret URL and a bearer secret; the secret is shown
+once and stored only as a hash. Anything that can send an authenticated JSON
+POST, such as a Hubflo automation, can push to it. Hubflo's own webhook format
+is not assumed: Mike defines the payload below, and an adapter can translate a
+native format later.
+
+```
+POST <app origin>/api/webhooks/crm/<token>
+Authorization: Bearer <secret>
+
+{ "events": [ { "type": "client.upsert", "data": { ... } },
+              { "type": "matter.upsert", "data": { ... } } ] }
+```
+
+A single `{ "type", "data" }` event is accepted too. Up to 100 events per
+request, body up to 512 kB.
+
+| Event | `data` fields |
+| --- | --- |
+| `client.upsert` | `external_id` (required), `name` (required to create), `kind`, `status`, `email`, `phone`, `address`, `source`, `notes`, `custom_fields`, `contacts` (each with its own `external_id`), `updated_at` |
+| `matter.upsert` | `external_id` (required), `name` (required to create), `cm_number`, `practice`, `client_external_id` (null unlinks), `archived`, `updated_at` |
+
+- Rows are matched by the endpoint's provider and `external_id` inside its
+  workspace, so repeated pushes are safe and race-tolerant.
+- Fields sent overwrite Mike's; fields left out are untouched; null clears.
+  Contacts and matters not mentioned are kept: a push never deletes anything.
+- A push whose `updated_at` is older than the last one applied is reported
+  `stale` and ignored, so out-of-order delivery cannot roll data back.
+- Clients are applied before matters within a request, so a matter can name a
+  client from the same push. A matter naming an unknown client is rejected with
+  `client_not_found`.
+- The response is 200 with a result per event (`created`, `updated`,
+  `unchanged`, `stale`, or `rejected` with an `error_code`). A bad envelope is
+  400. Any authentication failure (unknown token, paused endpoint, wrong
+  secret) is the same 401.
+- New matters are created as the person who made the endpoint, and are private
+  to them unless the endpoint is set to make matters organization-wide. They can
+  then be shared like any matter. If that person leaves the organization the
+  endpoint answers `endpoint_owner_unavailable` until it is recreated.
+- Activity (outcome and ids only, never the data) is kept for 30 days and shown
+  under Recent activity. **Replace secret** invalidates the old one at once.
+- The webhook is rate limited per IP (`RATE_LIMIT_CRM_WEBHOOK_MAX`, default 300
+  per 15 minutes). Existing deployments must apply
+  `backend/migrations/20261026_04_crm_sync.sql`.
+
+| Route | Purpose |
+| --- | --- |
+| `POST /webhooks/crm/:token` | Receive a push |
+| `GET/POST /crm-sync/endpoints` | List and create endpoints (admins) |
+| `PATCH/DELETE /crm-sync/endpoints/:id` | Pause, rename, change matter visibility, delete |
+| `POST /crm-sync/endpoints/:id/rotate-secret` | Replace the secret |
+| `GET /crm-sync/endpoints/:id/events` | Recent activity |
+
 ## Planned
 
-Mike for Mac reading the synced Drive folder, manual links per matter, Hubflo
-sync (matter data is pushed from Hubflo), AI write-in through an MCP server
-and scoped tokens, and matter-wide queries.
+Mike for Mac reading the synced Drive folder, manual links per matter, AI
+write-in through an MCP server and scoped tokens, and matter-wide queries.
