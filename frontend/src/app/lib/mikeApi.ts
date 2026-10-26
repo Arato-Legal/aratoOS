@@ -74,6 +74,10 @@ import type {
     OpenSourceWorkflowResponse,
     Project,
     QuickAction,
+    Client,
+    ClientContact,
+    ClientDetail,
+    MatterDashboard,
     Workflow,
     WorkflowAddon,
     WorkflowContributor,
@@ -4808,4 +4812,104 @@ export async function deletePlaybook(playbookId: string): Promise<void> {
     return apiRequest(`/playbooks/${encodeURIComponent(playbookId)}`, {
         method: "DELETE",
     });
+}
+
+// ---------------------------------------------------------------------------
+// Clients and matter dashboards
+// ---------------------------------------------------------------------------
+
+type ClientPayload = Partial<
+    Pick<
+        Client,
+        | "name"
+        | "kind"
+        | "status"
+        | "email"
+        | "phone"
+        | "address"
+        | "source"
+        | "notes"
+        | "custom_fields"
+    >
+>;
+type ContactPayload = Partial<
+    Pick<ClientContact, "name" | "role" | "email" | "phone" | "notes">
+>;
+
+const jsonInit = (method: string, payload?: unknown): RequestInit => ({
+    method,
+    headers: { "Content-Type": "application/json" },
+    ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+});
+
+export async function listClients(options?: {
+    workspace?: string;
+    status?: Client["status"];
+    q?: string;
+}): Promise<Client[]> {
+    const params = new URLSearchParams();
+    if (options?.workspace) params.set("workspace", options.workspace);
+    if (options?.status) params.set("status", options.status);
+    if (options?.q) params.set("q", options.q);
+    const qs = params.toString();
+    return apiRequest<Client[]>(`/clients${qs ? `?${qs}` : ""}`);
+}
+
+export async function createClient(
+    payload: ClientPayload & { name: string },
+    workspace?: string,
+): Promise<Client> {
+    const qs = workspace ? `?workspace=${encodeURIComponent(workspace)}` : "";
+    return apiRequest<Client>(`/clients${qs}`, jsonInit("POST", payload));
+}
+
+export async function getClient(clientId: string): Promise<ClientDetail> {
+    return apiRequest<ClientDetail>(`/clients/${clientId}`);
+}
+
+export async function updateClient(
+    clientId: string,
+    payload: ClientPayload,
+): Promise<Client> {
+    return apiRequest<Client>(`/clients/${clientId}`, jsonInit("PATCH", payload));
+}
+
+export async function deleteClient(clientId: string): Promise<void> {
+    await apiRequest(`/clients/${clientId}`, { method: "DELETE" });
+}
+
+export async function addClientContact(
+    clientId: string,
+    payload: ContactPayload & { name: string },
+): Promise<ClientContact> {
+    return apiRequest<ClientContact>(
+        `/clients/${clientId}/contacts`,
+        jsonInit("POST", payload),
+    );
+}
+
+export async function deleteClientContact(
+    clientId: string,
+    contactId: string,
+): Promise<void> {
+    await apiRequest(`/clients/${clientId}/contacts/${contactId}`, {
+        method: "DELETE",
+    });
+}
+
+export async function getMatterDashboard(
+    projectId: string,
+): Promise<MatterDashboard> {
+    return apiRequest<MatterDashboard>(`/clients/matters/${projectId}`);
+}
+
+/** Attach a matter to a client, or detach it with `null`. */
+export async function setMatterClient(
+    projectId: string,
+    clientId: string | null,
+): Promise<{ project_id: string; client_id: string | null }> {
+    return apiRequest(
+        `/clients/matters/${projectId}`,
+        jsonInit("PUT", { client_id: clientId }),
+    );
 }
