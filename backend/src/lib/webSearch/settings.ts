@@ -1,3 +1,5 @@
+import { DEFAULT_WEB_SEARCH_SOURCES, type WebSearchSources } from "./canadaSources";
+
 export const WEB_SEARCH_BACKENDS = ["brave", "tavily", "deepseek"] as const;
 
 export type WebSearchBackend = (typeof WEB_SEARCH_BACKENDS)[number];
@@ -13,12 +15,13 @@ export const WEB_SEARCH_FAMILY_CHOICES = {
 
 export type WebSearchFamily = keyof typeof WEB_SEARCH_FAMILY_CHOICES;
 
-export type WebSearchSettings = { enabled: boolean } & {
+export type WebSearchSettings = { enabled: boolean; sources: WebSearchSources } & {
     [F in WebSearchFamily]: (typeof WEB_SEARCH_FAMILY_CHOICES)[F][number];
 };
 
 export const DEFAULT_WEB_SEARCH_SETTINGS: WebSearchSettings = {
     enabled: false,
+    sources: DEFAULT_WEB_SEARCH_SOURCES,
     claude: "provider",
     openai: "provider",
     other: "off",

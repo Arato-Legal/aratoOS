@@ -41,6 +41,33 @@ describe("streamWithProvider with provider web search", () => {
     });
   });
 
+  it("limits Claude's search to the allowed domains, and leaves it open otherwise", async () => {
+    streamAiSdk.mockResolvedValue({ fullText: "ok" });
+
+    await streamWithProvider(params());
+
+    const tool = adapterOf(0).webSearchTool!;
+    expect(tool({ maxUses: 3, allowedDomains: ["canlii.org", "gc.ca"] })).toMatchObject({
+      args: { maxUses: 3, allowedDomains: ["canlii.org", "gc.ca"] },
+    });
+    expect(tool({ maxUses: 3, allowedDomains: [] }).args).not.toHaveProperty("allowedDomains");
+    expect(tool({ maxUses: 3 }).args).not.toHaveProperty("allowedDomains");
+  });
+
+  it("limits OpenAI's search to the allowed domains, and leaves it open otherwise", async () => {
+    streamAiSdk.mockResolvedValue({ fullText: "ok" });
+
+    await streamWithProvider(
+      params({ model: "gpt-5.5", apiKeys: { openai: "user-key" } }),
+    );
+
+    const tool = adapterOf(0).webSearchTool!;
+    expect(tool({ maxUses: 3, allowedDomains: ["canlii.org"] }).args).toMatchObject({
+      filters: { allowedDomains: ["canlii.org"] },
+    });
+    expect(tool({ maxUses: 3 }).args).not.toHaveProperty("filters");
+  });
+
   it("runs the turn again without search, once, and says search was unavailable", async () => {
     streamAiSdk
       .mockRejectedValueOnce(

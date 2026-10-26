@@ -22,6 +22,7 @@ export const tavily: SearchService = {
                 query,
                 max_results: MAX_SEARCH_RESULTS,
                 search_depth: "basic",
+                ...(deps.domains?.length ? { include_domains: deps.domains } : {}),
             },
             deps,
         );
