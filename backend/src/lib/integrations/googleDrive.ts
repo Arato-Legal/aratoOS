@@ -1413,14 +1413,18 @@ export type DriveBrowseItem = {
     isFolder: boolean;
 };
 
+const DRIVE_BROWSE_SCOPES = new Set([
+    GOOGLE_DRIVE_FULL_SCOPE,
+    GOOGLE_DRIVE_READONLY_SCOPE,
+]);
+
 /** Whether the scope can see folders and files Mike did not create. */
 export function driveScopeCanBrowse(scope: unknown): boolean {
     if (typeof scope !== "string") return false;
-    const granted = scope.split(/\s+/);
-    return (
-        granted.includes(GOOGLE_DRIVE_FULL_SCOPE) ||
-        granted.includes(GOOGLE_DRIVE_READONLY_SCOPE)
-    );
+    // Exact scope strings only, from the same table as driveScopeGrants.
+    return scope
+        .split(/\s+/)
+        .some((granted) => DRIVE_BROWSE_SCOPES.has(granted));
 }
 
 async function browseToken(owner: ConnectorOwner, db: Db): Promise<string> {

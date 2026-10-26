@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   addClientContact,
+  browseDriveFolders,
   createClient,
   deleteClient,
   deleteClientContact,
   getClient,
+  getMatterWorkspace,
   getMatterDashboard,
   listClients,
   setMatterClient,
+  setMatterDriveFolder,
   updateClient,
 } from "./mikeApi";
 
@@ -91,6 +94,38 @@ describe("Clients API requests", () => {
       url: "/api/clients/matters/p1",
       method: "PUT",
       body: { client_id: null },
+    },
+    {
+      name: "matter workspace",
+      call: () => getMatterWorkspace("p1"),
+      url: "/api/clients/matters/p1/workspace",
+      method: "GET",
+    },
+    {
+      name: "link a Drive folder",
+      call: () => setMatterDriveFolder("p1", "folder-1"),
+      url: "/api/clients/matters/p1/drive-folder",
+      method: "PUT",
+      body: { folder_id: "folder-1" },
+    },
+    {
+      name: "unlink the Drive folder",
+      call: () => setMatterDriveFolder("p1", null),
+      url: "/api/clients/matters/p1/drive-folder",
+      method: "PUT",
+      body: { folder_id: null },
+    },
+    {
+      name: "browse Drive folders",
+      call: () => browseDriveFolders(),
+      url: "/api/clients/drive/folders",
+      method: "GET",
+    },
+    {
+      name: "browse a folder in a workspace",
+      call: () => browseDriveFolders({ parent: "f/1", workspace: "personal" }),
+      url: "/api/clients/drive/folders?parent=f%2F1&workspace=personal",
+      method: "GET",
     },
   ])("$name", async ({ call, url, method, body }) => {
     await call();
