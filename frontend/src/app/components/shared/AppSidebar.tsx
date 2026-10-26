@@ -16,6 +16,7 @@ import {
   ChevronsUpDown,
   ChevronDown,
   Loader2,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { useUserProfile } from "@/app/contexts/UserProfileContext";
@@ -78,6 +79,7 @@ const WORKSPACE_HOME = "/assistant";
 const NAV_ITEMS = [
     { href: "/assistant", label: "Assistant", icon: ChatSkeuoIcon },
     { href: "/ide", label: "IDE", icon: IdeSkeuoIcon },
+    { href: "/clients", label: "Clients", icon: Users },
     { href: "/projects", label: "Projects", icon: FolderSkeuoIcon },
     { href: "/library", label: "Library", icon: LibrarySkeuoIcon },
     {

@@ -924,3 +924,52 @@ export interface TabularReviewDetailOut {
    */
   active_generation?: { id: string; seq: number } | null;
 }
+
+export type ClientKind = "individual" | "organization";
+export type ClientStatus = "lead" | "active" | "closed";
+
+export interface Client {
+  id: string;
+  user_id: string | null;
+  org_id: string | null;
+  name: string;
+  kind: ClientKind;
+  status: ClientStatus;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  source: string | null;
+  notes: string | null;
+  custom_fields: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClientContact {
+  id: string;
+  client_id: string;
+  name: string;
+  role: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+}
+
+export interface ClientMatter {
+  id: string;
+  name: string;
+  cm_number: string | null;
+  practice: string | null;
+  updated_at: string;
+}
+
+export interface ClientDetail extends Client {
+  contacts: ClientContact[];
+  matters: ClientMatter[];
+  can_delete: boolean;
+}
+
+export interface MatterDashboard {
+  project: ClientMatter & { client_id: string | null; access_role: string };
+  client: (Client & { contacts: ClientContact[] }) | null;
+}
