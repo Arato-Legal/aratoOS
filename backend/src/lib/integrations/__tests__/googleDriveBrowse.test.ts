@@ -29,3 +29,15 @@ describe("matter folder browsing scope", () => {
     expect(driveScopeCanBrowse(null)).toBe(false);
   });
 });
+
+import { isDriveEditableMime } from "../googleDrive";
+
+describe("isDriveEditableMime", () => {
+  it("accepts Google Docs and Word files only", () => {
+    expect(isDriveEditableMime("application/vnd.google-apps.document", "a")).toBe(true);
+    expect(isDriveEditableMime("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "a")).toBe(true);
+    expect(isDriveEditableMime("application/octet-stream", "Draft.DOCX")).toBe(true);
+    expect(isDriveEditableMime("application/pdf", "a.pdf")).toBe(false);
+    expect(isDriveEditableMime("application/vnd.google-apps.spreadsheet", "x.docx")).toBe(false);
+  });
+});

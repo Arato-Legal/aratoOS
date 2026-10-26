@@ -6,6 +6,7 @@ vi.mock("@/app/lib/userFacingError", () => ({ notifyError: vi.fn() }));
 vi.mock("@/app/lib/mikeApi", () => ({
     getMatterDashboard: vi.fn(),
     getMatterWorkspace: vi.fn(() => new Promise(() => {})),
+    openDriveFileForEditing: vi.fn(),
     setMatterDriveFolder: vi.fn(),
     browseDriveFolders: vi.fn(),
 }));

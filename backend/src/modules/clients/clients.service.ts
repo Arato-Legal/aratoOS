@@ -566,3 +566,11 @@ export {
   type MatterWorkspace,
   type WorkspaceFile,
 } from "./clients.drive";
+
+export {
+  getDriveSyncStatus,
+  openDriveFileForEditing,
+  pullDocumentFromDrive,
+  saveDocumentToDrive,
+  type DriveSyncStatus,
+} from "./clients.driveEdit";

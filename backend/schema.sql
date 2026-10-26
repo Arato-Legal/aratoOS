@@ -1523,6 +1523,27 @@ grant select, insert, update, delete on public.notifications to service_role;
 create index if not exists document_versions_doc_vnum_idx
   on public.document_versions(document_id, version_number);
 
+-- Documents edited from a matter's Drive workspace (backend/migrations/20261026_03_document_drive_links.sql)
+create table if not exists public.document_drive_links (
+  id uuid primary key default gen_random_uuid(),
+  document_id uuid not null unique
+    references public.documents(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  drive_file_id text not null check (length(drive_file_id) <= 200),
+  drive_mime_type text not null,
+  drive_name text,
+  -- Drive's modifiedTime and the .docx hash as of the last sync either way.
+  drive_modified_time timestamptz,
+  synced_sha256 text,
+  synced_at timestamptz not null default now(),
+  linked_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  unique (project_id, drive_file_id)
+);
+
+alter table public.document_drive_links enable row level security;
+revoke all on public.document_drive_links from anon, authenticated;
+
 create table if not exists public.upload_sessions (
   id uuid primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -11277,5 +11298,6 @@ insert into public.schema_migrations (filename) values
   ('20261025_02_project_tasks.sql'),
   ('20261025_03_notifications.sql'),
   ('20261026_01_clients.sql'),
-  ('20261026_02_matter_drive_folder.sql')
+  ('20261026_02_matter_drive_folder.sql'),
+  ('20261026_03_document_drive_links.sql')
 on conflict (filename) do nothing;
