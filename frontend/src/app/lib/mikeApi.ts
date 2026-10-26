@@ -4735,17 +4735,6 @@ export async function addClientContact(
     );
 }
 
-export async function updateClientContact(
-    clientId: string,
-    contactId: string,
-    payload: ContactPayload,
-): Promise<ClientContact> {
-    return apiRequest<ClientContact>(
-        `/clients/${clientId}/contacts/${contactId}`,
-        jsonInit("PATCH", payload),
-    );
-}
-
 export async function deleteClientContact(
     clientId: string,
     contactId: string,
