@@ -78,6 +78,8 @@ import type {
     ClientContact,
     ClientDetail,
     MatterDashboard,
+    MatterWorkspace,
+    WorkspaceFile,
     Workflow,
     WorkflowAddon,
     WorkflowContributor,
@@ -4912,4 +4914,36 @@ export async function setMatterClient(
         `/clients/matters/${projectId}`,
         jsonInit("PUT", { client_id: clientId }),
     );
+}
+
+// ---------------------------------------------------------------------------
+// Matter Drive workspace
+// ---------------------------------------------------------------------------
+
+export async function getMatterWorkspace(
+    projectId: string,
+): Promise<MatterWorkspace> {
+    return apiRequest<MatterWorkspace>(`/clients/matters/${projectId}/workspace`);
+}
+
+/** Link a matter's Drive folder, or unlink it with `null`. */
+export async function setMatterDriveFolder(
+    projectId: string,
+    folderId: string | null,
+): Promise<MatterWorkspace> {
+    return apiRequest<MatterWorkspace>(
+        `/clients/matters/${projectId}/drive-folder`,
+        jsonInit("PUT", { folder_id: folderId }),
+    );
+}
+
+export async function browseDriveFolders(options?: {
+    parent?: string;
+    workspace?: string;
+}): Promise<{ items: WorkspaceFile[]; drive_error: MatterWorkspace["drive_error"] }> {
+    const params = new URLSearchParams();
+    if (options?.parent) params.set("parent", options.parent);
+    if (options?.workspace) params.set("workspace", options.workspace);
+    const qs = params.toString();
+    return apiRequest(`/clients/drive/folders${qs ? `?${qs}` : ""}`);
 }

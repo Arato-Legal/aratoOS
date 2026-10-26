@@ -5,6 +5,9 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/app/lib/userFacingError", () => ({ notifyError: vi.fn() }));
 vi.mock("@/app/lib/mikeApi", () => ({
     getMatterDashboard: vi.fn(),
+    getMatterWorkspace: vi.fn(() => new Promise(() => {})),
+    setMatterDriveFolder: vi.fn(),
+    browseDriveFolders: vi.fn(),
 }));
 vi.mock("@/app/components/shared/PageHeader", () => ({
     PageHeader: ({ breadcrumbs }: { breadcrumbs?: { label: string }[] }) => (
@@ -22,6 +25,7 @@ const base = {
     practice: "Corporate",
     updated_at: "2026-10-20T00:00:00Z",
     client_id: "c1",
+    org_id: null,
     access_role: "owner",
 };
 

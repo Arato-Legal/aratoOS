@@ -1112,6 +1112,20 @@ alter table public.projects
 create index if not exists idx_projects_client
   on public.projects(client_id) where client_id is not null;
 
+-- A matter's linked Google Drive folder (backend/migrations/20261026_02_matter_drive_folder.sql)
+alter table public.projects
+  add column if not exists drive_folder_id text,
+  add column if not exists drive_folder_name text;
+
+alter table public.projects
+  drop constraint if exists projects_drive_folder_check;
+alter table public.projects
+  add constraint projects_drive_folder_check
+  check (
+    (drive_folder_id is null and drive_folder_name is null)
+    or (drive_folder_id is not null and length(drive_folder_id) <= 200)
+  );
+
 -- ---------------------------------------------------------------------------
 -- project_access_grants — direct, role-aware sharing
 -- ---------------------------------------------------------------------------
@@ -11262,5 +11276,6 @@ insert into public.schema_migrations (filename) values
   ('20261025_01_document_version_review_state.sql'),
   ('20261025_02_project_tasks.sql'),
   ('20261025_03_notifications.sql'),
-  ('20261026_01_clients.sql')
+  ('20261026_01_clients.sql'),
+  ('20261026_02_matter_drive_folder.sql')
 on conflict (filename) do nothing;

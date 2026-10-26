@@ -508,7 +508,11 @@ export async function setProjectClient(
 // ---------------------------------------------------------------------------
 
 export type MatterDashboard = {
-  project: ClientMatter & { client_id: string | null; access_role: string };
+  project: ClientMatter & {
+    client_id: string | null;
+    org_id: string | null;
+    access_role: string;
+  };
   client: (ClientRow & { contacts: ClientContactRow[] }) | null;
 };
 
@@ -525,13 +529,13 @@ export async function getMatterDashboard(
 
   const { data, error } = await db
     .from("projects")
-    .select("id, name, cm_number, practice, updated_at, client_id")
+    .select("id, name, cm_number, practice, updated_at, client_id, org_id")
     .eq("id", args.projectId)
     .maybeSingle();
   if (error) return internalFailure(error);
   if (!data) return failure("not_found", "Project not found");
   const project = {
-    ...(data as ClientMatter & { client_id: string | null }),
+    ...(data as ClientMatter & { client_id: string | null; org_id: string | null }),
     access_role: access.projectRole,
   };
 
@@ -554,3 +558,11 @@ export async function getMatterDashboard(
   }
   return ok({ project, client });
 }
+
+export {
+  browseDriveFolders,
+  getMatterWorkspace,
+  linkMatterDriveFolder,
+  type MatterWorkspace,
+  type WorkspaceFile,
+} from "./clients.drive";
