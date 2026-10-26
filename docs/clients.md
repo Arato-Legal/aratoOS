@@ -61,7 +61,6 @@ Word, Google Doc or file with an Open in Drive link.
 ## Planned
 
 Mike for Mac reading the synced Drive folder, one editor for Word and Google
-Docs files in the Work in progress folder,
-
-manual links per matter, Hubflo sync (matter data is pushed from Hubflo),
-AI write-in through an MCP server and scoped tokens, and matter-wide queries.
+Docs files in the Work in progress folder, manual links per matter, Hubflo
+sync (matter data is pushed from Hubflo), AI write-in through an MCP server
+and scoped tokens, and matter-wide queries.
