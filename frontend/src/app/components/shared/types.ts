@@ -970,6 +970,29 @@ export interface ClientDetail extends Client {
 }
 
 export interface MatterDashboard {
-  project: ClientMatter & { client_id: string | null; access_role: string };
+  project: ClientMatter & {
+    client_id: string | null;
+    org_id: string | null;
+    access_role: string;
+  };
   client: (Client & { contacts: ClientContact[] }) | null;
+}
+
+export type DriveFileKind = "docx" | "gdoc" | "folder" | "other";
+
+export interface WorkspaceFile {
+  id: string;
+  name: string;
+  kind: DriveFileKind;
+  modified_time: string | null;
+  web_view_link: string | null;
+}
+
+export interface MatterWorkspace {
+  linked: boolean;
+  folder: { id: string; name: string; web_view_link: string | null } | null;
+  wip: { id: string; name: string; web_view_link: string | null } | null;
+  files: WorkspaceFile[];
+  /** A fixed, user-safe reason Drive could not be read (not connected, scope…). */
+  drive_error: { code: string; message: string } | null;
 }

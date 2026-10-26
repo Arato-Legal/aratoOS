@@ -75,6 +75,16 @@ const DRIVE_API = "https://www.googleapis.com/drive/v3";
  * created or the user picked in the Google Picker.
  */
 export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+/**
+ * `GOOGLE_DRIVE_SCOPE_MODE=full` makes new connections request whole-Drive
+ * access, which is what lets Mike browse a folder it did not create (a
+ * matter's "Work in progress" folder). The default stays per-file.
+ */
+export function googleDriveRequestedScope(): string {
+    return process.env.GOOGLE_DRIVE_SCOPE_MODE?.trim().toLowerCase() === "full"
+        ? GOOGLE_DRIVE_FULL_SCOPE
+        : GOOGLE_DRIVE_SCOPE;
+}
 /** Full Drive access, held by connections made before drive.file. */
 export const GOOGLE_DRIVE_FULL_SCOPE = "https://www.googleapis.com/auth/drive";
 /** Read-only Drive access, held by the earliest connections. */
@@ -243,7 +253,10 @@ export async function startGoogleDriveOAuth(
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("response_type", "code");
     // OpenID/email only identifies the chosen account for the Manage dialog.
-    url.searchParams.set("scope", `openid email ${GOOGLE_DRIVE_SCOPE}`);
+    url.searchParams.set(
+        "scope",
+        `openid email ${googleDriveRequestedScope()}`,
+    );
     url.searchParams.set("state", stateToken);
     url.searchParams.set("code_challenge", codeChallenge);
     url.searchParams.set("code_challenge_method", "S256");
@@ -1362,4 +1375,140 @@ export async function executeGoogleDriveToolCall(
             event: driveEvent(toolName, "error", message),
         };
     }
+}
+
+// ---------------------------------------------------------------------------
+// Folder browsing (matter workspaces)
+// ---------------------------------------------------------------------------
+// Matter dashboards link a Drive folder and list its "Work in progress"
+// subfolder. That needs a scope that can see folders Mike did not create, so
+// these calls refuse a per-file (drive.file) connection with a stable code the
+// client turns into "reconnect Drive with full access". Every call runs with
+// the caller's own Google connection: a lawyer sees only what their Google
+// account may already see.
+
+export const DRIVE_FOLDER_MIME = "application/vnd.google-apps.folder";
+/** The subfolder of each matter folder where drafts and research live. */
+export const WORK_IN_PROGRESS_FOLDER = "Work in progress";
+
+const DRIVE_ID_RE = /^[A-Za-z0-9_-]{1,200}$/;
+const BROWSE_FIELDS = "id,name,mimeType,modifiedTime,webViewLink";
+const MAX_BROWSE_ITEMS = 200;
+
+export class GoogleDriveScopeError extends GoogleDriveUserError {
+    code = "google_drive_scope_insufficient";
+    constructor() {
+        super(
+            "Browsing matter folders needs full Google Drive access. Reconnect Google Drive and allow it.",
+        );
+    }
+}
+
+export type DriveBrowseItem = {
+    id: string;
+    name: string;
+    mimeType: string;
+    modifiedTime: string | null;
+    webViewLink: string | null;
+    isFolder: boolean;
+};
+
+/** Whether the scope can see folders and files Mike did not create. */
+export function driveScopeCanBrowse(scope: unknown): boolean {
+    if (typeof scope !== "string") return false;
+    const granted = scope.split(/\s+/);
+    return (
+        granted.includes(GOOGLE_DRIVE_FULL_SCOPE) ||
+        granted.includes(GOOGLE_DRIVE_READONLY_SCOPE)
+    );
+}
+
+async function browseToken(owner: ConnectorOwner, db: Db): Promise<string> {
+    const row = await loadTokenRow(owner, db);
+    if (!row?.encrypted_access_token) throw new GoogleDriveAuthRequiredError();
+    if (row.enabled === false)
+        throw new GoogleDriveUserError(
+            "Google Drive is switched off for this workspace.",
+        );
+    if (!driveScopeCanBrowse(row.scope)) throw new GoogleDriveScopeError();
+    return getAccessToken(owner, db);
+}
+
+function toBrowseItem(file: DriveFile): DriveBrowseItem | null {
+    if (!file.id || !file.name) return null;
+    const mimeType = file.mimeType ?? "";
+    return {
+        id: file.id,
+        name: file.name,
+        mimeType,
+        modifiedTime: file.modifiedTime ?? null,
+        webViewLink: file.webViewLink ?? null,
+        isFolder: mimeType === DRIVE_FOLDER_MIME,
+    };
+}
+
+export function isDriveId(value: unknown): value is string {
+    return typeof value === "string" && DRIVE_ID_RE.test(value);
+}
+
+/** The children of a folder ("root" is the user's My Drive), folders first. */
+export async function listDriveFolderChildren(
+    owner: ConnectorOwner,
+    db: Db,
+    args: { parentId: string; foldersOnly?: boolean },
+): Promise<DriveBrowseItem[]> {
+    if (!isDriveId(args.parentId))
+        throw new GoogleDriveUserError("That Google Drive folder is not valid.");
+    const token = await browseToken(owner, db);
+    const response = await driveFetch(token, "/files", {
+        q:
+            `'${escapeQuery(args.parentId)}' in parents and trashed = false` +
+            (args.foldersOnly ? ` and mimeType = '${DRIVE_FOLDER_MIME}'` : ""),
+        orderBy: "folder,name",
+        pageSize: String(MAX_BROWSE_ITEMS),
+        fields: `files(${BROWSE_FIELDS})`,
+        includeItemsFromAllDrives: "true",
+        supportsAllDrives: "true",
+    });
+    if (!response.ok) throw googleDriveHttpError(response.status);
+    const body = (await response.json()) as { files?: DriveFile[] };
+    return (body.files ?? [])
+        .map(toBrowseItem)
+        .filter((item): item is DriveBrowseItem => item !== null);
+}
+
+/** One folder's own metadata, or null when it is not a folder Drive shows. */
+export async function getDriveFolder(
+    owner: ConnectorOwner,
+    db: Db,
+    folderId: string,
+): Promise<DriveBrowseItem | null> {
+    if (!isDriveId(folderId))
+        throw new GoogleDriveUserError("That Google Drive folder is not valid.");
+    const token = await browseToken(owner, db);
+    const response = await driveFetch(
+        token,
+        `/files/${encodeURIComponent(folderId)}`,
+        { fields: BROWSE_FIELDS, supportsAllDrives: "true" },
+    );
+    if (response.status === 404 || response.status === 403) return null;
+    if (!response.ok) throw googleDriveHttpError(response.status);
+    const item = toBrowseItem((await response.json()) as DriveFile);
+    return item?.isFolder ? item : null;
+}
+
+/** The matter folder's "Work in progress" subfolder, matched without case. */
+export async function findWorkInProgressFolder(
+    owner: ConnectorOwner,
+    db: Db,
+    matterFolderId: string,
+): Promise<DriveBrowseItem | null> {
+    const folders = await listDriveFolderChildren(owner, db, {
+        parentId: matterFolderId,
+        foldersOnly: true,
+    });
+    const wanted = WORK_IN_PROGRESS_FOLDER.toLowerCase();
+    return (
+        folders.find((f) => f.name.trim().toLowerCase() === wanted) ?? null
+    );
 }

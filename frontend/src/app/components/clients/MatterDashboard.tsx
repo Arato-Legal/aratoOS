@@ -6,6 +6,7 @@ import { getMatterDashboard } from "@/app/lib/mikeApi";
 import { notifyError } from "@/app/lib/userFacingError";
 import { PageHeader } from "@/app/components/shared/PageHeader";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
+import { MatterWorkspaceSection } from "./MatterWorkspaceSection";
 import type { MatterDashboard as MatterDashboardData } from "../shared/types";
 import {
     DashboardPage,
@@ -104,6 +105,12 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                         />
                     </dl>
                 </DashboardSection>
+
+                <MatterWorkspaceSection
+                    projectId={project.id}
+                    orgId={project.org_id}
+                    canEdit={project.access_role !== "viewer"}
+                />
 
                 <DashboardSection title="Work in Mike">
                     <div className="flex flex-wrap gap-2">

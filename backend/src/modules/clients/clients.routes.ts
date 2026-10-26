@@ -12,11 +12,14 @@ import {
 } from "../../lib/workspace";
 import {
   addContact,
+  browseDriveFolders,
   createClient,
   deleteClient,
   deleteContact,
   getClient,
   getMatterDashboard,
+  getMatterWorkspace,
+  linkMatterDriveFolder,
   listClients,
   setProjectClient,
   updateClient,
@@ -64,6 +67,52 @@ clientsRouter.post(
     });
     if (!result.ok) return void sendServiceFailure(res, result);
     res.status(201).json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/drive/folders",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const db = createServerSupabase();
+    const { userId } = caller(res);
+    const workspace = await resolveWorkspaceFilter(db, userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const result = await browseDriveFolders(db, {
+      userId,
+      workspace: workspace.workspace,
+      parentId: req.query.parent,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/matters/:projectId/workspace",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await getMatterWorkspace(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.put(
+  "/matters/:projectId/drive-folder",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await linkMatterDriveFolder(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+      folderId: req.body?.folder_id ?? null,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
   }),
 );
 
