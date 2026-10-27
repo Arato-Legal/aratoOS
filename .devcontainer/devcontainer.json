@@ -1,0 +1,24 @@
+{
+  "name": "Mike test environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+  },
+  "hostRequirements": { "cpus": 4, "memory": "16gb", "storage": "32gb" },
+  "forwardPorts": [3000, 54321, 9000, 8025],
+  "portsAttributes": {
+    "3000": { "label": "Mike", "onAutoForward": "openBrowser" },
+    "54321": { "label": "Sign-in service (Supabase)", "onAutoForward": "silent" },
+    "9000": { "label": "File storage", "onAutoForward": "silent" },
+    "8025": { "label": "Test inbox (Mailpit)", "onAutoForward": "silent" }
+  },
+  "secrets": {
+    "ANTHROPIC_API_KEY": { "description": "Optional. Needed for chat and the assistant. Use a key with a low spending limit." },
+    "OPENAI_API_KEY": { "description": "Optional. An alternative to the Anthropic key." },
+    "GEMINI_API_KEY": { "description": "Optional. An alternative to the Anthropic key." },
+    "BRAVE_SEARCH_API_KEY": { "description": "Optional. Needed to try web search and Canadian sources." }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh"
+}

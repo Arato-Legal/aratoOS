@@ -1,0 +1,7 @@
+# Codespaces-only override. The storage service accepts browser uploads only
+# from the origins in its CORS file, and the repo's file lists localhost; setup.sh
+# writes one for this Codespace's own address.
+services:
+  createbucket:
+    volumes:
+      - ./.devcontainer/storage-cors.generated.json:/storage-cors.json:ro
