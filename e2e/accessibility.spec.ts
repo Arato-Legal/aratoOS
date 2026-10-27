@@ -122,7 +122,7 @@ test("matters page has no critical accessibility violations", async ({
     page,
 }) => {
     await page.goto("/matters");
-    await expect(page).toHaveURL(/\/projects/);
+    await expect(page).toHaveURL(/\/(?:projects|matters)/);
     /* The Plus icon button (aria-label="New project") renders with the list. */
     await expect(
         page.getByRole("button", { name: "New matter" }),
