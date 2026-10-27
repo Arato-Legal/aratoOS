@@ -4,6 +4,22 @@
 @import "../shared/ui/ThemeTokensUI.css";
 @import "../shared/ui/DesignTokensUI.css";
 
+/* Arato palette: Tailwind's cool gray scale is replaced by a sage/warm-ink
+   scale anchored on sage-wash (#EAEBDD) and warm-ink (#4A443C). */
+@theme {
+    --color-gray-50: #f6f6ee;
+    --color-gray-100: #eaebdd;
+    --color-gray-200: #dcdecf;
+    --color-gray-300: #c5c7b5;
+    --color-gray-400: #9a9c8a;
+    --color-gray-500: #6e6f60;
+    --color-gray-600: #55544a;
+    --color-gray-700: #4a443c;
+    --color-gray-800: #33362c;
+    --color-gray-900: #24291f;
+    --color-gray-950: #1d2f1a;
+}
+
 /* Table surfaces are transparent. Sticky layers retain an opaque page-color
    backing so content scrolling beneath them never shows through. */
 .table-surface {
