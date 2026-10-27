@@ -279,7 +279,13 @@ clientMemoryRouter.get("/", asyncRoute(async (req, res) => {
   try {
     const access = await clientAccess(req, res, false);
     if (!access) return;
-    res.json(await readClientMemory(createServerSupabase(), access));
+    res.json(
+      await readClientMemory(createServerSupabase(), {
+        ...access,
+        userId: res.locals.userId as string,
+        userEmail: res.locals.userEmail as string | undefined,
+      }),
+    );
   } catch (error) {
     sendClientMemoryError(res, error);
   }

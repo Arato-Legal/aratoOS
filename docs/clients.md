@@ -247,17 +247,31 @@ Each client has one `memory.md` (table `client_memory_files`, migration
 - **Read:** in every conversation of the client, at client level and in each of
   its matters, always (the matter's sharing switch does not affect it). Ranked
   above app memory and below the matter's own memory. A reader who cannot open
-  the client never gets it, and a shared-audience conversation about a
-  *personal* client does not either (an organization client is readable by every
-  member anyway).
+  the client never gets it, and a shared-audience conversation about a *personal*
+  client does not either (an organization client is readable by every member
+  anyway). The client page names a matter's notes only to readers who can open
+  that matter.
 - **Learned:** by a separate curator job (`memory.client`, in
   `memory.clientCurator.ts`) after a chat has been quiet for the usual window.
-  It learns from client-level chats and from matter chats **unless the matter's
-  sharing is off**. A per-chat cursor means each message is considered once. The
-  actor must still open the client (and, for a matter chat, write in the matter).
-  Like the other curators it is isolated, treats the transcript as untrusted, and
-  has one tool bound to the one file. It is independent of the per-conversation
-  consolidation state used for app and matter memory.
+  A **client-level chat** teaches the client's base file. A **matter chat**
+  teaches that **matter's notes** under the client's memory
+  (`client_memory_notes`, migration `20261026_09_client_memory_matter_notes.sql`),
+  and only while the matter's sharing is on. Client sessions and matter sessions
+  read the base file plus the notes of sharing-on matters. A per-chat cursor means
+  each message is considered once; the actor must still open the client (and, for
+  a matter chat, write in the matter). Like the other curators it is isolated,
+  treats the transcript as untrusted, and has one tool bound to its target. It is
+  independent of the per-conversation consolidation state used for app and matter
+  memory.
+- **Taking a matter private deletes what it taught.** Switching a matter's sharing
+  off deletes its notes (and resets its chats' cursors, so sharing again learns
+  afresh), before and after the switch so a racing curator run cannot leave a
+  note; if the delete fails the switch does not change. The same happens when the
+  matter moves to another client or is detached (including by a Hubflo sync).
+  Turning client memory off deletes the base file and every matter's notes. Notes
+  are also filtered by the matter's current sharing at read time. What is in the
+  base file (written by hand or learned from client chats) is not removed, because
+  it did not come from a matter.
 - **Edited:** anyone who can open the client reads it; only the client's
   creator or an organization admin edits it, turns it on or off, or wipes it
   (turning it off deletes what was learned). Saves are compare-and-swap on

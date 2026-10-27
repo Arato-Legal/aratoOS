@@ -6,6 +6,7 @@
 // member of that organization. Matters keep their own, stricter project
 // access: a client page only lists the matters the caller may open.
 
+import { deleteClientNotes } from "../../lib/memory/clientMemory";
 import { checkProjectAccess, getOrgRole, isOrgAdmin } from "../../lib/access";
 import { can } from "../../lib/permissions";
 import { teamOrgIdOf } from "../../lib/personalOrgs";
@@ -373,6 +374,21 @@ export async function setProjectClient(
     return failure("forbidden", "Only a matter owner can change its client.");
 
   const apply = async (): Promise<ServiceResult<{ project_id: string; client_id: string | null }>> => {
+    // Moving a matter to another client (or off its client) takes what it
+    // taught the old client's memory with it.
+    const { data: before } = await db
+      .from("projects")
+      .select("client_id")
+      .eq("id", args.projectId)
+      .maybeSingle();
+    const previous = (before as { client_id: string | null } | null)?.client_id ?? null;
+    if (previous && previous !== args.clientId) {
+      try {
+        await deleteClientNotes(db, { projectId: args.projectId });
+      } catch (error) {
+        return internalFailure(error);
+      }
+    }
     const { error } = await db
       .from("projects")
       .update({ client_id: args.clientId, updated_at: new Date().toISOString() })

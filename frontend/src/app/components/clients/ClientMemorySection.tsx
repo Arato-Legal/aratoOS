@@ -102,7 +102,7 @@ export function ClientMemorySection({ clientId }: { clientId: string }) {
         >
             <p className="mb-2 text-xs text-gray-500">
                 {memory.enabled
-                    ? "Applies to every conversation about this client, including in each of its matters. It learns from client chats and from matter chats whose matter shares with the client. Anyone who can open this client can read it."
+                    ? "Applies to every conversation about this client, including in each of its matters. It learns from client chats, and from matter chats whose matter shares with the client (kept as that matter's notes). Anyone who can open this client can read it."
                     : "Client memory is off. Nothing is learned or used."}
             </p>
             {memory.enabled && (
@@ -151,6 +151,27 @@ export function ClientMemorySection({ clientId }: { clientId: string }) {
                         <p className="mt-2 text-xs text-gray-500">
                             Only the client&apos;s creator or an organization admin can edit this.
                         </p>
+                    )}
+                    {memory.matter_notes.length > 0 && (
+                        <div className="mt-4 flex flex-col gap-3">
+                            <h3 className="text-sm font-medium text-gray-900">
+                                Learned in matters
+                            </h3>
+                            <p className="-mt-2 text-xs text-gray-500">
+                                Notes from matters that share with this client. Taking a
+                                matter private deletes its notes.
+                            </p>
+                            {memory.matter_notes.map((note) => (
+                                <div key={note.project_id} className="flex flex-col gap-1">
+                                    <h4 className="break-words text-xs font-medium text-gray-700">
+                                        {note.name}
+                                    </h4>
+                                    <pre className="whitespace-pre-wrap break-words rounded-lg bg-gray-50 p-2 font-mono text-xs leading-5 text-gray-800">
+                                        {note.content}
+                                    </pre>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </>
             )}

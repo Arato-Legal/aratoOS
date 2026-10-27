@@ -9,6 +9,7 @@
 import { checkProjectAccess, getOrgRole } from "../../lib/access";
 import { checkClientAccess, listSharedSiblingMatters } from "../../lib/clientSharing";
 import { attachActiveVersionPaths } from "../../lib/documentVersions";
+import { deleteClientNotes } from "../../lib/memory/clientMemory";
 import { can } from "../../lib/permissions";
 import { driveOwnerFor } from "./clients.integrations";
 import type { Db } from "../../lib/supabase";
@@ -62,11 +63,20 @@ export async function setMatterSharing(
   if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "access.manage"))
     return failure("forbidden", "Only a matter owner can change client sharing.");
-  const { error } = await db
-    .from("projects")
-    .update({ share_with_client: args.share, updated_at: new Date().toISOString() })
-    .eq("id", args.projectId);
-  if (error) return internalFailure(error);
+  // Taking a matter private removes what it taught the client's memory. Done
+  // before AND after the switch, so a curator run that raced the change cannot
+  // leave a note behind; if the delete fails, nothing has changed yet.
+  try {
+    if (!args.share) await deleteClientNotes(db, { projectId: args.projectId });
+    const { error } = await db
+      .from("projects")
+      .update({ share_with_client: args.share, updated_at: new Date().toISOString() })
+      .eq("id", args.projectId);
+    if (error) return internalFailure(error);
+    if (!args.share) await deleteClientNotes(db, { projectId: args.projectId });
+  } catch (error) {
+    return internalFailure(error);
+  }
   return ok({ project_id: args.projectId, share_with_client: args.share });
 }
 

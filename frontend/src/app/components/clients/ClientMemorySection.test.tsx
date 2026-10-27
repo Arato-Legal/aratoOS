@@ -28,6 +28,7 @@ import {
 import { ClientMemorySection } from "./ClientMemorySection";
 
 const memory = (over: object = {}) => ({
+    matter_notes: [],
     content: "Net 30",
     revision: 4,
     enabled: true,
@@ -49,6 +50,27 @@ describe("ClientMemorySection", () => {
         fireEvent.change(box, { target: { value: "Net 45" } });
         fireEvent.click(screen.getByRole("button", { name: "Save memory" }));
         await waitFor(() => expect(saveClientMemory).toHaveBeenCalledWith("c1", "Net 45", 4));
+    });
+
+    it("lists what matters taught it, by matter", async () => {
+        vi.mocked(getClientMemory).mockResolvedValue(
+            memory({
+                matter_notes: [
+                    { project_id: "p1", name: "Series A", content: "- Pays Net 30" },
+                ],
+            }),
+        );
+        render(<ClientMemorySection clientId="c1" />);
+        expect(await screen.findByText("Learned in matters")).toBeTruthy();
+        expect(screen.getByText("Series A")).toBeTruthy();
+        expect(screen.getByText("- Pays Net 30")).toBeTruthy();
+    });
+
+    it("shows no matter notes section when there are none", async () => {
+        vi.mocked(getClientMemory).mockResolvedValue(memory());
+        render(<ClientMemorySection clientId="c1" />);
+        await screen.findByLabelText("Client memory");
+        expect(screen.queryByText("Learned in matters")).toBeNull();
     });
 
     it("is read-only for someone who cannot edit", async () => {

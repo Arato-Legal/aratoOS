@@ -990,6 +990,8 @@ export interface MatterDashboard {
 }
 
 export interface ClientMemory {
+  /** What the client's matters taught it (only matters the caller can open). */
+  matter_notes: { project_id: string; name: string; content: string }[];
   content: string;
   revision: number;
   enabled: boolean;

@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   checkProjectAccess: vi.fn(),
   getClientMemory: vi.fn(),
   writeClientMemory: vi.fn(),
+  getMatterNote: vi.fn(),
+  writeMatterNote: vi.fn(),
   stream: vi.fn(),
 }));
 vi.mock("../../../lib/dbq/enqueue", () => ({ enqueueDbJob: mocks.enqueue }));
@@ -14,6 +16,8 @@ vi.mock("../../../lib/access", () => ({ checkProjectAccess: mocks.checkProjectAc
 vi.mock("../../../lib/memory/clientMemory", () => ({
   getClientMemory: mocks.getClientMemory,
   writeClientMemory: mocks.writeClientMemory,
+  getMatterNote: mocks.getMatterNote,
+  writeMatterNote: mocks.writeMatterNote,
 }));
 vi.mock("../../../lib/llm", () => ({ streamChatWithTools: mocks.stream }));
 vi.mock("../../../lib/modelSelection", () => ({
@@ -61,6 +65,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.checkClientAccess.mockResolvedValue({ ok: true, orgId: "org", name: "Acme" });
   mocks.getClientMemory.mockResolvedValue({ enabled: true, revision: 2, content: "old" });
+  mocks.getMatterNote.mockResolvedValue({ clientId: "cl", projectId: "p", revision: 7, content: "note" });
 });
 
 describe("clientForChat (the firewall)", () => {
@@ -163,6 +168,30 @@ describe("handleClientMemory", () => {
     expect(mocks.writeClientMemory).not.toHaveBeenCalled();
     expect(result).toMatchObject({ outcome: "no_change" });
     expect(upserts).toHaveLength(1);
+  });
+
+  it("writes a matter chat's learning to that matter's notes, never to the client's base file", async () => {
+    mocks.checkProjectAccess.mockResolvedValue({ ok: true, projectRole: "editor" });
+    mocks.writeMatterNote.mockResolvedValue({ applied: true, note: { revision: 8 } });
+    mocks.stream.mockImplementation(async (args: any) => {
+      expect(args.systemPrompt).toContain("deleted if the matter stops sharing");
+      await args.runTools([
+        { id: "t", name: "write_memory_file", input: { markdown: "- Pays Net 30", expectedRevision: 7, changeSummary: "added" } },
+      ]);
+    });
+    const matterChat = { id: "chat-1", client_id: null, project_id: "p", model: "m" };
+    const { db } = fakeDb(
+      { chats: matterChat, projects: { client_id: "cl", share_with_client: true }, chat_messages: { created_at: longAgo } },
+      { chat_messages: [{ role: "user", content: "Acme pays Net 30", created_at: longAgo }] },
+    );
+    const result = await handleClientMemory(db, job);
+    expect(mocks.getMatterNote).toHaveBeenCalledWith(expect.anything(), { clientId: "cl", projectId: "p" });
+    expect(mocks.writeMatterNote).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ clientId: "cl", projectId: "p", expectedRevision: 7, jobId: "job-1" }),
+    );
+    expect(mocks.writeClientMemory).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ outcome: "updated" });
   });
 
   it("requires edit access in the matter for a matter chat", async () => {

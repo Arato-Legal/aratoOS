@@ -28,7 +28,7 @@ Migrations the fork added, which must stay in this order after Mike's:
 `20261025_01` to `_03` (ported from TaxOSS) and `20261026_01` to `_04`
 (clients, matter Drive folder, document Drive links, CRM sync) `20261026_05`
 (client Drive folder, per-matter client sharing) `20261026_06` (client numbers,
-Hubflo links, workspace-wide Drive) `20261026_07` (client-level chats) and `20261026_08` (client memory).
+Hubflo links, workspace-wide Drive) `20261026_07` (client-level chats) `20261026_08` (client memory) and `20261026_09` (per-matter client memory notes).
 
 ## Mike's own files the fork changed
 

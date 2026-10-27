@@ -2912,6 +2912,28 @@ create index if not exists client_memory_cursors_chat_idx
 alter table public.client_memory_cursors enable row level security;
 revoke all on public.client_memory_cursors from anon, authenticated;
 
+-- Per-matter notes under a client's memory (backend/migrations/20261026_09_client_memory_matter_notes.sql)
+create table if not exists public.client_memory_notes (
+  client_id uuid not null references public.clients(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  revision bigint not null default 0 check (revision >= 0),
+  content text not null default '',
+  size_bytes integer not null default 0
+    check (size_bytes >= 0 and size_bytes <= 16384),
+  last_source_job_id uuid,
+  updated_by uuid references auth.users(id) on delete set null,
+  updated_at timestamptz not null default now(),
+  primary key (client_id, project_id)
+);
+
+create index if not exists client_memory_notes_project_idx
+  on public.client_memory_notes(project_id);
+create index if not exists client_memory_notes_updated_by_idx
+  on public.client_memory_notes(updated_by) where updated_by is not null;
+
+alter table public.client_memory_notes enable row level security;
+revoke all on public.client_memory_notes from anon, authenticated;
+
 
 create index if not exists idx_chats_user
   on public.chats(user_id);
@@ -11502,5 +11524,6 @@ insert into public.schema_migrations (filename) values
   ('20261026_05_client_matter_sharing.sql'),
   ('20261026_06_hubflo_links_org_drive.sql'),
   ('20261026_07_client_chats.sql'),
-  ('20261026_08_client_memory.sql')
+  ('20261026_08_client_memory.sql'),
+  ('20261026_09_client_memory_matter_notes.sql')
 on conflict (filename) do nothing;

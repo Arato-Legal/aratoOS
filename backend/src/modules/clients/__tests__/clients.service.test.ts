@@ -5,11 +5,13 @@ vi.mock("../../../lib/access", () => ({
   getOrgRole: vi.fn(),
   isOrgAdmin: (role: string | null) => role === "owner" || role === "admin",
 }));
+vi.mock("../../../lib/memory/clientMemory", () => ({ deleteClientNotes: vi.fn() }));
 vi.mock("../../../lib/personalOrgs", () => ({
   teamOrgIdOf: vi.fn(async (_db: unknown, id: string) => id),
 }));
 
 import { checkProjectAccess, getOrgRole } from "../../../lib/access";
+import { deleteClientNotes } from "../../../lib/memory/clientMemory";
 import {
   addContact,
   createClient,
@@ -187,6 +189,33 @@ describe("clients.service", () => {
       expect(
         await setProjectClient(db, { userId: "me", projectId: PROJECT_ID, clientId: null }),
       ).toMatchObject({ ok: true, data: { client_id: null } });
+    });
+
+    it("deletes what the matter taught its old client's memory when it moves or detaches", async () => {
+      vi.mocked(deleteClientNotes).mockClear();
+      const OTHER = "44444444-4444-4444-8444-444444444444";
+      // The matter is currently on OTHER; the fake answers every projects read with that.
+      project(null);
+      const moving = fakeDb({ clients: personalClient, projects: { client_id: OTHER } });
+      await setProjectClient(moving.db, { userId: "me", projectId: PROJECT_ID, clientId: CLIENT_ID });
+      expect(deleteClientNotes).toHaveBeenCalledWith(expect.anything(), { projectId: PROJECT_ID });
+
+      vi.mocked(deleteClientNotes).mockClear();
+      project(null);
+      const detaching = fakeDb({ clients: personalClient, projects: { client_id: OTHER } });
+      await setProjectClient(detaching.db, { userId: "me", projectId: PROJECT_ID, clientId: null });
+      expect(deleteClientNotes).toHaveBeenCalledWith(expect.anything(), { projectId: PROJECT_ID });
+    });
+
+    it("keeps its notes when it is re-attached to the same client, or first attached", async () => {
+      vi.mocked(deleteClientNotes).mockClear();
+      project(null);
+      const same = fakeDb({ clients: personalClient, projects: { client_id: CLIENT_ID } });
+      await setProjectClient(same.db, { userId: "me", projectId: PROJECT_ID, clientId: CLIENT_ID });
+      project(null);
+      const first = fakeDb({ clients: personalClient, projects: { client_id: null } });
+      await setProjectClient(first.db, { userId: "me", projectId: PROJECT_ID, clientId: CLIENT_ID });
+      expect(deleteClientNotes).not.toHaveBeenCalled();
     });
   });
 });

@@ -6,11 +6,12 @@
 // the client's creator or an organization admin edits it, switches it on or
 // off, or wipes it.
 
-import { getOrgRole, isOrgAdmin } from "../../lib/access";
+import { checkProjectAccess, getOrgRole, isOrgAdmin } from "../../lib/access";
 import type { Db } from "../../lib/supabase";
 import { isUuid } from "../../lib/uuid";
 import {
   getClientMemory,
+  listSharedMatterNotes,
   setClientMemoryEnabled,
   writeClientMemory,
   type ClientMemory,
@@ -22,7 +23,11 @@ export {
   MemoryValidationError,
 } from "../../lib/memory/files";
 
+export type ClientMemoryNote = { project_id: string; name: string; content: string };
+
 export type ClientMemoryView = {
+  /** What matters' chats taught it, for the matters the caller can open. */
+  matter_notes: ClientMemoryNote[];
   content: string;
   revision: number;
   enabled: boolean;
@@ -62,8 +67,13 @@ export async function resolveClientMemoryAccess(
   return { ok: true, clientId: args.clientId, canEdit };
 }
 
-function view(memory: ClientMemory, canEdit: boolean): ClientMemoryView {
+function view(
+  memory: ClientMemory,
+  canEdit: boolean,
+  matterNotes: ClientMemoryNote[] = [],
+): ClientMemoryView {
   return {
+    matter_notes: matterNotes,
     content: memory.content,
     revision: memory.revision,
     enabled: memory.enabled,
@@ -73,8 +83,38 @@ function view(memory: ClientMemory, canEdit: boolean): ClientMemoryView {
   };
 }
 
-export async function readClientMemory(db: Db, access: { clientId: string; canEdit: boolean }) {
-  return view(await getClientMemory(db, access.clientId), access.canEdit);
+// The notes shown are those of sharing-on matters the reader can open, so the
+// page never names or quotes a matter its reader could not see on the client page.
+async function readableMatterNotes(
+  db: Db,
+  args: { clientId: string; userId: string; userEmail?: string },
+): Promise<ClientMemoryNote[]> {
+  const notes = await listSharedMatterNotes(db, args.clientId);
+  if (!notes.length) return [];
+  const { data } = await db
+    .from("projects")
+    .select("id, name")
+    .in("id", notes.map((n) => n.projectId));
+  const names = new Map(((data ?? []) as { id: string; name: string }[]).map((p) => [p.id, p.name]));
+  const visible = await Promise.all(
+    notes.map(async (note) =>
+      (await checkProjectAccess(note.projectId, args.userId, args.userEmail, db)).ok
+        ? { project_id: note.projectId, name: names.get(note.projectId) ?? "Matter", content: note.content }
+        : null,
+    ),
+  );
+  return visible.filter((n): n is ClientMemoryNote => n !== null);
+}
+
+export async function readClientMemory(
+  db: Db,
+  access: { clientId: string; canEdit: boolean; userId: string; userEmail?: string },
+) {
+  const [memory, notes] = await Promise.all([
+    getClientMemory(db, access.clientId),
+    readableMatterNotes(db, access),
+  ]);
+  return view(memory, access.canEdit, memory.enabled ? notes : []);
 }
 
 export async function saveClientMemory(

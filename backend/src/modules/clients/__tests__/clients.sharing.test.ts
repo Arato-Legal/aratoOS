@@ -4,6 +4,7 @@ vi.mock("../../../lib/access", () => ({
   checkProjectAccess: vi.fn(),
   getOrgRole: vi.fn(),
 }));
+vi.mock("../../../lib/memory/clientMemory", () => ({ deleteClientNotes: vi.fn() }));
 vi.mock("../../../lib/personalOrgs", () => ({
   teamOrgIdOf: vi.fn(async (_db: unknown, id: string | null) => id),
 }));
@@ -17,6 +18,7 @@ vi.mock("../../../lib/integrations/googleDrive", () => ({
 }));
 
 import { checkProjectAccess } from "../../../lib/access";
+import { deleteClientNotes } from "../../../lib/memory/clientMemory";
 import { createDriveFolder } from "../../../lib/integrations/googleDrive";
 import { listSharedSiblingMatters } from "../../../lib/clientSharing";
 import { createMatterDriveFolder, setMatterSharing } from "../clients.sharing";
@@ -85,6 +87,31 @@ describe("setMatterSharing", () => {
     const r = await setMatterSharing(db, { userId: "me", projectId: PROJECT_ID, share: false });
     expect(r.ok).toBe(true);
     expect(updates[0].patch).toMatchObject({ share_with_client: false });
+  });
+
+  it("deletes what the matter taught client memory when it goes private, not when it shares", async () => {
+    vi.mocked(deleteClientNotes).mockClear();
+    access("owner");
+    const off = fakeDb({});
+    await setMatterSharing(off.db, { userId: "me", projectId: PROJECT_ID, share: false });
+    // Before and after the switch, so a curator run that raced it cannot leave a note.
+    expect(deleteClientNotes).toHaveBeenCalledTimes(2);
+    expect(deleteClientNotes).toHaveBeenCalledWith(expect.anything(), { projectId: PROJECT_ID });
+
+    vi.mocked(deleteClientNotes).mockClear();
+    access("owner");
+    await setMatterSharing(fakeDb({}).db, { userId: "me", projectId: PROJECT_ID, share: true });
+    expect(deleteClientNotes).not.toHaveBeenCalled();
+  });
+
+  it("changes nothing when the deletion fails", async () => {
+    vi.mocked(deleteClientNotes).mockClear();
+    vi.mocked(deleteClientNotes).mockRejectedValueOnce(new Error("db down"));
+    access("owner");
+    const { db, updates } = fakeDb({});
+    const r = await setMatterSharing(db, { userId: "me", projectId: PROJECT_ID, share: false });
+    expect(r.ok).toBe(false);
+    expect(updates).toHaveLength(0);
   });
 });
 

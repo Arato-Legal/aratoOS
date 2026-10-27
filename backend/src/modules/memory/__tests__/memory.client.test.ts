@@ -6,8 +6,16 @@ vi.mock("../../../lib/access", () => ({
   checkProjectAccess: vi.fn(),
 }));
 
-import { getOrgRole } from "../../../lib/access";
-import { resolveClientMemoryAccess } from "../memory.client";
+vi.mock("../../../lib/memory/clientMemory", () => ({
+  getClientMemory: vi.fn(),
+  listSharedMatterNotes: vi.fn(),
+  setClientMemoryEnabled: vi.fn(),
+  writeClientMemory: vi.fn(),
+}));
+
+import { checkProjectAccess, getOrgRole } from "../../../lib/access";
+import { getClientMemory, listSharedMatterNotes } from "../../../lib/memory/clientMemory";
+import { readClientMemory, resolveClientMemoryAccess } from "../memory.client";
 
 const UUID = "11111111-1111-4111-8111-111111111111";
 const dbWith = (client: unknown) =>
@@ -43,5 +51,38 @@ describe("resolveClientMemoryAccess", () => {
   it("hides the client from a non-member", async () => {
     vi.mocked(getOrgRole).mockResolvedValue(null as never);
     expect(await resolveClientMemoryAccess(dbWith({ user_id: "c", org_id: "org" }), { clientId: UUID, userId: "x", requireEdit: false })).toEqual({ ok: false, status: 404 });
+  });
+});
+
+describe("readClientMemory", () => {
+  const base = { clientId: UUID, enabled: true, revision: 1, content: "BASE", sizeBytes: 4, updatedAt: null };
+  const access = { clientId: UUID, canEdit: false, userId: "u" };
+  const projectsDb = {
+    from: () => ({
+      select: () => ({
+        in: async () => ({ data: [{ id: "open", name: "Open deal" }, { id: "closed", name: "Hidden deal" }], error: null }),
+      }),
+    }),
+  } as never;
+
+  it("shows the notes of sharing matters the reader can open, and names no other", async () => {
+    vi.mocked(getClientMemory).mockResolvedValue(base);
+    vi.mocked(listSharedMatterNotes).mockResolvedValue([
+      { clientId: UUID, projectId: "open", revision: 1, content: "OPEN NOTE" },
+      { clientId: UUID, projectId: "closed", revision: 1, content: "HIDDEN NOTE" },
+    ]);
+    vi.mocked(checkProjectAccess).mockImplementation((async (id: string) =>
+      id === "open" ? { ok: true } : { ok: false }) as never);
+    const view = await readClientMemory(projectsDb, access);
+    expect(view.matter_notes).toEqual([{ project_id: "open", name: "Open deal", content: "OPEN NOTE" }]);
+    expect(JSON.stringify(view)).not.toContain("HIDDEN");
+    expect(JSON.stringify(view)).not.toContain("Hidden deal");
+  });
+
+  it("shows no notes while client memory is off", async () => {
+    vi.mocked(getClientMemory).mockResolvedValue({ ...base, enabled: false });
+    vi.mocked(listSharedMatterNotes).mockResolvedValue([{ clientId: UUID, projectId: "open", revision: 1, content: "N" }]);
+    vi.mocked(checkProjectAccess).mockResolvedValue({ ok: true } as never);
+    expect((await readClientMemory(projectsDb, access)).matter_notes).toEqual([]);
   });
 });
