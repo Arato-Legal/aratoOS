@@ -119,8 +119,8 @@ beforeEach(() => {
     deleteChat.mockResolvedValue(undefined);
 });
 
-describe("project assistant chat deletion gating", () => {
-    it("lets a project admin delete a colleague's chat", async () => {
+describe("matter assistant chat deletion gating", () => {
+    it("lets a matter admin delete a colleague's chat", async () => {
         // The served role, not the row's user_id: this chat was created by
         // "u2" and the caller is an admin of the project it lives in.
         await renderPage([
@@ -192,9 +192,9 @@ describe("project assistant chat deletion gating", () => {
         expect(deleteChat).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
-        const notice = await screen.findByText(/skipped because only a project owner/);
+        const notice = await screen.findByText(/skipped because only a matter owner/);
         expect(notice.textContent).toContain(
-            "1 selected chat was skipped because only a project owner can delete them.",
+            "1 selected chat was skipped because only a matter owner can delete them.",
         );
         expect(notice.textContent).toContain(
             "1 chat was not deleted because the request failed.",

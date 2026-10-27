@@ -151,7 +151,7 @@ export default function ProjectAssistantPage({ params }: Props) {
         setSelectedChatIds(failedIds);
         const notices = [
             blocked > 0
-                ? `${blocked} selected chat${blocked === 1 ? " was" : "s were"} skipped because only a project owner can delete them.`
+                ? `${blocked} selected chat${blocked === 1 ? " was" : "s were"} skipped because only a matter owner can delete them.`
                 : null,
             failedIds.length > 0
                 ? `${failedIds.length} chat${failedIds.length === 1 ? " was" : "s were"} not deleted because the request failed. ${failedIds.length === 1 ? "It remains" : "They remain"} selected so you can try again.`
@@ -179,7 +179,7 @@ export default function ProjectAssistantPage({ params }: Props) {
                 canCreateChat={workspace.canDo("content.edit")}
                 onOpenChat={(chatId) =>
                     router.push(
-                        `/projects/${projectId}/assistant/chat/${chatId}`,
+                        `/matters/${projectId}/assistant/chat/${chatId}`,
                     )
                 }
                 onDeleteChat={handleDeleteChatRow}

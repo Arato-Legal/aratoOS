@@ -113,7 +113,7 @@ async function orgProjectIdsHoldingUserContent(
     for (const [index, result] of results.entries()) {
         await throwIfError(
             result.error,
-            `Failed to load ${PROJECT_CONTENT_TABLES[index]} projects`,
+            `Failed to load ${PROJECT_CONTENT_TABLES[index]} matters`,
         );
         candidateIds.push(
             ...uniqueStrings(

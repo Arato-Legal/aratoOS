@@ -218,7 +218,7 @@ describe("projects.routes", () => {
 
     // ── GET /projects (overview) ──────────────────────────────────────────
     describe("GET /projects", () => {
-        it.each(["owner", "admin"])("keeps an org %s's public and private project participation scoped to its workspace", async (orgRole) => {
+        it.each(["owner", "admin"])("keeps an org %s's public and private matter participation scoped to its workspace", async (orgRole) => {
             const orgId = "7b1d9d0e-3c5a-4f6e-9a51-0c2f7d3e8a11";
             const inheritedRole = orgRole === "owner" ? "owner" : "editor";
             const projects = [
@@ -454,7 +454,7 @@ describe("projects.routes", () => {
       });
     });
 
-    it("uses the projects collection for directory search", async () => {
+    it("uses the matters collection for directory search", async () => {
       const res = await request(app)
         .get("/projects?view=directory-search")
         .set(...AUTH);
@@ -463,7 +463,7 @@ describe("projects.routes", () => {
       expect(res.body).toEqual([]);
     });
 
-    it("no longer exposes a separate project directory search route", async () => {
+    it("no longer exposes a separate matter directory search route", async () => {
       const res = await request(app)
         .get("/projects/directory/search?search=Agreement")
         .set(...AUTH);
@@ -584,7 +584,7 @@ describe("projects.routes", () => {
     };
     const PRIVATE = { ...WALLED, id: "p-private", visibility: "private" };
 
-    it("hides an org project the caller is denied on", async () => {
+    it("hides an org matter the caller is denied on", async () => {
       vi.mocked(createServerSupabase).mockImplementationOnce(
         () =>
           directorySearchDb({
@@ -602,7 +602,7 @@ describe("projects.routes", () => {
       expect(res.body).toEqual([]);
     });
 
-    it("still returns the org project when no deny override exists", async () => {
+    it("still returns the org matter when no deny override exists", async () => {
       vi.mocked(createServerSupabase).mockImplementationOnce(
         () =>
           directorySearchDb({
@@ -621,7 +621,7 @@ describe("projects.routes", () => {
       ]);
     });
 
-    it("keeps an org owner's view of a project carrying a stale deny row", async () => {
+    it("keeps an org owner's view of a matter carrying a stale deny row", async () => {
       vi.mocked(createServerSupabase).mockImplementationOnce(
         () =>
           directorySearchDb({
@@ -641,7 +641,7 @@ describe("projects.routes", () => {
       ]);
     });
 
-    it("walls an org admin off a project they are denied on, like any member", async () => {
+    it("walls an org admin off a matter they are denied on, like any member", async () => {
       vi.mocked(createServerSupabase).mockImplementationOnce(
         () =>
           directorySearchDb({
@@ -663,7 +663,7 @@ describe("projects.routes", () => {
     // and document filenames, so a private project must not appear in it for
     // a member it was not shared with.
     it.each(["member", "admin"])(
-      "keeps a private org project out of an org %s's picker",
+      "keeps a private org matter out of an org %s's picker",
       async (role) => {
         vi.mocked(createServerSupabase).mockImplementationOnce(
           () =>
@@ -682,7 +682,7 @@ describe("projects.routes", () => {
       },
     );
 
-    it("does not offer an organization owner a member's private project", async () => {
+    it("does not offer an organization owner a member's private matter", async () => {
       // Owning the organization is not a reason to see a colleague's
       // private matter in a picker, any more than to open it.
       vi.mocked(createServerSupabase).mockImplementationOnce(
@@ -701,7 +701,7 @@ describe("projects.routes", () => {
       expect(res.body).toEqual([]);
     });
 
-    it("does not offer an admin a private project that has no Owner left", async () => {
+    it("does not offer an admin a private matter that has no Owner left", async () => {
       // Only the organization's owners take such a project over.
       vi.mocked(createServerSupabase).mockImplementationOnce(
         () =>
@@ -720,7 +720,7 @@ describe("projects.routes", () => {
       expect(res.body).toEqual([]);
     });
 
-    it("offers a private org project to a member it was shared with, and to an owner once it has no Owner left", async () => {
+    it("offers a private org matter to a member it was shared with, and to an owner once it has no Owner left", async () => {
       for (const options of [
         { memberships: [{ org_id: "o1", role: "member" }], grants: { "p-private": "viewer" } },
         { memberships: [{ org_id: "o1", role: "owner" }], ownerless: ["p-private"] },
@@ -1071,7 +1071,7 @@ describe("projects.routes", () => {
   });
 
   describe("folder upload path resolution", () => {
-    it("resolves a project path through the atomic RPC", async () => {
+    it("resolves a matter path through the atomic RPC", async () => {
       const captured = captureRpcArgs();
       supabaseState.rpc = {
         data: {
@@ -1135,12 +1135,12 @@ describe("projects.routes", () => {
       // not exist is a lie the UI then repeats to them.
       expect(res.status).toBe(403);
       expect(res.body.detail).toBe(
-        "You do not have permission to organize documents in this project.",
+        "You do not have permission to organize documents in this matter.",
       );
       expect(captured.name).toBeUndefined();
     });
 
-    it("returns project folder conflicts without replacement permissions", async () => {
+    it("returns matter folder conflicts without replacement permissions", async () => {
       checkProjectAccess.mockResolvedValue({
         ok: true,
         isCreator: false,
@@ -1263,11 +1263,11 @@ describe("projects.routes", () => {
 
             expect(res.status).toBe(400);
             expect(res.body.detail).toBe(
-                "shared_with is no longer supported; use the project access endpoints.",
+                "shared_with is no longer supported; use the matter access endpoints.",
             );
         });
 
-        it("creates the project with normalized project details", async () => {
+        it("creates the matter with normalized matter details", async () => {
             supabaseState.rpc = {
                 data: {
                     id: "p9",
@@ -1330,7 +1330,7 @@ describe("projects.routes", () => {
             );
         });
 
-        it("defaults new projects to memory on when the preference is unreadable", async () => {
+        it("defaults new matters to memory on when the preference is unreadable", async () => {
             supabaseState.rpc = {
                 data: { id: "p12", name: "Legacy", user_id: "u1" },
                 error: null,
@@ -1350,7 +1350,7 @@ describe("projects.routes", () => {
             expect(res.body.memory_enabled).toBe(true);
         });
 
-        it("commits an explicit memory opt-out in the same project transaction", async () => {
+        it("commits an explicit memory opt-out in the same matter transaction", async () => {
             supabaseState.rpc = {
                 data: { id: "p10", name: "Private", user_id: "u1" },
                 error: null,
@@ -1388,7 +1388,7 @@ describe("projects.routes", () => {
 
     // ── GET /projects/:projectId (detail, shared access helper) ───────────
     describe("GET /projects/:projectId", () => {
-        it("returns 404 when the project does not exist", async () => {
+        it("returns 404 when the matter does not exist", async () => {
             supabaseState.tables.projects = { data: null, error: null };
 
       const res = await request(app)
@@ -1396,7 +1396,7 @@ describe("projects.routes", () => {
         .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
 
         it("returns 404 when the caller is neither owner nor shared", async () => {
@@ -1414,7 +1414,7 @@ describe("projects.routes", () => {
         .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
             expect(checkProjectAccess).toHaveBeenCalledWith(
                 "p1",
                 "u1",
@@ -1592,7 +1592,7 @@ describe("projects.routes", () => {
                 .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
 
         it("keeps the management surface owner-only", async () => {
@@ -1604,7 +1604,7 @@ describe("projects.routes", () => {
 
             expect(res.status).toBe(403);
             expect(res.body.detail).toBe(
-                "Only a project owner can change who has access.",
+                "Only a matter owner can change who has access.",
             );
         });
     });
@@ -1631,7 +1631,7 @@ describe("projects.routes", () => {
             supabaseState.tables.documents = { data: [], error: null };
         });
 
-        it("allows a project owner (204)", async () => {
+        it("allows a matter owner (204)", async () => {
             const res = await request(app)
                 .delete("/projects/p1/folders/f1")
                 .set(...AUTH);
@@ -1653,17 +1653,17 @@ describe("projects.routes", () => {
                 .set(...AUTH);
             expect(res.status).toBe(403);
             expect(res.body.detail).toBe(
-                "You do not have permission to organize documents in this project.",
+                "You do not have permission to organize documents in this matter.",
             );
         });
 
-        it("still answers 404 when the project is invisible", async () => {
+        it("still answers 404 when the matter is invisible", async () => {
             checkProjectAccess.mockResolvedValue({ ok: false });
             const res = await request(app)
                 .delete("/projects/p1/folders/f1")
                 .set(...AUTH);
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
     });
 
@@ -1687,12 +1687,12 @@ describe("projects.routes", () => {
 
             expect(res.status).toBe(403);
             expect(res.body.detail).toBe(
-                "You do not have permission to organize documents in this project.",
+                "You do not have permission to organize documents in this matter.",
             );
             expect(supabaseState.inserts).toEqual([]);
         });
 
-        it("keeps 404 for a project the caller cannot see at all", async () => {
+        it("keeps 404 for a matter the caller cannot see at all", async () => {
             checkProjectAccess.mockResolvedValue({ ok: false });
 
             const res = await request(app)
@@ -1701,7 +1701,7 @@ describe("projects.routes", () => {
                 .send({ name: "Closing" });
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
     });
 
@@ -1790,7 +1790,7 @@ describe("projects.routes", () => {
             ]);
         });
 
-        it("never demotes a project admin on a colleague's chat", async () => {
+        it("never demotes a matter admin on a colleague's chat", async () => {
             seedChats();
             checkProjectAccess.mockResolvedValue({
                 ok: true,
@@ -1809,7 +1809,7 @@ describe("projects.routes", () => {
             ).toEqual(["owner", "owner", "owner"]);
         });
 
-        it("labels every chat viewer when the caller only views the project", async () => {
+        it("labels every chat viewer when the caller only views the matter", async () => {
             seedChats();
             checkProjectAccess.mockResolvedValue({
                 ok: true,
@@ -1840,7 +1840,7 @@ describe("projects.routes", () => {
                 .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
             expect(checkProjectAccess).toHaveBeenCalledTimes(1);
         });
 
@@ -1870,11 +1870,11 @@ describe("projects.routes", () => {
 
             expect(res.status).toBe(400);
             expect(res.body.detail).toBe(
-                "shared_with is no longer supported; use the project access endpoints.",
+                "shared_with is no longer supported; use the matter access endpoints.",
             );
         });
 
-        it("returns 404 when the update matches no owned project", async () => {
+        it("returns 404 when the update matches no owned matter", async () => {
             supabaseState.tables.projects = { data: null, error: null };
 
             const res = await request(app)
@@ -1883,7 +1883,7 @@ describe("projects.routes", () => {
                 .send({ name: "Renamed" });
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
     });
 
@@ -1900,10 +1900,10 @@ describe("projects.routes", () => {
         .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
 
-        it("returns 204 when an org Admin deletes another creator's project", async () => {
+        it("returns 204 when an org Admin deletes another creator's matter", async () => {
             deleteProjectsByIds.mockResolvedValue(1);
             checkProjectAccess.mockResolvedValue({
                 ok: true,
@@ -1927,7 +1927,7 @@ describe("projects.routes", () => {
         });
 
         it.each(["member", "viewer"] as const)(
-            "returns 403 when a %s tries to delete the project",
+            "returns 403 when a %s tries to delete the matter",
             async (projectRole) => {
                 checkProjectAccess.mockResolvedValue({
                     ok: true,
@@ -1943,7 +1943,7 @@ describe("projects.routes", () => {
 
                 expect(res.status).toBe(403);
                 expect(res.body.detail).toBe(
-                    "Only a project owner can delete this project.",
+                    "Only a matter owner can delete this matter.",
                 );
                 // Refused before the cascade could run.
                 expect(deleteProjectsByIds).not.toHaveBeenCalled();
@@ -1958,7 +1958,7 @@ describe("projects.routes", () => {
                 .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
             expect(deleteProjectsByIds).not.toHaveBeenCalled();
         });
 
@@ -2030,7 +2030,7 @@ describe("projects.routes", () => {
             };
         }
 
-        it("returns 404 when the caller cannot access the project", async () => {
+        it("returns 404 when the caller cannot access the matter", async () => {
             checkProjectAccess.mockResolvedValue({ ok: false });
 
             const res = await request(app)
@@ -2038,7 +2038,7 @@ describe("projects.routes", () => {
                 .set(...AUTH);
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
 
         it("returns the version hashes and the edit trail as an attachment", async () => {
@@ -2129,7 +2129,7 @@ describe("projects.routes", () => {
 // ── Project audit events ──────────────────────────────────────────────────
 // Creating, opening, closing, deleting and sharing a project each leave one
 // row in audit_events; a refused request leaves none.
-describe("project audit events", () => {
+describe("matter audit events", () => {
     beforeEach(() => {
         resetSupabaseState();
         checkProjectAccess.mockReset();
@@ -2165,7 +2165,7 @@ describe("project audit events", () => {
         );
     });
 
-    it("records nothing when project creation is refused", async () => {
+    it("records nothing when matter creation is refused", async () => {
         const res = await request(app)
             .post("/projects")
             .set(...AUTH)
@@ -2174,7 +2174,7 @@ describe("project audit events", () => {
         expect(recordAudit).not.toHaveBeenCalled();
     });
 
-    it("records project.deleted after the cascade, naming the project and its organization", async () => {
+    it("records project.deleted after the cascade, naming the matter and its organization", async () => {
         deleteProjectsByIds.mockResolvedValue(1);
         checkProjectAccess.mockResolvedValue({
             ok: true,

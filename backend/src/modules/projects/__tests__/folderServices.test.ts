@@ -27,13 +27,13 @@ describe("folder callers retain their scope and failure policies", () => {
   // the project, so they are refused by name (403) instead of being told the
   // matter is missing; `forbidden` (404) is now reserved for a caller
   // checkProjectAccess itself refuses.
-  it("keeps project permissions ahead of all folder operations", async () => {
+  it("keeps matter permissions ahead of all folder operations", async () => {
     mocks.access.mockResolvedValue({ ok: true, projectRole: "viewer" });
     const fake = scriptedDb([]);
     const refusal = {
       ok: false,
       kind: "role_forbidden",
-      detail: "You do not have permission to organize documents in this project.",
+      detail: "You do not have permission to organize documents in this matter.",
     };
     expect(
       await updateProjectFolder(fake.db, {
@@ -45,7 +45,7 @@ describe("folder callers retain their scope and failure policies", () => {
     fake.done();
   });
 
-  it("hides the project entirely from a caller with no access", async () => {
+  it("hides the matter entirely from a caller with no access", async () => {
     mocks.access.mockResolvedValue({ ok: false });
     const fake = scriptedDb([]);
     expect(await deleteProjectFolder(fake.db, actor)).toEqual({
@@ -54,7 +54,7 @@ describe("folder callers retain their scope and failure policies", () => {
     });
     fake.done();
   });
-  it("never walks a parent outside the project", async () => {
+  it("never walks a parent outside the matter", async () => {
     const fake = scriptedDb([{ table: "project_subfolders", data: null }]);
     expect(
       await updateProjectFolder(fake.db, {
@@ -108,7 +108,7 @@ describe("folder callers retain their scope and failure policies", () => {
     });
     fake.done();
   });
-  it("preserves the project's parent-existence check before rejecting a self move", async () => {
+  it("preserves the matter's parent-existence check before rejecting a self move", async () => {
     const fake = scriptedDb([
       {
         table: "project_subfolders",
@@ -186,7 +186,7 @@ describe("folder callers retain their scope and failure policies", () => {
       ok: false,
       kind: "role_forbidden",
       detail:
-        "This folder contains documents added by other people. Only the project owner can delete it.",
+        "This folder contains documents added by other people. Only the matter owner can delete it.",
     });
     expect(fake.calls.some((call) => call.op === "delete")).toBe(false);
     fake.done();

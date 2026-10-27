@@ -400,7 +400,7 @@ export function useDirectoryData(
       setProjectsHasMore(rows.length > DIRECTORY_PAGE_SIZE);
     } catch (error) {
       notifyError(error, {
-        action: "load more projects",
+        action: "load more matters",
         dedupeKey: "directory-more-projects",
         onRetry: () => retryRef.current?.loadMoreProjects(),
       });
@@ -445,7 +445,7 @@ export function useDirectoryData(
           }));
         } catch (error) {
           notifyError(error, {
-            action: "open the project folder",
+            action: "open the matter folder",
             dedupeKey: `directory-project-level:${levelKey}`,
             onRetry: () =>
               retryRef.current?.loadProjectLevel(projectId, parentFolderId),
@@ -505,7 +505,7 @@ export function useDirectoryData(
           }));
         } catch (error) {
           notifyError(error, {
-            action: "load more project files",
+            action: "load more matter files",
             dedupeKey: `directory-project-more:${levelKey}`,
             onRetry: () =>
               retryRef.current?.loadMoreProjectDocuments(

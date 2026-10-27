@@ -14,7 +14,7 @@ const { rows, selection } = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
     useSearchParams: () => new URLSearchParams(),
-    usePathname: () => "/projects",
+    usePathname: () => "/matters",
 }));
 
 vi.mock("@/app/lib/mikeApi", () => ({
@@ -116,7 +116,7 @@ describe("ProjectsOverview failures", () => {
 
     // The row used to come back with no explanation beyond a console line
     // and a warning popup that named neither the project nor a next step.
-    it("restores the row and names the project when a delete fails", async () => {
+    it("restores the row and names the matter when a delete fails", async () => {
         const user = userEvent.setup();
         rows.current = [project("p1", "Matter A")];
         vi.mocked(deleteProject).mockRejectedValue(new Error("boom"));
@@ -151,7 +151,7 @@ describe("ProjectsOverview failures", () => {
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent(
-            "1 of 2 projects couldn't be deleted (Matter B)",
+            "1 of 2 matters couldn't be deleted (Matter B)",
         );
         // The failed row is back; the deleted one is gone.
         expect(screen.getByText("Matter B")).toBeInTheDocument();
@@ -166,7 +166,7 @@ describe("ProjectsOverview failures", () => {
         );
     });
 
-    it("says when the project filters could not be loaded", async () => {
+    it("says when the matter filters could not be loaded", async () => {
         vi.mocked(getProjectFilterOptions).mockRejectedValue(
             new Error("boom"),
         );
@@ -175,7 +175,7 @@ describe("ProjectsOverview failures", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByText("Couldn't load the project filters"),
+                screen.getByText("Couldn't load the matter filters"),
             ).toBeInTheDocument(),
         );
     });

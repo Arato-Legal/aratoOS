@@ -60,7 +60,7 @@ describe("mobile page header", () => {
     });
 
     it("floats transparently over project chat workspaces", () => {
-        navigation.pathname = "/projects/project-1/assistant/chat/chat-1";
+        navigation.pathname = "/matters/project-1/assistant/chat/chat-1";
         render(
             <MikeLayout>
                 <div>Project chat</div>
@@ -92,7 +92,7 @@ describe("mobile page header", () => {
     });
 
     it("keeps the mobile header in normal flow on non-chat pages", () => {
-        navigation.pathname = "/projects";
+        navigation.pathname = "/matters";
         render(
             <MikeLayout>
                 <div>Projects</div>

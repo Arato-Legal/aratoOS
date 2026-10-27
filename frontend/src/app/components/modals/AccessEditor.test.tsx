@@ -124,7 +124,7 @@ describe("AccessEditor — failures and empty states", () => {
         renderEditor({ scope: "project", rows: [], canManage: false });
 
         expect(
-            screen.getByText(/Access is inherited from the project/),
+            screen.getByText(/Access is inherited from the matter/),
         ).toBeInTheDocument();
         expect(
             screen.queryByText("No one has access yet."),
@@ -401,18 +401,18 @@ describe("OrganizationAccessEditor — public and private", () => {
         ).not.toBeInTheDocument();
         expect(
             screen.getByText(
-                "Add Elite Law LLP members as owners with rights to manage access, settings and delete the project. Everyone in Elite Law LLP can already open and edit it.",
+                "Add Elite Law LLP members as owners with rights to manage access, settings and delete the matter. Everyone in Elite Law LLP can already open and edit it.",
             ),
         ).toBeInTheDocument();
 
         const owners = screen.getByRole("searchbox", {
-            name: "Project owners",
+            name: "Matter owners",
         });
         fireEvent.focus(owners);
         fireEvent.change(owners, { target: { value: "jane" } });
         fireEvent.click(
             within(
-                screen.getByRole("listbox", { name: "Project owners matches" }),
+                screen.getByRole("listbox", { name: "Matter owners matches" }),
             ).getByText("Jane Lee"),
         );
         expect(onAssign).toHaveBeenCalledWith(
@@ -456,7 +456,7 @@ describe("OrganizationAccessEditor — public and private", () => {
                 SHARED,
             ],
         });
-        const list = screen.getByRole("list", { name: "Project owners list" });
+        const list = screen.getByRole("list", { name: "Matter owners list" });
         expect(within(list).getByText("me@firm.example")).toBeInTheDocument();
         // The creator is always an Owner: nothing to change or remove.
         expect(
@@ -504,7 +504,7 @@ describe("OrganizationAccessEditor — public and private", () => {
                 },
             ],
         });
-        const list = screen.getByRole("list", { name: "Project owners list" });
+        const list = screen.getByRole("list", { name: "Matter owners list" });
         // The heading already says these are owners.
         expect(within(list).queryByText("Owner")).not.toBeInTheDocument();
         expect(
@@ -540,7 +540,7 @@ describe("OrganizationAccessEditor — public and private", () => {
     it("still shows the role of somebody on a public item's list who is not an owner", () => {
         // Without it a Viewer would pass for an owner under that heading.
         renderEditor({ visibility: "organization" });
-        const list = screen.getByRole("list", { name: "Project owners list" });
+        const list = screen.getByRole("list", { name: "Matter owners list" });
         expect(
             within(list).getByRole("button", {
                 name: "Role for sam@firm.example",
@@ -607,7 +607,7 @@ describe("OrganizationAccessEditor — public and private", () => {
         renderEditor();
         expect(
             screen.getByText(
-                "Share this project with members of Elite Law LLP. They are added as Editors; change a person's role in the list below. It cannot be shared outside the organisation.",
+                "Share this matter with members of Elite Law LLP. They are added as Editors; change a person's role in the list below. It cannot be shared outside the organisation.",
             ),
         ).toBeInTheDocument();
     });
@@ -636,12 +636,12 @@ describe("OrganizationAccessEditor — public and private", () => {
     it("does not offer the organization's owner on a public item, which they own already", () => {
         renderEditor({ visibility: "organization", assignments: [] });
         const owners = screen.getByRole("searchbox", {
-            name: "Project owners",
+            name: "Matter owners",
         });
         fireEvent.focus(owners);
         fireEvent.change(owners, { target: { value: "firm.example" } });
         const matches = screen.getByRole("listbox", {
-            name: "Project owners matches",
+            name: "Matter owners matches",
         });
         expect(within(matches).getByText("Jane Lee")).toBeInTheDocument();
         expect(within(matches).queryByText("Org Owner")).not.toBeInTheDocument();

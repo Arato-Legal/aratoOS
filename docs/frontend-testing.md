@@ -38,7 +38,7 @@ response. `e2e/assistant-streaming.spec.ts` loads eight synthetic exchanges and
 sends four content replies or eight reasoning replies through a browser
 `ReadableStream`, with CPU throttling. The reasoning case also scrolls long
 reasoning with the keyboard, checks its bottom blur, toggles its disclosure
-and resizes the viewport. Both cases run in the general assistant, project
+and resizes the viewport. Both cases run in the general assistant, matter
 assistant and tabular-review chat (six browser scenarios).
 It uses the real Next.js/React renderer, fails on browser console errors and
 uncaught exceptions, and requires no model-provider key. It belongs to the

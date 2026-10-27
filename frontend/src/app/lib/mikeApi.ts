@@ -78,6 +78,7 @@ import type {
     ClientContact,
     ClientDetail,
     MatterDashboard,
+    ClientFiles,
     MatterWorkspace,
     WorkspaceFile,
     DriveSyncStatus,
@@ -4938,6 +4939,43 @@ export async function setMatterDriveFolder(
         `/clients/matters/${projectId}/drive-folder`,
         jsonInit("PUT", { folder_id: folderId }),
     );
+}
+
+/** Create the matter's Drive folder inside its client's folder and link it. */
+export async function createMatterDriveFolder(
+    projectId: string,
+): Promise<MatterWorkspace> {
+    return apiRequest<MatterWorkspace>(
+        `/clients/matters/${projectId}/drive-folder/create`,
+        { method: "POST" },
+    );
+}
+
+/** Link a client's Drive folder, or unlink it with `null`. */
+export async function setClientDriveFolder(
+    clientId: string,
+    folderId: string | null,
+): Promise<{ client_id: string; drive_folder_id: string | null; drive_folder_name: string | null }> {
+    return apiRequest(
+        `/clients/${clientId}/drive-folder`,
+        jsonInit("PUT", { folder_id: folderId }),
+    );
+}
+
+/** Let the client's other matters read this matter's data, or stop. */
+export async function setMatterSharing(
+    projectId: string,
+    share: boolean,
+): Promise<{ project_id: string; share_with_client: boolean }> {
+    return apiRequest(
+        `/clients/matters/${projectId}/sharing`,
+        jsonInit("PUT", { share_with_client: share }),
+    );
+}
+
+/** What the client's other matters share with this one (read-only). */
+export async function getClientFiles(projectId: string): Promise<ClientFiles> {
+    return apiRequest<ClientFiles>(`/clients/matters/${projectId}/client-files`);
 }
 
 export async function browseDriveFolders(options?: {

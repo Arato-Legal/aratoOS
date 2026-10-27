@@ -28,7 +28,7 @@ const rows = [
         kind: "task.assigned",
         title: "Task assigned to you: File the return",
         body: "Due 2026-11-30.",
-        href: "/projects/p1/tasks",
+        href: "/matters/p1/tasks",
         project_id: "p1",
         document_id: null,
         read_at: null,
@@ -40,7 +40,7 @@ const rows = [
         kind: "project.shared",
         title: "A project was shared with you as editor",
         body: null,
-        href: "/projects/p2",
+        href: "/matters/p2/documents",
         project_id: "p2",
         document_id: null,
         read_at: "2026-10-22T10:00:00Z",
@@ -67,7 +67,7 @@ describe("notifications settings", () => {
         expect(screen.getByText(/no outgoing email configured/)).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "A project was shared with you as editor" })).toHaveAttribute(
             "href",
-            "/projects/p2",
+            "/matters/p2/documents",
         );
         expect(screen.getByText(/Unread ·/)).toBeInTheDocument();
     });

@@ -175,7 +175,7 @@ projectsRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
   )
     return void res.status(400).json({
       detail:
-        "shared_with is no longer supported; use the project access endpoints.",
+        "shared_with is no longer supported; use the matter access endpoints.",
     });
   const { name, cm_number, practice, org_id, visibility, memory_enabled } =
     req.body as {
@@ -224,7 +224,7 @@ projectsRouter.get("/:projectId/directory", requireAuth, asyncRoute(async (req, 
   });
   if (!result.ok) {
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     return void sendInternalError(res, result.error);
   }
   res.json(result.body);
@@ -290,7 +290,7 @@ projectsRouter.get("/:projectId", requireAuth, asyncRoute(async (req, res) => {
   if (!result.ok) {
     if (result.kind === "db_error")
       return void sendInternalError(res, result.error);
-    return void res.status(404).json({ detail: "Project not found" });
+    return void res.status(404).json({ detail: "Matter not found" });
   }
   res.json(result.body);
 }));
@@ -310,7 +310,7 @@ projectsRouter.get("/:projectId/people", requireAuth, asyncRoute(async (req, res
   if (!result.ok) {
     if (result.kind === "db_error")
       return void sendInternalError(res, result.error);
-    return void res.status(404).json({ detail: "Project not found" });
+    return void res.status(404).json({ detail: "Matter not found" });
   }
   res.json(result.body);
 }));
@@ -402,7 +402,7 @@ projectsRouter.patch("/:projectId", requireAuth, asyncRoute(async (req, res) => 
   )
     return void res.status(400).json({
       detail:
-        "shared_with is no longer supported; use the project access endpoints.",
+        "shared_with is no longer supported; use the matter access endpoints.",
     });
   const db = createServerSupabase();
 
@@ -419,7 +419,7 @@ projectsRouter.patch("/:projectId", requireAuth, asyncRoute(async (req, res) => 
       return void res.status(400).json({ detail: result.detail });
     if (result.kind === "db_error")
       return void sendInternalError(res, result.error);
-    return void res.status(404).json({ detail: "Project not found" });
+    return void res.status(404).json({ detail: "Matter not found" });
   }
   res.json(result.body);
 }));
@@ -434,7 +434,7 @@ projectsRouter.delete("/:projectId", requireAuth, asyncRoute(async (req, res) =>
   const result = await deleteProject(db, { projectId, userId, userEmail });
   if (!result.ok) {
     if (result.kind === "not_found")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "forbidden")
       return void res.status(403).json({ detail: result.detail });
     return void sendInternalError(res, result.error);
@@ -455,7 +455,7 @@ projectsRouter.get("/:projectId/documents", requireAuth, asyncRoute(async (req, 
     userEmail,
   });
   if (!result.ok)
-    return void res.status(404).json({ detail: "Project not found" });
+    return void res.status(404).json({ detail: "Matter not found" });
   res.json(result.docs);
 }));
 
@@ -482,7 +482,7 @@ projectsRouter.get(
     });
     if (!result.ok) {
       if (result.kind === "forbidden")
-        return void res.status(404).json({ detail: "Project not found" });
+        return void res.status(404).json({ detail: "Matter not found" });
       return void res
         .status(500)
         .json({ detail: "Failed to build project export manifest" });
@@ -515,7 +515,7 @@ projectsRouter.post(
     if (!result.ok) {
       switch (result.kind) {
         case "forbidden":
-          return void res.status(404).json({ detail: "Project not found" });
+          return void res.status(404).json({ detail: "Matter not found" });
         // Seeing the project but not being allowed to organize it is a
         // refusal, not a missing matter.
         case "role_forbidden":
@@ -569,7 +569,7 @@ projectsRouter.patch("/:projectId/documents/:documentId", requireAuth, asyncRout
     if (result.kind === "role_forbidden")
       return void res.status(403).json({ detail: result.detail });
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "doc_not_found")
       return void res.status(404).json({ detail: "Document not found" });
     if (result.kind === "db_error")
@@ -593,7 +593,7 @@ projectsRouter.get("/:projectId/chats", requireAuth, asyncRoute(async (req, res)
   const result = await listProjectChats(db, { projectId, userId, userEmail });
   if (!result.ok) {
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     return void sendInternalError(res, result.error);
   }
   res.json(result.chats);
@@ -628,7 +628,7 @@ projectsRouter.post(
       if (result.kind === "role_forbidden")
         return void res.status(403).json({ detail: result.detail });
       if (result.kind === "forbidden")
-        return void res.status(404).json({ detail: "Project not found" });
+        return void res.status(404).json({ detail: "Matter not found" });
       if (result.kind === "parent_not_found")
         return void res.status(404).json({ detail: "Parent folder not found" });
       return void res.status(500).json({
@@ -661,7 +661,7 @@ projectsRouter.post("/:projectId/folders", requireAuth, asyncRoute(async (req, r
     if (result.kind === "role_forbidden")
       return void res.status(403).json({ detail: result.detail });
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "parent_not_found")
       return void res.status(404).json({ detail: "Parent folder not found" });
     return void sendInternalError(res, result.error);
@@ -690,7 +690,7 @@ projectsRouter.patch("/:projectId/folders/:folderId", requireAuth, asyncRoute(as
     if (result.kind === "role_forbidden")
       return void res.status(403).json({ detail: result.detail });
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "parent_not_found")
       return void res.status(404).json({ detail: "Parent folder not found" });
     if (result.kind === "cycle")
@@ -719,7 +719,7 @@ projectsRouter.delete("/:projectId/folders/:folderId", requireAuth, asyncRoute(a
     if (result.kind === "role_forbidden")
       return void res.status(403).json({ detail: result.detail });
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "not_found")
       return void res.status(404).json({ detail: "Folder not found" });
     return void sendInternalError(res, result.error);
@@ -746,7 +746,7 @@ projectsRouter.patch("/:projectId/documents/:documentId/folder", requireAuth, as
     if (result.kind === "role_forbidden")
       return void res.status(403).json({ detail: result.detail });
     if (result.kind === "forbidden")
-      return void res.status(404).json({ detail: "Project not found" });
+      return void res.status(404).json({ detail: "Matter not found" });
     if (result.kind === "folder_not_found")
       return void res.status(404).json({ detail: "Folder not found" });
     return void res.status(404).json({ detail: "Document not found" });

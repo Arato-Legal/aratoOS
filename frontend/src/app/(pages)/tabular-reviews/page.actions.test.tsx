@@ -97,7 +97,7 @@ describe("review overview selection actions", () => {
         render(<TabularReviewsPage />);
         await user.click(screen.getByRole("button", { name: "Actions" }));
         await user.click(screen.getByRole("menuitem", { name: "Open" }));
-        expect(push).toHaveBeenCalledWith("/projects/p1/tabular-reviews/r1");
+        expect(push).toHaveBeenCalledWith("/matters/p1/tabular-reviews/r1");
     });
 
     it("opens details for a single selected review", async () => {

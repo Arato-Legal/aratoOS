@@ -130,7 +130,7 @@ async function loadProjectDrive(
     .eq("id", projectId)
     .maybeSingle();
   if (error) return internalFailure(error);
-  if (!data) return failure("not_found", "Project not found");
+  if (!data) return failure("not_found", "Matter not found");
   return ok(data as ProjectDriveRow);
 }
 
@@ -138,9 +138,9 @@ export async function getMatterWorkspace(
   db: Db,
   args: { userId: string; userEmail?: string | null; projectId: string },
 ): Promise<ServiceResult<MatterWorkspace>> {
-  if (!isUuid(args.projectId)) return failure("not_found", "Project not found");
+  if (!isUuid(args.projectId)) return failure("not_found", "Matter not found");
   const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   const project = await loadProjectDrive(db, args.projectId);
   if (!project.ok) return project;
 
@@ -180,11 +180,11 @@ export async function linkMatterDriveFolder(
     folderId: unknown;
   },
 ): Promise<ServiceResult<MatterWorkspace>> {
-  if (!isUuid(args.projectId)) return failure("not_found", "Project not found");
+  if (!isUuid(args.projectId)) return failure("not_found", "Matter not found");
   if (args.folderId !== null && !isDriveId(args.folderId))
     return failure("validation", "folder_id must be a Drive folder id or null");
   const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "content.edit"))
     return failure("forbidden", "You need edit access to link a Drive folder.");
 

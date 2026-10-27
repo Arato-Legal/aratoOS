@@ -50,7 +50,7 @@ export async function listContentPeople(
         if (error || !project)
             return {
                 ok: false,
-                detail: error?.message ?? "Parent project not found",
+                detail: error?.message ?? "Parent matter not found",
             };
         const people = await listProjectPeople(
             db,

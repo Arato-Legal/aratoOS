@@ -131,7 +131,7 @@ describe("AppSidebar workspace switcher", () => {
     expect(history.queryByRole("status", { name: "Running review review running" })).toBeNull();
   });
 
-  it("combines chats and project and standalone reviews in History by last update", async () => {
+  it("combines chats and matter and standalone reviews in History by last update", async () => {
     state.chats = [{
       id: "chat", title: "Discussion", user_id: "u1", project_id: null, is_owner: true,
       created_at: "2026-09-01T00:00:00Z", updated_at: "2026-10-14T00:00:00Z",
@@ -140,7 +140,7 @@ describe("AppSidebar workspace switcher", () => {
       { id: "project-review", project_id: "matter", project_name: "Matter Alpha", title: "Older review edited today", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-10-15T00:00:00Z" },
       { id: "standalone", project_id: null, title: "Standalone review", created_at: "2026-10-13T00:00:00Z", updated_at: "2026-10-13T00:00:00Z" },
     ] as TabularReview[]);
-    state.pathname = "/projects/matter/tabular-reviews/project-review";
+    state.pathname = "/matters/matter/tabular-reviews/project-review";
     render(<AppSidebar isOpen onToggle={vi.fn()} />);
     expect(screen.getByRole("button", { name: "History" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.queryByText("Assistant History")).toBeNull();
@@ -150,7 +150,7 @@ describe("AppSidebar workspace switcher", () => {
     expect(projectReview).toHaveTextContent("Matter Alpha: Older review edited today");
     const chat = history.getByRole("button", { name: "Discussion" });
     const standalone = history.getByRole("link", { name: "Tabular review: Standalone review" });
-    expect(projectReview).toHaveAttribute("href", "/projects/matter/tabular-reviews/project-review");
+    expect(projectReview).toHaveAttribute("href", "/matters/matter/tabular-reviews/project-review");
     expect(projectReview).toHaveAttribute("aria-current", "page");
     expect(standalone).toHaveAttribute("href", "/tabular-reviews/standalone");
     expect(projectReview.compareDocumentPosition(chat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -275,7 +275,7 @@ describe("AppSidebar workspace switcher", () => {
     // `hidden`: the open menu takes the rest of the page out of the
     // accessibility tree.
     expect(
-      screen.getByRole("button", { name: "Recent Projects", hidden: true }),
+      screen.getByRole("button", { name: "Recent Matters", hidden: true }),
     ).toHaveClass("text-xs", "font-semibold");
     expect(label).not.toHaveClass("uppercase");
     expect(label).not.toHaveClass("tracking-wider");
@@ -362,7 +362,7 @@ describe("AppSidebar workspace switcher", () => {
 
   it("leaves for the home page first, and switches once the page has gone", async () => {
     state.organizations = [ACME, BETA];
-    state.pathname = "/projects";
+    state.pathname = "/matters";
     const user = userEvent.setup();
     const view = render(<AppSidebar isOpen onToggle={vi.fn()} />);
 
@@ -385,14 +385,14 @@ describe("AppSidebar workspace switcher", () => {
     );
 
     // Once only: moving on from home does not switch again.
-    state.pathname = "/projects";
+    state.pathname = "/matters";
     view.rerender(<AppSidebar isOpen onToggle={vi.fn()} />);
     expect(state.setWorkspace).toHaveBeenCalledTimes(1);
   });
 
   it("still switches if they went somewhere else before home arrived", async () => {
     state.organizations = [ACME, BETA];
-    state.pathname = "/projects";
+    state.pathname = "/matters";
     const user = userEvent.setup();
     const view = render(<AppSidebar isOpen onToggle={vi.fn()} />);
 
@@ -433,7 +433,7 @@ describe("AppSidebar workspace switcher", () => {
     ).toBeVisible();
   });
 
-  it("loads the active workspace's recent projects, and reloads them on a switch", async () => {
+  it("loads the active workspace's recent matters, and reloads them on a switch", async () => {
     state.organizations = [ACME];
     vi.mocked(listProjectsPage).mockImplementation(async (options) =>
       options?.workspace === ACME.id
@@ -466,7 +466,7 @@ describe("AppSidebar workspace switcher", () => {
     expect(await screen.findByText("My own matter")).toBeInTheDocument();
   });
 
-  it.each(["personal", ACME.id])("paginates only projects the user created in %s", async (workspaceId) => {
+  it.each(["personal", ACME.id])("paginates only matters the user created in %s", async (workspaceId) => {
     state.workspaceId = workspaceId;
     state.organizations = [ACME];
     const ownProjects = Array.from({ length: 12 }, (_, index) =>
@@ -540,18 +540,18 @@ describe("AppSidebar workspace switcher", () => {
     expect(screen.queryByText("Org matter")).not.toBeInTheDocument();
   });
 
-  it("lines the empty projects placeholder up with the Recent Projects button", async () => {
+  it("lines the empty matters placeholder up with the Recent Matters button", async () => {
     render(<AppSidebar isOpen onToggle={vi.fn()} />);
 
-    const placeholder = await screen.findByText("No projects yet");
-    const button = screen.getByRole("button", { name: "Recent Projects" });
+    const placeholder = await screen.findByText("No matters yet");
+    const button = screen.getByRole("button", { name: "Recent Matters" });
     const horizontalPadding = (element: HTMLElement) =>
       [...element.classList].filter((name) => /^px-/.test(name));
     expect(horizontalPadding(placeholder)).toEqual(horizontalPadding(button));
     expect(horizontalPadding(placeholder)).toEqual(["px-3.5"]);
   });
 
-  it("does not narrow the recent projects outside a workspace provider", async () => {
+  it("does not narrow the recent matters outside a workspace provider", async () => {
     state.workspaceId = null;
     state.organizations = null;
     render(<AppSidebar isOpen onToggle={vi.fn()} />);

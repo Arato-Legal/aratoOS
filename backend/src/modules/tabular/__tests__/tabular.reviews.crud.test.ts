@@ -187,7 +187,7 @@ describe("createTabularReview", () => {
         });
     });
 
-    it("404s when the target project is not reachable", async () => {
+    it("404s when the target matter is not reachable", async () => {
         checkProjectAccess.mockResolvedValue({ ok: false });
         const { db } = makeFakeDb();
         const result = await createTabularReview(db, {
@@ -200,7 +200,7 @@ describe("createTabularReview", () => {
         expect(result).toMatchObject({
             ok: false,
             kind: "not_found",
-            detail: "Project not found",
+            detail: "Matter not found",
         });
     });
 
@@ -314,7 +314,7 @@ describe("createTabularReview", () => {
         expect(calls.some((call) => call.op === "insert")).toBe(false);
     });
 
-    it("lets the project decide the organization, whatever org_id says", async () => {
+    it("lets the matter decide the organization, whatever org_id says", async () => {
         resolveContentOrgId.mockResolvedValue({ ok: true, orgId: "org-2" });
         checkProjectAccess.mockResolvedValue({
             ...OWNER,
@@ -357,7 +357,7 @@ describe("createTabularReview", () => {
         expect(calls.some((call) => call.op === "insert")).toBe(false);
     });
 
-    it("404s a project the caller may read but not contribute to", async () => {
+    it("404s a matter the caller may read but not contribute to", async () => {
         checkProjectAccess.mockResolvedValue({
             ok: true,
             isCreator: false,
@@ -378,11 +378,11 @@ describe("createTabularReview", () => {
         expect(result).toMatchObject({
             ok: false,
             kind: "forbidden",
-            detail: "You do not have permission to write in this project.",
+            detail: "You do not have permission to write in this matter.",
         });
     });
 
-    it("stamps the project's tenant and answers as the creator", async () => {
+    it("stamps the matter's tenant and answers as the creator", async () => {
         resolveContentOrgId.mockResolvedValue({ ok: true, orgId: "org-2" });
         const { db, calls } = makeFakeDb({
             tables: {
@@ -754,7 +754,7 @@ describe("tabular review access grants", () => {
         });
     });
 
-    it("reports project inheritance instead of a grant list", async () => {
+    it("reports matter inheritance instead of a grant list", async () => {
         const { db } = standalone({ project_id: "proj-1", org_id: "org-1" });
         const result = await getTabularReviewAccess(db, {
             reviewId: "rev-1",
@@ -804,7 +804,7 @@ describe("tabular review access grants", () => {
             ok: false,
             kind: "conflict",
             code: "access_inherited",
-            detail: "Project-owned reviews inherit access from their project.",
+            detail: "Matter-owned reviews inherit access from their matter.",
         });
         expect(upsertContentGrant).not.toHaveBeenCalled();
     });
@@ -1108,7 +1108,7 @@ describe("updateTabularReview", () => {
         });
     });
 
-    it("keeps an organization's review in the organization when it is taken out of its project", async () => {
+    it("keeps an organization's review in the organization when it is taken out of its matter", async () => {
         // It becomes a standalone review of the same organization, not the
         // personal property of whoever moved it.
         const { db, calls } = seeded({
@@ -1129,8 +1129,8 @@ describe("updateTabularReview", () => {
     });
 
     it.each([
-        ["a personal project", null],
-        ["another organization's project", "org-2"],
+        ["a personal matter", null],
+        ["another organization's matter", "org-2"],
     ])(
         "refuses to move an organization's review into %s",
         async (_label, destinationOrgId) => {
@@ -1151,13 +1151,13 @@ describe("updateTabularReview", () => {
             expect(result).toMatchObject({
                 ok: false,
                 kind: "validation",
-                detail: "This review belongs to an organization and can only be moved to a project in the same organization.",
+                detail: "This review belongs to an organization and can only be moved to a matter in the same organization.",
             });
             expect(calls.some((call) => call.op === "update")).toBe(false);
         },
     );
 
-    it("moves an organization's review between projects of that organization", async () => {
+    it("moves an organization's review between matters of that organization", async () => {
         resolveContentOrgId.mockResolvedValue({ ok: true, orgId: "org-1" });
         const { db, calls } = seeded({
             user_id: "user-1",
@@ -1247,7 +1247,7 @@ describe("updateTabularReview", () => {
         expect(calls.some((call) => call.op === "update")).toBe(false);
     });
 
-    it("restamps org_id from the destination project on a move", async () => {
+    it("restamps org_id from the destination matter on a move", async () => {
         // `tabular_reviews.org_id` is a denormalized copy of the project's
         // tenant that the SQL visibility predicates read directly, so a move
         // that left it stale would keep the review visible to an
@@ -1310,7 +1310,7 @@ describe("updateTabularReview", () => {
         });
     });
 
-    it("404s a move to a project the caller cannot reach", async () => {
+    it("404s a move to a matter the caller cannot reach", async () => {
         checkProjectAccess.mockResolvedValue({ ok: false });
         const { db } = seeded();
         const result = await updateTabularReview(db, {
@@ -1321,11 +1321,11 @@ describe("updateTabularReview", () => {
         expect(result).toMatchObject({
             ok: false,
             kind: "not_found",
-            detail: "Target project not found",
+            detail: "Target matter not found",
         });
     });
 
-    it("403s a move into a project where the caller is only a viewer", async () => {
+    it("403s a move into a matter where the caller is only a viewer", async () => {
         // A move contributes the review to the destination exactly as
         // creating it there would, so it needs the same content.edit gate.
         checkProjectAccess.mockResolvedValue({
@@ -1344,7 +1344,7 @@ describe("updateTabularReview", () => {
         expect(result).toMatchObject({
             ok: false,
             kind: "forbidden",
-            detail: "You do not have permission to write in this project.",
+            detail: "You do not have permission to write in this matter.",
         });
         expect(calls.some((call) => call.op === "update")).toBe(false);
     });

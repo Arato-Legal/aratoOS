@@ -99,7 +99,7 @@ async function fillAndAdd(
     email: string,
     role: string,
 ) {
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
     expect(
         screen.queryByPlaceholderText("Add by email..."),
     ).not.toBeInTheDocument();
@@ -119,12 +119,12 @@ async function fillAndAdd(
 }
 
 async function submit(user: ReturnType<typeof userEvent.setup>) {
-    if (!screen.queryByRole("button", { name: "Create project" })) {
+    if (!screen.queryByRole("button", { name: "Create matter" })) {
         const detailsNext = screen.getByRole("button", { name: "Next" });
         await waitFor(() => expect(detailsNext).toBeEnabled());
         await user.click(detailsNext);
     }
-    if (!screen.queryByRole("button", { name: "Create project" })) {
+    if (!screen.queryByRole("button", { name: "Create matter" })) {
         await waitFor(() =>
       expect(screen.getByRole("dialog", { name: "Access" })).toBeVisible(),
         );
@@ -132,7 +132,7 @@ async function submit(user: ReturnType<typeof userEvent.setup>) {
         await user.click(screen.getByRole("button", { name: "Next" }));
     }
     await user.click(
-        await screen.findByRole("button", { name: "Create project" }),
+        await screen.findByRole("button", { name: "Create matter" }),
     );
 }
 
@@ -184,7 +184,7 @@ describe("NewProjectModal sharing", () => {
         );
     });
 
-  it("creates a new project in the active workspace's organization, private unless made public", async () => {
+  it("creates a new matter in the active workspace's organization, private unless made public", async () => {
     activeWorkspace.id = "org-1";
     const user = userEvent.setup({ delay: null });
     renderModal();
@@ -203,17 +203,17 @@ describe("NewProjectModal sharing", () => {
     ).toHaveAttribute("aria-pressed", "false");
     expect(
       screen.getByText(
-        "Only the people you share this project with can open it.",
+        "Only the people you share this matter with can open it.",
       ),
     ).toBeInTheDocument();
 
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
-    while (!screen.queryByRole("button", { name: "Create project" })) {
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
+    while (!screen.queryByRole("button", { name: "Create matter" })) {
       const next = screen.getByRole("button", { name: "Next" });
       await waitFor(() => expect(next).toBeEnabled());
       await user.click(next);
     }
-    await user.click(screen.getByRole("button", { name: "Create project" }));
+    await user.click(screen.getByRole("button", { name: "Create matter" }));
 
     await waitFor(() =>
       expect(createProject).toHaveBeenCalledWith(
@@ -227,7 +227,7 @@ describe("NewProjectModal sharing", () => {
     );
   });
 
-  it("offers no Public toggle for a personal project", () => {
+  it("offers no Public toggle for a personal matter", () => {
     activeWorkspace.id = "personal";
     renderModal();
     expect(
@@ -235,12 +235,12 @@ describe("NewProjectModal sharing", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("starts a new project as personal in the personal workspace", async () => {
+  it("starts a new matter as personal in the personal workspace", async () => {
     activeWorkspace.id = "personal";
     const user = userEvent.setup({ delay: null });
     renderModal();
 
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
 
     await waitFor(() =>
@@ -254,31 +254,31 @@ describe("NewProjectModal sharing", () => {
     );
   });
 
-  it("labels project memory once, and reads On or Off beside the switch", async () => {
+  it("labels matter memory once, and reads On or Off beside the switch", async () => {
     const user = userEvent.setup({ delay: null });
     renderModal();
 
-    expect(screen.getByText("Project memory")).toBeInTheDocument();
+    expect(screen.getByText("Matter memory")).toBeInTheDocument();
     // The label says what it is; no second line explaining it.
     expect(
-      screen.queryByText("Let Mike remember shared project context"),
+      screen.queryByText("Let Mike remember shared matter context"),
     ).not.toBeInTheDocument();
 
-    const memory = screen.getByRole("switch", { name: "Enable project memory" });
+    const memory = screen.getByRole("switch", { name: "Enable matter memory" });
     expect(memory).toHaveTextContent("On");
     await user.click(memory);
     expect(memory).toHaveTextContent("Off");
     expect(memory).toHaveAttribute("aria-checked", "false");
   });
 
-  it("creates new projects with memory enabled by default", async () => {
+  it("creates new matters with memory enabled by default", async () => {
     const user = userEvent.setup({ delay: null });
     renderModal();
 
     expect(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     ).toBeChecked();
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
 
     await waitFor(() =>
@@ -292,7 +292,7 @@ describe("NewProjectModal sharing", () => {
     );
   });
 
-  it("follows the account's off default for new projects", async () => {
+  it("follows the account's off default for new matters", async () => {
     useUserProfile.mockReturnValue({
       profile: { practiceAreas: [], projectMemoryDefault: false },
     });
@@ -300,9 +300,9 @@ describe("NewProjectModal sharing", () => {
     renderModal();
 
     expect(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     ).not.toBeChecked();
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
 
     await waitFor(() =>
@@ -316,7 +316,7 @@ describe("NewProjectModal sharing", () => {
     );
   });
 
-  it("lets the creator override the account default for one project", async () => {
+  it("lets the creator override the account default for one matter", async () => {
     useUserProfile.mockReturnValue({
       profile: { practiceAreas: [], projectMemoryDefault: false },
     });
@@ -324,9 +324,9 @@ describe("NewProjectModal sharing", () => {
     renderModal();
 
     await user.click(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     );
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
 
     await waitFor(() =>
@@ -340,7 +340,7 @@ describe("NewProjectModal sharing", () => {
     );
   });
 
-  it("resets to the account default, not to on, after a project is created", async () => {
+  it("resets to the account default, not to on, after a matter is created", async () => {
     // resetForm hard-coded `true`, so the next project started from this
     // still-open modal silently opted into project memory against the
     // account's saved default.
@@ -350,13 +350,13 @@ describe("NewProjectModal sharing", () => {
     const user = userEvent.setup({ delay: null });
     renderModal();
 
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
     await waitFor(() => expect(createProject).toHaveBeenCalled());
 
     await waitFor(() =>
       expect(
-        screen.getByRole("switch", { name: "Enable project memory" }),
+        screen.getByRole("switch", { name: "Enable matter memory" }),
       ).not.toBeChecked(),
     );
   });
@@ -366,9 +366,9 @@ describe("NewProjectModal sharing", () => {
     renderModal();
 
     await user.click(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     );
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     await submit(user);
 
     await waitFor(() =>
@@ -430,7 +430,7 @@ describe("NewProjectModal sharing", () => {
         // say what the server will serve for it on every future load.
         const user = userEvent.setup({ delay: null });
         const onCreated = renderModal();
-        await user.type(screen.getByPlaceholderText("Add project name"), "P");
+        await user.type(screen.getByPlaceholderText("Add matter name"), "P");
         await submit(user);
 
         await waitFor(() => expect(onCreated).toHaveBeenCalled());
@@ -447,7 +447,7 @@ describe("NewProjectModal sharing", () => {
         const user = userEvent.setup({ delay: null });
         const onCreated = renderModal();
 
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         await user.click(screen.getByRole("button", { name: "Next" }));
         expect(screen.getByRole("dialog", { name: "Access" })).toBeVisible();
         expect(createProject).not.toHaveBeenCalled();
@@ -465,7 +465,7 @@ describe("NewProjectModal sharing", () => {
         fireEvent.submit(form!);
         expect(createProject).not.toHaveBeenCalled();
 
-        const create = screen.getByRole("button", { name: "Create project" });
+        const create = screen.getByRole("button", { name: "Create matter" });
         expect(create).toHaveAttribute("type", "button");
         await user.click(create);
         await waitFor(() => expect(createProject).toHaveBeenCalledTimes(1));
@@ -535,13 +535,13 @@ describe("NewProjectModal sharing", () => {
         );
     });
 
-    it("reports a refused grant and does not create a second project on retry", async () => {
+    it("reports a refused grant and does not create a second matter on retry", async () => {
         const user = userEvent.setup({ delay: null });
         const onCreated = renderModal();
         vi.mocked(grantProjectAccess).mockRejectedValueOnce(
             new MikeApiError({
                 status: 400,
-                message: "The project creator already has owner access",
+                message: "The matter creator already has owner access",
             }),
         );
 
@@ -550,20 +550,20 @@ describe("NewProjectModal sharing", () => {
 
         expect(
             await screen.findByText(
-                /Project created, but access was not granted to counsel@firm.test: The project creator already has owner access/,
+                /Matter created, but access was not granted to counsel@firm.test: The matter creator already has owner access/,
             ),
         ).toBeInTheDocument();
         // The dialog stays open on the only screen that knows sharing failed.
         expect(onCreated).not.toHaveBeenCalled();
 
         // Retry: the project already exists, so it must not be created twice.
-    await user.click(screen.getByRole("button", { name: "Create project" }));
+    await user.click(screen.getByRole("button", { name: "Create matter" }));
         await waitFor(() => expect(onCreated).toHaveBeenCalled());
         expect(createProject).toHaveBeenCalledTimes(1);
         expect(grantProjectAccess).toHaveBeenCalledTimes(2);
     });
 
-  it("persists a changed memory opt-out before retrying a created project", async () => {
+  it("persists a changed memory opt-out before retrying a created matter", async () => {
     const user = userEvent.setup({ delay: null });
     const onCreated = renderModal();
     vi.mocked(grantProjectAccess).mockRejectedValueOnce(
@@ -575,16 +575,16 @@ describe("NewProjectModal sharing", () => {
 
     await fillAndAdd(user, "counsel@firm.test", "editor");
     await submit(user);
-    await screen.findByText(/Project created, but access was not granted/);
+    await screen.findByText(/Matter created, but access was not granted/);
 
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     );
     await user.click(screen.getByRole("button", { name: "Next" }));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await user.click(screen.getByRole("button", { name: "Create project" }));
+    await user.click(screen.getByRole("button", { name: "Create matter" }));
 
     await waitFor(() =>
       expect(setProjectMemoryEnabled).toHaveBeenCalledWith("p1", false),
@@ -621,7 +621,7 @@ describe("NewProjectModal sharing", () => {
       ),
     );
 
-    await user.type(screen.getByPlaceholderText("Add project name"), "P");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "P");
     const fileInput =
       document.querySelector<HTMLInputElement>('input[type="file"]');
     expect(fileInput).not.toBeNull();
@@ -639,7 +639,7 @@ describe("NewProjectModal sharing", () => {
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     );
     await user.click(screen.getByRole("button", { name: "Next" }));
     await user.click(screen.getByRole("button", { name: "Next" }));
@@ -656,7 +656,7 @@ describe("NewProjectModal sharing", () => {
     it("shows direct sharing only on step two with Owner, Editor and Viewer", async () => {
         const user = userEvent.setup({ delay: null });
         renderModal();
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         expect(
             screen.queryByPlaceholderText("Add by email..."),
         ).not.toBeInTheDocument();
@@ -684,14 +684,14 @@ describe("NewProjectModal sharing", () => {
         {
             user_id: "me",
             email: "me@firm.test",
-            display_name: "Project Creator",
+            display_name: "Matter Creator",
             role: "member",
             created_at: "2026-01-01T00:00:00Z",
         },
         {
             user_id: "member-lead",
             email: "lead@elite.test",
-            display_name: "Project Lead",
+            display_name: "Matter Lead",
             role: "member",
             created_at: "2026-01-01T00:00:00Z",
         },
@@ -718,13 +718,13 @@ describe("NewProjectModal sharing", () => {
         },
     ];
 
-    it("shares a private organization project with individual members", async () => {
+    it("shares a private organization matter with individual members", async () => {
         const user = userEvent.setup({ delay: null });
         activeWorkspace.id = "org-1";
         activeWorkspace.name = "Elite Law LLP";
         vi.mocked(listOrgMembers).mockResolvedValue(ORG_MEMBERS as never);
         renderModal();
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         // Left private on the details step.
         await user.click(screen.getByRole("button", { name: "Next" }));
         expect(
@@ -754,11 +754,11 @@ describe("NewProjectModal sharing", () => {
 
         await user.type(peoplePicker, "lead");
         await user.click(
-            await screen.findByRole("option", { name: /Project Lead/ }),
+            await screen.findByRole("option", { name: /Matter Lead/ }),
         );
         const people = screen.getByRole("list", { name: "People with access" });
-        expect(within(people).getByText("Project Lead")).toBeInTheDocument();
-        expect(within(people).getByText("Project Creator")).toBeInTheDocument();
+        expect(within(people).getByText("Matter Lead")).toBeInTheDocument();
+        expect(within(people).getByText("Matter Creator")).toBeInTheDocument();
         expect(within(people).getByText("lead@elite.test")).toHaveClass(
             "sm:justify-self-end",
         );
@@ -791,19 +791,19 @@ describe("NewProjectModal sharing", () => {
         );
     });
 
-    it("makes an organization project public from its details, and walls a member off", async () => {
+    it("makes an organization matter public from its details, and walls a member off", async () => {
         const user = userEvent.setup({ delay: null });
         activeWorkspace.id = "org-1";
         activeWorkspace.name = "Elite Law LLP";
         vi.mocked(listOrgMembers).mockResolvedValue(ORG_MEMBERS as never);
         renderModal();
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         const publicToggle = screen.getByRole("button", { name: "Public" });
         await user.click(publicToggle);
         expect(publicToggle).toHaveAttribute("aria-pressed", "true");
         expect(
             screen.getByText(
-                "Everyone in Elite Law LLP can open and edit this project.",
+                "Everyone in Elite Law LLP can open and edit this matter.",
             ),
         ).toBeInTheDocument();
 
@@ -817,15 +817,15 @@ describe("NewProjectModal sharing", () => {
             screen.queryByRole("searchbox", { name: "People" }),
         ).not.toBeInTheDocument();
         const ownerPicker = await screen.findByRole("searchbox", {
-            name: "Project owners",
+            name: "Matter owners",
         });
         await user.type(ownerPicker, "lead");
         await user.click(
-            await screen.findByRole("option", { name: /Project Lead/ }),
+            await screen.findByRole("option", { name: /Matter Lead/ }),
         );
-        const owners = screen.getByRole("list", { name: "Project owners list" });
-        expect(within(owners).getByText("Project Lead")).toBeInTheDocument();
-    expect(within(owners).getByText("Project Creator")).toBeInTheDocument();
+        const owners = screen.getByRole("list", { name: "Matter owners list" });
+        expect(within(owners).getByText("Matter Lead")).toBeInTheDocument();
+    expect(within(owners).getByText("Matter Creator")).toBeInTheDocument();
 
         await user.click(
             await screen.findByRole("button", { name: "Deny list" }),
@@ -864,7 +864,7 @@ describe("NewProjectModal sharing", () => {
         expect(grantProjectAccess).toHaveBeenCalledTimes(2);
     });
 
-    it("drops the people lined up for a private project when it is made public", async () => {
+    it("drops the people lined up for a private matter when it is made public", async () => {
         // Named people belong to a private project. Carried into a public
         // one they would be applied where nothing on screen shows them.
         const user = userEvent.setup({ delay: null });
@@ -872,30 +872,30 @@ describe("NewProjectModal sharing", () => {
         activeWorkspace.name = "Elite Law LLP";
         vi.mocked(listOrgMembers).mockResolvedValue(ORG_MEMBERS as never);
         renderModal();
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         await user.click(screen.getByRole("button", { name: "Next" }));
         const peoplePicker = await screen.findByRole("searchbox", {
             name: "People",
         });
         await user.type(peoplePicker, "lead");
         await user.click(
-            await screen.findByRole("option", { name: /Project Lead/ }),
+            await screen.findByRole("option", { name: /Matter Lead/ }),
         );
 
         await user.click(screen.getByRole("button", { name: "Back" }));
         await user.click(screen.getByRole("button", { name: "Public" }));
-        while (!screen.queryByRole("button", { name: "Create project" })) {
+        while (!screen.queryByRole("button", { name: "Create matter" })) {
             await user.click(screen.getByRole("button", { name: "Next" }));
         }
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
 
         await waitFor(() => expect(createProject).toHaveBeenCalled());
         expect(grantProjectAccess).not.toHaveBeenCalled();
     });
 
-    it("applies a changed Public setting to a project that already exists on retry", async () => {
+    it("applies a changed Public setting to a matter that already exists on retry", async () => {
         // A refused grant leaves the created project in place. Going Back
         // and changing who can open it must reach that project, which the
         // retry reuses rather than creating again.
@@ -908,31 +908,31 @@ describe("NewProjectModal sharing", () => {
             new MikeApiError({ status: 403, message: "Not allowed" }),
         );
         renderModal();
-    await user.type(screen.getByPlaceholderText("Add project name"), "Matter");
+    await user.type(screen.getByPlaceholderText("Add matter name"), "Matter");
         await user.click(screen.getByRole("button", { name: "Next" }));
         const peoplePicker = await screen.findByRole("searchbox", {
             name: "People",
         });
         await user.type(peoplePicker, "lead");
         await user.click(
-            await screen.findByRole("option", { name: /Project Lead/ }),
+            await screen.findByRole("option", { name: /Matter Lead/ }),
         );
         await user.click(screen.getByRole("button", { name: "Next" }));
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
-        await screen.findByText(/Project created, but access was not granted/);
+        await screen.findByText(/Matter created, but access was not granted/);
         // Created private; nothing to re-save on the first attempt.
         expect(updateProject).not.toHaveBeenCalled();
 
         await user.click(screen.getByRole("button", { name: "Back" }));
         await user.click(screen.getByRole("button", { name: "Back" }));
         await user.click(screen.getByRole("button", { name: "Public" }));
-        while (!screen.queryByRole("button", { name: "Create project" })) {
+        while (!screen.queryByRole("button", { name: "Create matter" })) {
             await user.click(screen.getByRole("button", { name: "Next" }));
         }
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
 
         await waitFor(() =>
@@ -981,25 +981,25 @@ describe("NewProjectModal sharing", () => {
         await attachPendingFile("brief.pdf");
 
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
         expect(
             await screen.findByText(
-                /Project created, but access was not granted to counsel@firm\.test/,
+                /Matter created, but access was not granted to counsel@firm\.test/,
             ),
         ).toBeInTheDocument();
         // Grants run first, so a refusal leaves no upload to redo.
         expect(uploadProjectDocuments).not.toHaveBeenCalled();
 
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
         await waitFor(() => expect(onCreated).toHaveBeenCalled());
         expect(createProject).toHaveBeenCalledTimes(1);
         expect(uploadProjectDocuments).toHaveBeenCalledTimes(1);
     });
 
-    it("tells the caller to refetch when a created project is never handed over", async () => {
+    it("tells the caller to refetch when a created matter is never handed over", async () => {
         const user = userEvent.setup({ delay: null });
         const onClose = vi.fn();
         const onCreated = vi.fn();
@@ -1010,14 +1010,14 @@ describe("NewProjectModal sharing", () => {
 
         await fillAndAdd(user, "counsel@firm.test", "editor");
         await submit(user);
-        await screen.findByText(/Project created, but access was not granted/);
+        await screen.findByText(/Matter created, but access was not granted/);
 
         await user.click(screen.getByRole("button", { name: "Close" }));
         expect(onCreated).not.toHaveBeenCalled();
         expect(onClose).toHaveBeenCalledWith(true);
     });
 
-    it("cannot be dismissed while the project is being created", async () => {
+    it("cannot be dismissed while the matter is being created", async () => {
         const user = userEvent.setup({ delay: null });
         const onClose = vi.fn();
         // Never settles: the create is still in flight when the user tries to
@@ -1025,7 +1025,7 @@ describe("NewProjectModal sharing", () => {
         vi.mocked(createProject).mockReturnValue(new Promise(() => {}) as never);
         render(<NewProjectModal open onClose={onClose} onCreated={vi.fn()} />);
 
-        await user.type(screen.getByPlaceholderText("Add project name"), "P");
+        await user.type(screen.getByPlaceholderText("Add matter name"), "P");
         await submit(user);
         await waitFor(() => expect(createProject).toHaveBeenCalled());
 
@@ -1041,7 +1041,7 @@ describe("NewProjectModal sharing", () => {
         const user = userEvent.setup({ delay: null });
         renderModal();
 
-        await user.type(screen.getByPlaceholderText("Add project name"), "P");
+        await user.type(screen.getByPlaceholderText("Add matter name"), "P");
         await user.click(screen.getByRole("button", { name: "Next" }));
         await user.click(screen.getByRole("button", { name: "Next" }));
 
@@ -1063,7 +1063,7 @@ describe("NewProjectModal sharing", () => {
         ).toBeInTheDocument();
 
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
 
         await waitFor(() => expect(uploadProjectDocuments).toHaveBeenCalled());
@@ -1094,7 +1094,7 @@ describe("NewProjectModal sharing", () => {
             target: { files: [new File(["a"], "a.pdf"), new File(["b"], "b.pdf")] },
         });
         await user.click(
-            await screen.findByRole("button", { name: "Create project" }),
+            await screen.findByRole("button", { name: "Create matter" }),
         );
 
         expect(
@@ -1105,7 +1105,7 @@ describe("NewProjectModal sharing", () => {
         expect(uploadProjectDocuments).not.toHaveBeenCalled();
     });
 
-    it("keeps Back open once the project exists", async () => {
+    it("keeps Back open once the matter exists", async () => {
         // Back stays open: a retry persists a changed memory choice, so the
         // details step still describes something that can change.
         const user = userEvent.setup({ delay: null });
@@ -1119,9 +1119,9 @@ describe("NewProjectModal sharing", () => {
         expect(screen.getByRole("button", { name: "Back" })).toBeEnabled();
 
         await user.click(
-            await screen.findByRole("button", { name: "Create project" }),
+            await screen.findByRole("button", { name: "Create matter" }),
         );
-        await screen.findByText(/Project created, but access was not granted/);
+        await screen.findByText(/Matter created, but access was not granted/);
 
         expect(screen.getByRole("button", { name: "Back" })).toBeEnabled();
         await user.click(screen.getByRole("button", { name: "Back" }));
@@ -1131,7 +1131,7 @@ describe("NewProjectModal sharing", () => {
         ).toBeInTheDocument();
     });
 
-    it("locks the identifying fields once the project exists", async () => {
+    it("locks the identifying fields once the matter exists", async () => {
         // The retry reuses the created project and never re-reads the name,
         // CM number or practice, so these stayed editable while every edit
         // made to them on the second attempt was silently dropped.
@@ -1143,12 +1143,12 @@ describe("NewProjectModal sharing", () => {
 
         await fillAndAdd(user, "counsel@firm.test", "editor");
         await submit(user);
-        await screen.findByText(/Project created, but access was not granted/);
+        await screen.findByText(/Matter created, but access was not granted/);
 
         await user.click(screen.getByRole("button", { name: "Back" }));
         await user.click(screen.getByRole("button", { name: "Back" }));
 
-        expect(screen.getByLabelText("Project name")).toBeDisabled();
+        expect(screen.getByLabelText("Matter name")).toBeDisabled();
         expect(screen.getByLabelText("CM number")).toBeDisabled();
         expect(screen.getByLabelText("Practice")).toBeDisabled();
         expect(
@@ -1161,7 +1161,7 @@ describe("NewProjectModal sharing", () => {
         await user.click(screen.getByRole("button", { name: "Next" }));
         await user.click(screen.getByRole("button", { name: "Next" }));
         await user.click(
-            screen.getByRole("button", { name: "Create project" }),
+            screen.getByRole("button", { name: "Create matter" }),
         );
 
         await waitFor(() =>

@@ -17,7 +17,7 @@ Website: [mikeoss.com](https://mikeoss.com)
 - Chat with legal documents and open matters
 - Review documents and apply suggested edits
 - Run reusable assistant and tabular-review workflows
-- Organize projects, folders, and a document library
+- Organize matters, folders, and a document library
 - Verify citations and research US case law with CourtListener
 - Work from Microsoft Word with the task-pane add-in
 - Run supported language models locally through Ollama

@@ -1020,7 +1020,7 @@ function ChatInputForChatImpl(
                 }
                 breadcrumbs={
                     projectName
-                        ? ["Projects", projectName, "Assistant", "Add playbook"]
+                        ? ["Matters", projectName, "Assistant", "Add playbook"]
                         : ["Assistant", "Add playbook"]
                 }
                 initialPlaybookId={playbookModalInitialId}

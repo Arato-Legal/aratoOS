@@ -2,7 +2,7 @@
 
 Mike can maintain a private Markdown file named `memory.md` for a user in each
 workspace they use — one for Personal, and one for each organization they
-belong to — and one shared Markdown file for each project. Memory is optional,
+belong to — and one shared Markdown file for each matter. Memory is optional,
 inspectable, and editable. It is reference context for later conversations; it is not a source
 of authorization, instructions, or citations.
 
@@ -24,15 +24,15 @@ the answer being shown to the user.
    live model runs. This prevents a curator for an older turn from committing
    while someone is still talking in the same conversation.
 2. **Relevant memory is loaded.** Private conversations may receive the active
-   user's app memory for the workspace the conversation is in. Project
-   conversations may also receive project memory. Shared-audience
+   user's app memory for the workspace the conversation is in. Matter
+   conversations may also receive matter memory. Shared-audience
    conversations never receive private app memory.
 3. **Memory is fenced as data.** The files are placed in the earliest synthetic
    user message, inside delimiters the body cannot forge, and accompanied by a
    system policy that says memory is untrusted reference material. The
    delimiter is derived from the fenced text, so the turn stays byte-identical
    while memory is unchanged and provider prompt caches keep working. Current chat input
-   outranks project memory, and project memory outranks app memory.
+   outranks matter memory, and matter memory outranks app memory.
 4. **The answer is persisted.** Curation is considered only after a terminal
    assistant response has been saved successfully. Cancelled responses,
    failures, and unanswered `ask_inputs` pauses release their lease without
@@ -46,7 +46,7 @@ the answer being shown to the user.
    the job. It then reloads the authoritative transcript and current file.
 7. **Each scope is curated independently.** An eligible private-project turn
    can produce one app-memory candidate and one project-memory candidate. The
-   project pass never receives app memory. A failure in one scope does not
+   matter pass never receives app memory. A failure in one scope does not
    discard a successful write to the other scope.
 8. **The curator decides whether to write.** It may call the single server-bound
    `write_memory_file` tool with the complete proposed Markdown file, or call
@@ -77,32 +77,32 @@ the answer being shown to the user.
   leaving, being removed, and the organization being deleted all take it
   away. A new one starts enabled or disabled as the user left their Personal
   memory.
-- Project memory belongs to the project. Members with `project.view` can read
+- Matter memory belongs to the matter. Members with `project.view` can read
   it, members with `content.edit` can edit it, and members with
   `access.manage` can enable or destructively disable it.
 - Both scopes are on by default: a new account's app memory is enabled when
-  the account is created, and a new project's shared memory is enabled unless
+  the account is created, and a new matter's shared memory is enabled unless
   its creator clears the toggle. Turning either off is destructive — see
   "Disable, wipe, and deletion".
 - A user's own standalone main chats and durable Word add-in chats may update
   app memory. A standalone chat started in an organization's workspace updates
   the user's memory for that organization; every other eligible conversation
   updates their Personal memory. Chats and tabular reviews in a private
-  personal project may update both app and project memory. A conversation is
+  personal matter may update both app and matter memory. A conversation is
   private only while it belongs to the actor and has no direct access grants,
   and is either personal or a standalone chat in an organization the actor
-  still belongs to; a project is private only while it has no organization
-  and no project access grants. The same three tests gate whether app memory is shown to the
+  still belongs to; a matter is private only while it has no organization
+  and no matter access grants. The same three tests gate whether app memory is shown to the
   model, so a conversation that cannot see private memory can never write it.
-- Organization projects and personal projects with any access grant may update
-  project memory only. Their conversations never update a participant's app
+- Organization matters and personal matters with any access grant may update
+  matter memory only. Their conversations never update a participant's app
   memory.
-- A project curator runs separately and never receives app memory. This
-  prevents private app context from being copied into project memory.
-- When facts conflict, the current conversation wins over project memory, and
-  project memory wins over app memory.
+- A matter curator runs separately and never receives app memory. This
+  prevents private app context from being copied into matter memory.
+- When facts conflict, the current conversation wins over matter memory, and
+  matter memory wins over app memory.
 - Shared-audience model calls never receive a participant's private app memory.
-  Project conversations may receive the project's shared memory only. This is
+  Matter conversations may receive the matter's shared memory only. This is
   a data boundary rather than a prompt-only confidentiality instruction.
 
 The live model receives enabled memory in an earliest synthetic user message,
@@ -117,23 +117,23 @@ permissions, change policy, or trigger tools by itself.
   no Save or Cancel buttons. Turning memory off requires confirmation and
   deletes the existing file while cancelling pending and future updates.
 - The same settings page contains the default applied when that user creates a
-  project. New projects default to memory on, but the creator can change the
-  value during project creation.
-- **Project Memory** is a normal-size modal available from a project and from
-  the project assistant chat menu. It contains the project-memory toggle,
+  matter. New matters default to memory on, but the creator can change the
+  value during matter creation.
+- **Matter Memory** is a normal-size modal available from a matter and from
+  the matter assistant chat menu. It contains the matter-memory toggle,
   current file, automatic-save state, curation activity, conflicts, and
   failures. Viewers can read, editors can edit, and only owners can change the
   enabled setting.
 - **Settings > Model Preferences** contains the memory-curation model selector.
   Automatic mode uses the effective model selected for the conversation. A
   deployment-wide `MEMORY_CURATOR_MODEL` override takes precedence.
-- **Settings > Privacy & Data** can export the app file plus every project file
+- **Settings > Privacy & Data** can export the app file plus every matter file
   the user can still view as a ZIP, with the user's memory for each
   organization under `organizations/`. Its Delete Memory action clears the
-  user's app memory in every workspace and memories for private projects
+  user's app memory in every workspace and memories for private matters
   created by that user, while leaving memory
   enabled so future eligible conversations can rebuild it. It does not erase
-  organization or otherwise shared project memory.
+  organization or otherwise shared matter memory.
 
 ## How memory is learned
 
@@ -145,7 +145,7 @@ work in the conversation. Superseded jobs exit before invoking a model.
 
 Scheduling state is kept per conversation and actor, while the quiet gate is
 conversation-wide. If several chats become quiet around the same time, their
-jobs may run concurrently. Writes targeting the same app or project file are
+jobs may run concurrently. Writes targeting the same app or matter file are
 still serialized by compare-and-swap: the first valid write advances the
 revision and later jobs must reload and merge against that new revision.
 
@@ -156,13 +156,13 @@ current memory when it runs. It receives exactly one server-bound tool:
 write_memory_file({ expectedRevision, markdown, changeSummary });
 ```
 
-The model cannot select a user, project, or storage path. It may make no tool
+The model cannot select a user, matter, or storage path. It may make no tool
 call when the transcript contains nothing durable and useful. When it does
 write, it supplies the complete replacement file, which lets it add, correct,
 reorganize, deduplicate, or remove entries.
 
 Good memory candidates include stable preferences, recurring facts,
-terminology, goals, working conventions, constraints, and project decisions.
+terminology, goals, working conventions, constraints, and matter decisions.
 The curator is instructed not to retain credentials or other secrets,
 short-lived tasks, unsupported sensitive inferences, or unendorsed material
 copied from documents, web pages, or tool results.
@@ -171,9 +171,9 @@ Only attributed messages at or before the successfully completed terminal turn
 are eligible. Error and cancelled turns, `ask_inputs` pauses, local-only Word
 chats, title generation, extraction calls, and historical backfill are
 excluded. App-memory learning uses only the actor's attributed input and never
-runs for a shared project. Project learning may use attributed input from
-project members. App eligibility is recorded on each completed turn, so turns
-created while a project was shared cannot be learned later merely because its
+runs for a shared matter. Matter learning may use attributed input from
+matter members. App eligibility is recorded on each completed turn, so turns
+created while a matter was shared cannot be learned later merely because its
 access grants were removed.
 
 An `ask_inputs` answer can be submitted only by the user who owns the original
@@ -210,9 +210,9 @@ later completed turns.
 Clearing a file in its editor saves an empty Markdown body without disabling
 memory. The Privacy & Data bulk-delete action similarly purges eligible private
 files while preserving their enabled setting, so future conversations may
-recreate them. Account deletion purges the user's app memory. Project deletion
-purges that project's shared memory; deleting a contributor does not delete
-project memory.
+recreate them. Account deletion purges the user's app memory. Matter deletion
+purges that matter's shared memory; deleting a contributor does not delete
+matter memory.
 
 Erasure is immediate and transactional: the same UPDATE that empties the body
 bumps the epoch, so a curator job that read the old content can no longer
@@ -243,8 +243,8 @@ payloads contain IDs and cursors, not transcripts, credentials, or memory
 content. Account exports include the applicable current memory body.
 
 New accounts start with app memory enabled. Existing accounts are opted out by
-the upgrade migration. Existing projects receive an enabled project file;
-newly created projects use the creator's project-memory default or the explicit
+the upgrade migration. Existing matters receive an enabled matter file;
+newly created matters use the creator's matter-memory default or the explicit
 choice made in the creation modal. No historical conversation is backfilled.
 
 ## Launch checklist
@@ -256,7 +256,7 @@ the following as launch gates, not assumed properties:
 - retention precision is acceptable on durable and transient examples;
 - credential, API-key, privileged-data, and unsupported-sensitive-inference
   cases produce no critical secret-storage failures;
-- app context never appears in project-curator input or project memory;
+- app context never appears in project-curator input or matter memory;
 - outsider, viewer, editor, and owner API permissions match the scope model;
 - concurrent manual, curator, disable, wipe, account-delete, and
   project-delete races do not lose updates or resurrect erased content;

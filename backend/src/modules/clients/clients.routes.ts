@@ -14,6 +14,10 @@ import {
   addContact,
   browseDriveFolders,
   createClient,
+  createMatterDriveFolder,
+  getClientFiles,
+  setClientDriveFolder,
+  setMatterSharing,
   deleteClient,
   deleteContact,
   getClient,
@@ -168,6 +172,60 @@ clientsRouter.put(
     const result = await linkMatterDriveFolder(createServerSupabase(), {
       ...caller(res),
       projectId: req.params.projectId,
+      folderId: req.body?.folder_id ?? null,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.put(
+  "/matters/:projectId/sharing",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await setMatterSharing(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+      share: req.body?.share_with_client,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/matters/:projectId/client-files",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await getClientFiles(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.post(
+  "/matters/:projectId/drive-folder/create",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await createMatterDriveFolder(createServerSupabase(), {
+      ...caller(res),
+      projectId: req.params.projectId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.put(
+  "/:clientId/drive-folder",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await setClientDriveFolder(createServerSupabase(), {
+      userId: caller(res).userId,
+      clientId: req.params.clientId,
       folderId: req.body?.folder_id ?? null,
     });
     if (!result.ok) return void sendServiceFailure(res, result);

@@ -485,7 +485,7 @@ describe("POST /single-documents/:documentId/versions/from-document", () => {
 
         expect(res.status).toBe(403);
         expect(res.body.detail).toBe(
-            "You do not have permission to edit content in this project.",
+            "You do not have permission to edit content in this matter.",
         );
     });
 
@@ -559,7 +559,7 @@ describe("PATCH /single-documents/:documentId/versions/:versionId/review", () =>
             .send({ state: "approved" });
 
         expect(res.status).toBe(403);
-        expect(res.body.detail).toBe("Only a project owner can approve a version.");
+        expect(res.body.detail).toBe("Only a matter owner can approve a version.");
         expect(updates).toEqual([]);
         expect(rows.document_versions[0].review_state).toBe("draft");
     });

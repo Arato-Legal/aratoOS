@@ -108,7 +108,7 @@ export default function NotificationsSettingsPage() {
                         <div className="min-w-0 space-y-1">
                             <SettingsLabel>Email me about new notifications</SettingsLabel>
                             <SettingsDescription>
-                                A task assigned to you, a project shared with you, a version
+                                A task assigned to you, a matter shared with you, a version
                                 sent for review or approved, and reminders of tasks due.
                                 {preferences && !preferences.email_configured
                                     ? " This deployment has no outgoing email configured, so nothing is sent; your choice is kept."
@@ -152,7 +152,7 @@ export default function NotificationsSettingsPage() {
                         <SettingsRow>
                             <SettingsDescription>
                                 Nothing yet. Notifications appear here when something happens to
-                                you in a project or an organization.
+                                you in a matter or an organization.
                             </SettingsDescription>
                         </SettingsRow>
                     ) : (

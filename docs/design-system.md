@@ -258,23 +258,23 @@ neighbours, never by clipping content:
   primary chat renders, at full width, and the action that opens the side
   chat is not offered. The IDE is a desktop workspace and has no such gate.
 
-The IDE's Open project picker and project switcher list projects in the active
+The IDE's Open matter picker and matter switcher list matters in the active
 workspace that the user created or was directly added to, whether public or
 private. Public visibility alone does not make someone a participant. Switching
 workspace clears the picker cache and selection. Inherited organization permissions and
-audited private-content access do not put projects in this picker. The backend
-applies this participation filter to its already-authorized project list.
+audited private-content access do not put matters in this picker. The backend
+applies this participation filter to its already-authorized matter list.
 The picker and FileDirectory share the compact native `SelectionCheckbox` in
 `components/ui/selection-checkbox.tsx`, including its mixed and disabled states.
 
 The app sidebar's History combines assistant chats, tabular reviews, and the
 caller's own playbook runs from the active workspace, including reviews inside
-projects. Chats and reviews are fetched by last update and runs by start time,
+matters. Chats and reviews are fetched by last update and runs by start time,
 then merged newest first. Older rows stay buffered until
 every paginated source reaches them, so fetching another page does not reveal
 newer items below older ones. Review rows use the tabular-review SVG icon and
-open the review's project or standalone route. Project reviews prefix their
-title with the project name. Project prefixes and chat Shared labels use the
+open the review's matter or standalone route. Matter reviews prefix their
+title with the matter name. Matter prefixes and chat Shared labels use the
 same muted `text-gray-400` treatment. Edits and generation starts/completions
 advance review activity and promote it in History; lease heartbeats do not.
 Running reviews show a spinner, including after navigating away. A review
@@ -290,14 +290,14 @@ green tick once finished, until the run's results are on screen; a failed or
 interrupted run gets no tick.
 Activity refreshes keep the loaded History rows and pagination visible; only
 the affected review's icon changes. A workspace change still clears the old list.
-Review overview project filters, create choices and move destinations also stay
-within their workspace; selecting a project filter must not disable workspace
+Review overview matter filters, create choices and move destinations also stay
+within their workspace; selecting a matter filter must not disable workspace
 scoping. A workspace switch resets those filters and dialogs. Detail pages opened
-by link follow the item's own workspace, with project children inheriting theirs.
+by link follow the item's own workspace, with matter children inheriting theirs.
 Late list pages and chat creations must not populate a newly selected workspace.
 Chat Share, Rename and Delete actions are visible only to owners. Directly shared
-standalone chats offer Leave to viewers and editors; project chats never offer
-Leave because their access comes from project membership. Audited organization
+standalone chats offer Leave to viewers and editors; matter chats never offer
+Leave because their access comes from matter membership. Audited organization
 access is not a direct sharing grant and does not offer Leave.
 When opening a chat, missing workspace metadata means the detail is still loading;
 only an explicit null organization means Personal. Prefer the matching chat detail
@@ -481,7 +481,7 @@ goes in it and when.
 5. **Destructive actions are retried through their own entry point.** Retry
    after a failed single delete that asked for confirmation re-opens that
    confirmation; it never deletes from the notice. A delete that never asked
-   (a row action on a single-version document, a review or a project) re-runs
+   (a row action on a single-version document, a review or a matter) re-runs
    the same entry point. A bulk delete's Retry re-runs only the items that
    failed, which the user has already confirmed.
 6. **Cancellation is not an error.** `notifyError` returns `null` for an
@@ -531,7 +531,7 @@ These are the rules the primitives already follow. Match them in new work.
   selected fill class (`LIQUID_GLASS_HOVER_CLASS`, `LIQUID_GLASS_SELECTED_CLASS`,
   and the modal-row pair) gets an inset ring on that fill's perimeter by
   default. When the fill belongs to a row that wraps the focusable control, as
-  in the sidebar's chat and project rows, give the control `data-focus-fill`
+  in the sidebar's chat and matter rows, give the control `data-focus-fill`
   and `outline-none` so the row draws the ring instead.
 - **Text fields may hide the ring after a click.** Browsers match
   `:focus-visible` on a focused text field even when it was clicked. Add

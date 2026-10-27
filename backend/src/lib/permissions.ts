@@ -81,7 +81,7 @@ export function can(
  * projects and documents modules gate on it.
  */
 export const DOCS_ORGANIZE_FORBIDDEN =
-  "You do not have permission to organize documents in this project.";
+  "You do not have permission to organize documents in this matter.";
 
 /**
  * "Not found" is for rows the caller cannot see at all. A Viewer who can open
@@ -89,4 +89,4 @@ export const DOCS_ORGANIZE_FORBIDDEN =
  * UI stops telling people their document disappeared.
  */
 export const DOCUMENT_EDIT_FORBIDDEN =
-  "You do not have permission to edit content in this project.";
+  "You do not have permission to edit content in this matter.";

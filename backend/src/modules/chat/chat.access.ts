@@ -47,12 +47,12 @@ export async function validateAccessibleProjectId(
         db,
     );
     if (!access.ok)
-        return { ok: false, status: 404, detail: "Project not found" };
+        return { ok: false, status: 404, detail: "Matter not found" };
     if (!can(access.projectRole, "content.edit"))
         return {
             ok: false,
             status: 403,
-            detail: "You do not have permission to write in this project.",
+            detail: "You do not have permission to write in this matter.",
         };
     return { ok: true };
 }

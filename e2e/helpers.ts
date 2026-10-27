@@ -76,15 +76,15 @@ export async function createProject(
         // Not inside a test: the caller owns its own timeout.
     }
 
-    await page.goto("/projects");
+    await page.goto("/matters");
     await expect(page).toHaveURL(/\/projects/, { timeout: 10_000 });
 
     /* The Plus icon button in the header has aria-label="New project" */
-    const createBtn = page.getByRole("button", { name: "New project" });
+    const createBtn = page.getByRole("button", { name: "New matter" });
     await expect(createBtn).toBeVisible({ timeout: 10_000 });
     await createBtn.click();
 
-    const nameInput = page.getByPlaceholder("Project name");
+    const nameInput = page.getByPlaceholder("Matter name");
     await expect(nameInput).toBeVisible({ timeout: 5_000 });
     await nameInput.fill(projectName);
 
@@ -108,7 +108,7 @@ export async function createProject(
         ).toBeVisible({ timeout: 5_000 });
     }
 
-    /* Create — NewProjectModal's onCreated calls router.push(`/projects/${id}`).
+    /* Create — NewProjectModal's onCreated calls router.push(`/matters/${id}/documents`).
        The PDF upload runs (awaited) inside handleSubmit before onCreated fires,
        so allow extra time for navigation when a file is attached.
 
@@ -121,6 +121,6 @@ export async function createProject(
        The documents step's primary action is a button whose label flips to
        "Creating…" while in flight. */
     const navTimeout = filePath ? 30_000 : 15_000;
-    await page.getByRole("button", { name: "Create project" }).click();
+    await page.getByRole("button", { name: "Create matter" }).click();
     await page.waitForURL(/\/projects\/.+/, { timeout: navTimeout });
 }

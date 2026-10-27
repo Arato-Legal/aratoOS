@@ -201,7 +201,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
         openSideChat,
         adoptSideChat,
         closeSideChat,
-    } = useChatRoute(`/projects/${projectId}/assistant/chat`);
+    } = useChatRoute(`/matters/${projectId}/assistant/chat`);
     const [projectChats, setProjectChats] = useState<Chat[] | null>(null);
     const [ownerOnlyAction, setOwnerOnlyAction] = useState<string | null>(null);
     const [editorGateAction, setEditorGateAction] = useState<string | null>(
@@ -707,7 +707,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
         if (!canEditContent) {
             // Only accuse somebody of lacking a role once we know they do.
             if (projectRole) {
-                setEditorGateAction("upload documents to this project");
+                setEditorGateAction("upload documents to this matter");
             }
             return;
         }
@@ -871,7 +871,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
 
     function selectProject() {
         if (!projectPicker.selectedId) return;
-        router.push(`/projects/${projectPicker.selectedId}/assistant/chat`);
+        router.push(`/matters/${projectPicker.selectedId}/assistant/chat`);
     }
 
     const handleExplorerFileDrop = async (e: React.DragEvent) => {
@@ -1423,7 +1423,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                                     triggerClassName="h-6 w-6 text-gray-500 hover:text-gray-900"
                                     items={[
                                         {
-                                            label: "Select project",
+                                            label: "Select matter",
                                             icon: FolderOpen,
                                             onSelect: () =>
                                                 void projectPicker.openPicker(),
@@ -1436,11 +1436,11 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                                             disabled: !canEditContent,
                                         },
                                         {
-                                            label: "Go to project page",
+                                            label: "Go to matter page",
                                             icon: ArrowUpRight,
                                             onSelect: () =>
                                                 router.push(
-                                                    `/projects/${projectId}`,
+                                                    `/matters/${projectId}/documents`,
                                                 ),
                                         },
                                     ]}
@@ -1715,7 +1715,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                     onClose={() => setAddDocumentsOpen(false)}
                     onSelect={(documents) => addUploadedDocuments(documents)}
                     breadcrumb={[
-                        "Projects",
+                        "Matters",
                         project.name +
                             (project.cm_number
                                 ? ` (${project.cm_number})`
@@ -1729,7 +1729,7 @@ export default function ProjectAssistantChatPage({ params }: Props) {
             <WarningPopup
                 open={!!projectPicker.error}
                 onClose={projectPicker.clearError}
-                title="Projects could not be loaded"
+                title="Matters could not be loaded"
                 message={projectPicker.error ?? ""}
             />
             <WarningPopup
@@ -1751,9 +1751,9 @@ export default function ProjectAssistantChatPage({ params }: Props) {
                 loading={projectPicker.loading}
                 selectedId={projectPicker.selectedId}
                 onSelect={projectPicker.setSelectedId}
-                breadcrumbs={["IDE", "Select project"]}
+                breadcrumbs={["IDE", "Select matter"]}
                 primaryAction={{
-                    label: "Select project",
+                    label: "Select matter",
                     type: "button",
                     onClick: selectProject,
                     disabled: !projectPicker.selectedId,

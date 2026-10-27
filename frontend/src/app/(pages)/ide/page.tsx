@@ -20,11 +20,11 @@ export default function IdePage() {
 
     function openSelectedProject() {
         if (!projectPicker.selectedId) return;
-        router.push(`/projects/${projectPicker.selectedId}/assistant/chat`);
+        router.push(`/matters/${projectPicker.selectedId}/assistant/chat`);
     }
 
     function openCreatedProject(project: Project) {
-        router.push(`/projects/${project.id}/assistant/chat`);
+        router.push(`/matters/${project.id}/assistant/chat`);
     }
 
     return (
@@ -47,7 +47,7 @@ export default function IdePage() {
                     title="Integrated Drafting Environment"
                     description={
                         projectPicker.error ??
-                        "Open a Project to start drafting and reviewing with the help of the Project Assistant."
+                        "Open a Matter to start drafting and reviewing with the help of the Matter Assistant."
                     }
                     tone={projectPicker.error ? "error" : "default"}
                     action={
@@ -58,14 +58,14 @@ export default function IdePage() {
                                 onClick={() => void projectPicker.openPicker()}
                                 loading={projectPicker.loading}
                             >
-                                Open project
+                                Open matter
                             </PillButtonUI>
                             <PillButtonUI
                                 tone="white"
                                 size="sm"
                                 onClick={() => setNewProjectOpen(true)}
                             >
-                                New project
+                                New matter
                             </PillButtonUI>
                         </div>
                     }
@@ -79,7 +79,7 @@ export default function IdePage() {
                 loading={projectPicker.loading}
                 selectedId={projectPicker.selectedId}
                 onSelect={projectPicker.setSelectedId}
-                breadcrumbs={["IDE", "Open project"]}
+                breadcrumbs={["IDE", "Open matter"]}
                 primaryAction={{
                     label: "Open",
                     variant: "blue",

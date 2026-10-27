@@ -11,7 +11,7 @@ export function DocSearchBlock({ event, isStreaming, showConnector }: {
 }) {
     const [open, setOpen] = useState(false);
     const scope = new Map([
-        ["project", "project documents"], ["library", "the document library"],
+        ["project", "matter documents"], ["library", "the document library"],
         ["templates", "the template library"], ["document", "this document"],
     ]).get(event.scope) ?? "documents";
     const count = event.match_count ?? 0;

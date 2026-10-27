@@ -22,7 +22,7 @@ test("authenticated user lands on the assistant page", async ({ page }) => {
 
 /* ─── Test 2: create project → upload PDF → chat ─────────────────────────── */
 
-test("project document: read uploaded PDF and reload the saved answer", async ({ page }) => {
+test("matter document: read uploaded PDF and reload the saved answer", async ({ page }) => {
     test.skip(!hasLlmKey, LLM_SKIP_REASON);
     test.setTimeout(120_000);
     await createProject(page, `E2E document ${Date.now()}`, PDF_FIXTURE);

@@ -43,7 +43,7 @@ pattern. Worker 0 is the historical `e2e@mike.local` (or `E2E_EMAIL` /
 (`workerAccount()` in `e2e/users.ts`). The worker-scoped fixture in
 `e2e/fixtures.ts` creates the account through the local Supabase admin API,
 signs in once, finishes onboarding and reuses the session for every test in
-that worker. Separate users have separate project, chat and workflow lists and
+that worker. Separate users have separate matter, chat and workflow lists and
 separate sessions, so workers can't race on each other's data. Tests inside a
 file still run in order. `e2e/auth.setup.ts` only creates the dedicated logout
 user, whose global sign-out must never revoke a shared session. No login secret
@@ -133,7 +133,7 @@ replaced:
   completed answer, reload it, rename the chat and reload, then delete it and
   verify a fresh history request returns 404. Optimistic UI changes alone do
   not pass.
-- **Project document:** create a project, upload the PDF, open the empty composer
+- **Matter document:** create a matter, upload the PDF, open the empty composer
   and send a question. The provider fixture selects the advertised document,
   requests `read_document`, and echoes the actual tool result. The browser
   requires text found only inside the PDF and verifies the saved answer after

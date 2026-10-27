@@ -232,12 +232,12 @@ describe("AppSidebar account dropdown", () => {
     },
   );
 
-  it("expands the open project's recent items and leaves others collapsed", async () => {
+  it("expands the open matter's recent items and leaves others collapsed", async () => {
     vi.mocked(listProjectsPage).mockResolvedValue([
       { id: "open-project", name: "Open matter" },
       { id: "other-project", name: "Other matter" },
     ] as never);
-    state.pathname = "/projects/open-project/assistant";
+    state.pathname = "/matters/open-project/assistant";
     render(<AppSidebar isOpen onToggle={vi.fn()} />);
 
     expect(
@@ -257,12 +257,12 @@ describe("AppSidebar account dropdown", () => {
     expect(listProjectChats).not.toHaveBeenCalledWith("other-project");
   });
 
-  it("gives the recent projects list more height while a project is expanded", async () => {
+  it("gives the recent matters list more height while a matter is expanded", async () => {
     const user = userEvent.setup();
     vi.mocked(listProjectsPage).mockResolvedValue([
       { id: "open-project", name: "Open matter" },
     ] as never);
-    state.pathname = "/projects/open-project";
+    state.pathname = "/matters/open-project/documents";
     render(<AppSidebar isOpen onToggle={vi.fn()} />);
 
     const toggle = await screen.findByRole("button", {
@@ -282,7 +282,7 @@ describe("AppSidebar account dropdown", () => {
     rerender(<AppSidebar isOpen onToggle={vi.fn()} />);
 
     expect(screen.getByText("Assistant")).toHaveClass("sidebar-fade-in-2");
-    expect(screen.getByText("Recent Projects").closest("button")).toHaveClass(
+    expect(screen.getByText("Recent Matters").closest("button")).toHaveClass(
       "sidebar-fade-in",
     );
   });

@@ -89,7 +89,7 @@ describe("audit event presentation", () => {
       { label: "Invited role", value: "Member" },
     ]);
   });
-  it("uses recorded context without loading private project names", () => {
+  it("uses recorded context without loading private matter names", () => {
     expect(
       auditSubject({
         ...event,
@@ -159,7 +159,7 @@ describe("audit event presentation", () => {
         project_id: "p",
         chat_id: "c",
       })?.href,
-    ).toBe("/projects/p/assistant/chat/c");
+    ).toBe("/matters/p/assistant/chat/c");
   });
   it("handles missing identities and provides an exact timestamp with seconds and timezone", () => {
     expect(auditActor({ ...event, user_display_name: null })).toBe(
@@ -182,7 +182,7 @@ describe("audit event presentation", () => {
   });
 });
 
-describe("project lifecycle and sharing events", () => {
+describe("matter lifecycle and sharing events", () => {
   const project = {
     ...event,
     action: "project.created",
@@ -192,18 +192,18 @@ describe("project lifecycle and sharing events", () => {
     detail: { org_id: "org", visibility: "organization" },
   };
 
-  it("labels project events and names the project, never a person", () => {
-    expect(auditAction(project)).toBe("Project created");
+  it("labels matter events and names the matter, never a person", () => {
+    expect(auditAction(project)).toBe("Matter created");
     expect(auditSubject({ ...project, affected_user_display_name: "Jamie Morgan" })).toEqual({
-      type: "Project",
+      type: "Matter",
       name: "Acquisition",
-      context: "Project",
+      context: "Matter",
     });
     expect(auditDetailFields(project)).toEqual([
       { label: "Visibility", value: "Organization" },
     ]);
     expect(auditSummary(project, false)).toBe("Alex Chen created Acquisition.");
-    expect(auditAction({ ...project, status: "failed" })).toBe("Project creation");
+    expect(auditAction({ ...project, status: "failed" })).toBe("Matter creation");
   });
 
   it("shows a visibility change as before and after, and renamed fields by name", () => {
@@ -221,10 +221,10 @@ describe("project lifecycle and sharing events", () => {
         detail: { fields: ["name", "cm_number"] },
       }),
     ).toEqual([{ label: "Changed", value: "Name, Cm Number" }]);
-    expect(auditAction({ ...project, action: "project.deleted" })).toBe("Project deleted");
+    expect(auditAction({ ...project, action: "project.deleted" })).toBe("Matter deleted");
   });
 
-  it("treats the person a project is shared with as the recipient, with their role", () => {
+  it("treats the person a matter is shared with as the recipient, with their role", () => {
     const shared = {
       ...project,
       action: "project.access.granted",
@@ -232,15 +232,15 @@ describe("project lifecycle and sharing events", () => {
       detail: { target_email: "jamie@example.com", target_user_id: "target-id", role: "editor" },
       affected_user_display_name: "Jamie Morgan",
     };
-    expect(auditAction(shared)).toBe("Project shared");
-    expect(auditSubject(shared)).toEqual({ type: "Recipient", name: "Jamie Morgan", context: "Project" });
+    expect(auditAction(shared)).toBe("Matter shared");
+    expect(auditSubject(shared)).toEqual({ type: "Recipient", name: "Jamie Morgan", context: "Matter" });
     expect(auditSubjectEmail(shared)).toBe("jamie@example.com");
     expect(auditDetailFields(shared)).toEqual([{ label: "Role", value: "Editor" }]);
-    expect(auditSummary(shared, false)).toBe("Alex Chen shared the project with Jamie Morgan.");
+    expect(auditSummary(shared, false)).toBe("Alex Chen shared the matter with Jamie Morgan.");
     const revoked = { ...shared, action: "project.access.revoked", detail: { target_email: "jamie@example.com" } };
-    expect(auditAction(revoked)).toBe("Project access removed");
+    expect(auditAction(revoked)).toBe("Matter access removed");
     expect(auditDetailFields(revoked)).toEqual([]);
-    expect(auditSummary(revoked, true)).toBe("You removed project access for Jamie Morgan.");
-    expect(auditDestination(revoked)).toEqual({ href: "/projects/p1", label: "Open project" });
+    expect(auditSummary(revoked, true)).toBe("You removed matter access for Jamie Morgan.");
+    expect(auditDestination(revoked)).toEqual({ href: "/matters/p1/documents", label: "Open matter" });
   });
 });

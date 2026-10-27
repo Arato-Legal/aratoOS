@@ -316,7 +316,7 @@ export async function resolveContentOrgId(
     if (!data)
         return {
             ok: false,
-            detail: "Project not found",
+            detail: "Matter not found",
         };
     return {
         ok: true,

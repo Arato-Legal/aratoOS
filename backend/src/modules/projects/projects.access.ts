@@ -40,13 +40,13 @@ export type ProjectAccessFailure =
 const NOT_FOUND: ProjectAccessFailure = {
   ok: false,
   kind: "not_found",
-  detail: "Project not found",
+  detail: "Matter not found",
 };
 
 const CANNOT_MANAGE: ProjectAccessFailure = {
   ok: false,
   kind: "forbidden",
-  detail: "Only a project owner can change who has access.",
+  detail: "Only a matter owner can change who has access.",
 };
 
 // GET /projects/:projectId/access — the grant list, for whoever may manage
@@ -127,7 +127,7 @@ export async function grantProjectAccess(
     return {
       ok: false,
       kind: "validation",
-      detail: "You cannot share a project with yourself.",
+      detail: "You cannot share a matter with yourself.",
     };
 
   if (access.project.org_id) {
@@ -180,8 +180,8 @@ export async function grantProjectAccess(
         userId: target.member.userId,
         orgId: access.project.org_id,
         kind: "project.shared",
-        title: `A project was shared with you as ${role}`,
-        href: `/projects/${projectId}`,
+        title: `A matter was shared with you as ${role}`,
+        href: `/matters/${projectId}/documents`,
         projectId,
         subjectType: "project",
         subjectId: projectId,
@@ -246,8 +246,8 @@ export async function grantProjectAccess(
       userId: grantedUserId,
       orgId: null,
       kind: "project.shared",
-      title: `A project was shared with you as ${typeof grant.role === "string" ? grant.role : role}`,
-      href: `/projects/${projectId}`,
+      title: `A matter was shared with you as ${typeof grant.role === "string" ? grant.role : role}`,
+      href: `/matters/${projectId}/documents`,
       projectId,
       subjectType: "project",
       subjectId: projectId,

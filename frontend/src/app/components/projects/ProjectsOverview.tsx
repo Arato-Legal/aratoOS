@@ -118,7 +118,7 @@ const ORGANIZATION_PROJECT_FILTERS: { id: ProjectFilter; label: string }[] = [
 ];
 const PERSONAL_PROJECT_FILTERS: { id: ProjectFilter; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "mine", label: "My Projects" },
+    { id: "mine", label: "My Matters" },
     { id: "shared", label: "Shared with Me" },
 ];
 const PROJECT_FILTER_SCOPES: Record<ProjectFilter, ProjectScope> = {
@@ -200,7 +200,7 @@ export function ProjectsOverview() {
         ownerUserIdFilter: ownerFilter,
         sort,
     });
-    const loadError = loadErrorObj ? "Could not load projects." : null;
+    const loadError = loadErrorObj ? "Could not load matters." : null;
     const effectiveLoading = loading && !previewEmptyStates;
     const visibleProjects = useMemo(
         () => (previewEmptyStates ? [] : projects),
@@ -220,7 +220,7 @@ export function ProjectsOverview() {
                 // set a practice", so the empty dropdown is explained rather
                 // than left to be misread.
                 notifyError(error, {
-                    action: "load the project filters",
+                    action: "load the matter filters",
                     dedupeKey: "projects-filter-options",
                     onRetry: () =>
                         setFilterOptionsAttempt((attempt) => attempt + 1),
@@ -304,7 +304,7 @@ export function ProjectsOverview() {
         sort?.key === "created" ? sort.direction : null;
     const nameFilterButton = (
         <TableSortFilter
-            label="Sort by project name"
+            label="Sort by matter name"
             value={nameSortDirection}
             align="right"
             onChange={(direction) => handleSortChange("name", direction)}
@@ -400,7 +400,7 @@ export function ProjectsOverview() {
         // mistaken for an outsider just because they did not create it.
         if (!can(roleFrom(detailsProject), "access.manage")) {
             setOwnerOnlyAction({
-                action: "edit project details",
+                action: "edit matter details",
                 contacts: detailsProject.admin_contacts,
             });
             return;
@@ -458,9 +458,9 @@ export function ProjectsOverview() {
               })`
             : "";
         notifyPartialFailure(
-            `${failedIds.length} of ${ids.length} projects couldn't be deleted${named}. They are back in the list and still selected.`,
+            `${failedIds.length} of ${ids.length} matters couldn't be deleted${named}. They are back in the list and still selected.`,
             {
-                action: `delete ${failedIds.length} project${
+                action: `delete ${failedIds.length} matter${
                     failedIds.length === 1 ? "" : "s"
                 }`,
                 dedupeKey: "projects-bulk-delete",
@@ -499,7 +499,7 @@ export function ProjectsOverview() {
                 action: `delete “${project.name}”`,
                 dedupeKey: `project-delete:${project.id}`,
                 onRetry: () => void handleDeleteProjectRow(project),
-                supportNote: `Project: ${project.name} (${project.id})`,
+                supportNote: `Matter: ${project.name} (${project.id})`,
             });
         }
     }
@@ -546,7 +546,7 @@ export function ProjectsOverview() {
                     .map((project) => project?.admin_contacts),
             );
             setOwnerOnlyAction({
-                action: `delete ${blocked} of the selected projects — only a project owner can delete a project`,
+                action: `delete ${blocked} of the selected matters — only a matter owner can delete a matter`,
                 contacts: blockedContacts,
             });
         }
@@ -567,7 +567,7 @@ export function ProjectsOverview() {
                 onView={
                     appliesToSelection || !project
                         ? undefined
-                        : () => router.push(`/projects/${project!.id}`)
+                        : () => router.push(`/matters/${project!.id}/documents`)
                 }
                 viewLabel="Open"
                 onEditDetails={
@@ -586,7 +586,7 @@ export function ProjectsOverview() {
                 }
                 deleteLabel={
                     appliesToSelection
-                        ? `Delete ${actionIds.length} projects`
+                        ? `Delete ${actionIds.length} matters`
                         : undefined
                 }
             />
@@ -612,17 +612,17 @@ export function ProjectsOverview() {
                         type: "search",
                         value: search,
                         onChange: setSearch,
-                        placeholder: "Search projects…",
+                        placeholder: "Search matters…",
                     },
                     {
                         type: "new",
                         onClick: () => setModalOpen(true),
-                        title: "New project",
+                        title: "New matter",
                     },
                 ]}
             >
                 <h1 className={`${PAGE_HEADER_TITLE_CLASS} text-gray-900`}>
-                    Projects
+                    Matters
                 </h1>
             </PageHeader>
 
@@ -659,7 +659,7 @@ export function ProjectsOverview() {
                                     }}
                                     onChange={toggleAll}
                                     className={TABLE_CHECKBOX_CLASS}
-                                    aria-label="Select all projects"
+                                    aria-label="Select all matters"
                                 />
                             )}
                             <span className="mr-1">Name</span>
@@ -759,7 +759,7 @@ export function ProjectsOverview() {
                     <TableEmptyState>
                         <EmptyState
                             icon={<OpenProjectSvgIcon />}
-                            title="Projects"
+                            title="Matters"
                             description={loadError}
                             tone="error"
                             action={
@@ -778,14 +778,14 @@ export function ProjectsOverview() {
                         {activeFilter === "public" || activeFilter === "shared" ? (
                             <p className="text-sm text-gray-400">
                                 {activeFilter === "public"
-                                    ? "No public projects"
-                                    : "No projects shared with you"}
+                                    ? "No public matters"
+                                    : "No matters shared with you"}
                             </p>
                         ) : (
                             <EmptyState
                                 icon={<OpenProjectSvgIcon />}
-                                title="Projects"
-                                description="Upload documents into projects and to commence chats and tabular reviews with them."
+                                title="Matters"
+                                description="Upload documents into matters and to commence chats and tabular reviews with them."
                                 action={
                                     <PillButtonUI
                                         tone="black"
@@ -852,7 +852,7 @@ export function ProjectsOverview() {
                                                 project.id;
                                             return;
                                         }
-                                        router.push(`/projects/${project.id}`);
+                                        router.push(`/matters/${project.id}/documents`);
                                     }}
                                 >
                                     {/* Project Name */}
@@ -934,7 +934,7 @@ export function ProjectsOverview() {
                                         <RowActions
                                             onView={() =>
                                                 router.push(
-                                                    `/projects/${project.id}`,
+                                                    `/matters/${project.id}/documents`,
                                                 )
                                             }
                                             viewLabel="Open"
@@ -983,7 +983,7 @@ export function ProjectsOverview() {
                 }}
                 onCreated={(p) => {
                     setProjects((prev) => [p, ...prev]);
-                    router.push(`/projects/${p.id}`);
+                    router.push(`/matters/${p.id}/documents`);
                 }}
             />
 
@@ -1006,8 +1006,8 @@ export function ProjectsOverview() {
             />
             <ConfirmPopup
                 open={confirmDeleteAllOpen && selectedIds.length > 0}
-                title="Delete all selected projects?"
-                message={`This will permanently delete every selected project you administer, including selected projects not currently shown. Every file within those projects will also be deleted. Projects you cannot delete will be skipped. ${selectedIds.length} projects are selected.`}
+                title="Delete all selected matters?"
+                message={`This will permanently delete every selected matter you administer, including selected matters not currently shown. Every file within those matters will also be deleted. Matters you cannot delete will be skipped. ${selectedIds.length} matters are selected.`}
                 confirmLabel="Delete"
                 confirmVariant="danger"
                 onCancel={() => setConfirmDeleteAllOpen(false)}

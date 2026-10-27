@@ -36,7 +36,7 @@ interface AddDocumentsModalProps {
 const TABS: { value: DirectoryTab; label: string }[] = [
   { value: "files", label: "Files" },
   { value: "templates", label: "Templates" },
-  { value: "projects", label: "Projects" },
+  { value: "projects", label: "Matters" },
 ];
 
 const DIRECTORY_GRID_CLASS =
@@ -307,7 +307,7 @@ export function AddDocumentsModal({
     } catch (reason) {
       setError(
         userMessage(reason, {
-          fallback: "Failed to load project documents.",
+          fallback: "Failed to load matter documents.",
         }),
       );
     } finally {
@@ -354,7 +354,7 @@ export function AddDocumentsModal({
     } catch (reason) {
       setError(
         userMessage(reason, {
-          fallback: "Failed to load projects.",
+          fallback: "Failed to load matters.",
         }),
       );
     } finally {
@@ -914,7 +914,7 @@ export function AddDocumentsModal({
           ) : activeTab === "projects" ? (
             filteredProjects.length === 0 ? (
               <p className="py-8 text-center text-sm text-gray-400">
-                {query ? "No matches found" : "No projects yet"}
+                {query ? "No matches found" : "No matters yet"}
               </p>
             ) : (
               <div className="space-y-px">

@@ -50,7 +50,7 @@ vi.mock("./ProjectPageParts", () => ({
     }) => (
         <>
             <button type="button" onClick={onDeleteProject}>
-                Delete project
+                Delete matter
             </button>
             <button type="button" onClick={onOpenAccess}>
                 Open access
@@ -125,7 +125,7 @@ describe("ProjectWorkspaceProvider failures", () => {
         clearToasts();
     });
 
-    it("says a project delete failed and retries only through the confirmation", async () => {
+    it("says a matter delete failed and retries only through the confirmation", async () => {
         // The dialog used to drop back to its resting state with the project
         // still there, which reads as "nothing happened".
         vi.mocked(deleteProject).mockRejectedValue(new Error("boom"));
@@ -137,14 +137,14 @@ describe("ProjectWorkspaceProvider failures", () => {
         );
 
         await user.click(
-            await screen.findByRole("button", { name: "Delete project" }),
+            await screen.findByRole("button", { name: "Delete matter" }),
         );
         await user.click(
             await screen.findByRole("button", { name: "Confirm delete" }),
         );
 
         const alert = await screen.findByRole("alert");
-        expect(alert).toHaveTextContent("Couldn't delete this project");
+        expect(alert).toHaveTextContent("Couldn't delete this matter");
 
         // Retry never deletes from the notice: the confirmation is still
         // (or again) the only way to delete.
@@ -195,7 +195,7 @@ describe("ProjectWorkspaceProvider failures", () => {
         );
     });
 
-    it("says the project itself could not be loaded", async () => {
+    it("says the matter itself could not be loaded", async () => {
         vi.mocked(getProject).mockRejectedValue(new Error("boom"));
         render(
             <ProjectWorkspaceProvider projectId="project-1">
@@ -204,7 +204,7 @@ describe("ProjectWorkspaceProvider failures", () => {
         );
 
         expect(await screen.findByRole("alert")).toHaveTextContent(
-            "Couldn't load this project",
+            "Couldn't load this matter",
         );
     });
 });

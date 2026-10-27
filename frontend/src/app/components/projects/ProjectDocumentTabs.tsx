@@ -49,7 +49,7 @@ export function ProjectDocumentTabs({
 }: Props) {
     return (
         <DocumentTabBar
-            label="Project documents"
+            label="Matter documents"
             idPrefix="project-document"
             className="project-document-tabs"
             tabs={tabs.map((tab) => {

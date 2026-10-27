@@ -23,7 +23,7 @@ export const VERSION_REVIEW_COLUMNS =
     "review_state, reviewed_by, reviewed_at, review_note";
 
 export const APPROVAL_FORBIDDEN =
-    "Only a project owner can approve a version.";
+    "Only a matter owner can approve a version.";
 export const REVIEW_EDIT_FORBIDDEN =
     "You do not have permission to change this version's review state.";
 
@@ -176,7 +176,7 @@ async function notifyReviewers(
 ): Promise<void> {
     if (!args.projectId) return;
     const label = args.versionNumber ? `${args.filename} (version ${args.versionNumber})` : args.filename;
-    const href = `/projects/${args.projectId}`;
+    const href = `/matters/${args.projectId}/documents`;
     if (args.state === "in_review") {
         const listed = await listProjectPeople(db, args.project);
         if (!listed.ok) return;

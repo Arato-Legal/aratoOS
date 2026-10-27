@@ -52,10 +52,10 @@ const DELETE_ROWS: {
     kind: "chats",
     label: "Delete all chats",
     description:
-      "Permanently delete the organization's assistant, project and tabular review chat history.",
+      "Permanently delete the organization's assistant, matter and tabular review chat history.",
     title: "Delete all organization chats?",
     message:
-      "This will permanently delete assistant, project and tabular review chat history across the organization, for every member. Consider exporting anything you need to keep first. This action cannot be undone.",
+      "This will permanently delete assistant, matter and tabular review chat history across the organization, for every member. Consider exporting anything you need to keep first. This action cannot be undone.",
   },
   {
     kind: "tabular-reviews",
@@ -68,12 +68,12 @@ const DELETE_ROWS: {
   },
   {
     kind: "projects",
-    label: "Delete all projects",
+    label: "Delete all matters",
     description:
-      "Permanently delete every project in the organization, including documents, chats, and tabular reviews.",
-    title: "Delete all organization projects?",
+      "Permanently delete every matter in the organization, including documents, chats, and tabular reviews.",
+    title: "Delete all organization matters?",
     message:
-      "This will permanently delete every project in the organization, including their documents, chats, and tabular reviews, for every member. Consider exporting anything you need to keep first. This action cannot be undone.",
+      "This will permanently delete every matter in the organization, including their documents, chats, and tabular reviews, for every member. Consider exporting anything you need to keep first. This action cannot be undone.",
   },
   {
     kind: "playbooks",
@@ -88,10 +88,10 @@ const DELETE_ROWS: {
     kind: "memories",
     label: "Delete all memory",
     description:
-      "Permanently delete the memory of every project in the organization.",
+      "Permanently delete the memory of every matter in the organization.",
     title: "Delete all organization memory?",
     message:
-      "This permanently deletes the memory of every project in the organization. Memory remains enabled and can be rebuilt from future conversations. This action cannot be undone.",
+      "This permanently deletes the memory of every matter in the organization. Memory remains enabled and can be rebuilt from future conversations. This action cannot be undone.",
   },
 ];
 
@@ -104,13 +104,13 @@ const POLICY_ROWS: {
     key: "allow_member_exports",
     label: "Let members export their data",
     description: (orgName) =>
-      `Members can export their own chats, tabular reviews, projects and memory in ${orgName} from Settings › Privacy & Data. Owners always can.`,
+      `Members can export their own chats, tabular reviews, matters and memory in ${orgName} from Settings › Privacy & Data. Owners always can.`,
   },
   {
     key: "allow_member_deletes",
     label: "Let members delete their data in bulk",
     description: (orgName) =>
-      `Members can delete all of their own chats, tabular reviews, projects or memory in ${orgName} at once. Deleting one item at a time is not affected.`,
+      `Members can delete all of their own chats, tabular reviews, matters or memory in ${orgName} at once. Deleting one item at a time is not affected.`,
   },
 ];
 

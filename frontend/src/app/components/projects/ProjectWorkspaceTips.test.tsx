@@ -13,7 +13,7 @@ describe("ProjectWorkspaceTips", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByText(/Ask the Chat to edit a project document/),
+                screen.getByText(/Ask the Chat to edit a matter document/),
             ).toBeVisible(),
         );
         expect(screen.getByText("Tip:").tagName).toBe("STRONG");
@@ -21,7 +21,7 @@ describe("ProjectWorkspaceTips", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Next tip" }));
         expect(
-            screen.getByText(/The Chat can create a new project document/),
+            screen.getByText(/The Chat can create a new matter document/),
         ).toBeVisible();
         expect(screen.getByText("4/5")).toBeVisible();
 
@@ -29,7 +29,7 @@ describe("ProjectWorkspaceTips", () => {
             screen.getByRole("button", { name: "Previous tip" }),
         );
         expect(
-            screen.getByText(/Ask the Chat to edit a project document/),
+            screen.getByText(/Ask the Chat to edit a matter document/),
         ).toBeVisible();
     });
 });

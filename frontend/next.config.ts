@@ -32,10 +32,32 @@ const nextConfig: NextConfig = {
                 source: "/sitemap_:slug.xml",
                 destination: "/api/sitemap/sitemap_:slug.xml",
             },
+            // Matters are served by the pages under app/(pages)/projects (the
+            // directory keeps Mike's name so upstream merges stay clean).
+            // /matters/:id and /matters/:id/edit/* are real routes and win
+            // over these rewrites, which only apply when no page matches.
+            { source: "/matters", destination: "/projects" },
+            { source: "/matters/:id/documents", destination: "/projects/:id" },
+            {
+                source: "/matters/:id/:path(assistant|folders|tabular-reviews|tasks)/:rest*",
+                destination: "/projects/:id/:path/:rest*",
+            },
         ];
     },
     async redirects() {
         return [
+            // Old matter URLs from bookmarks, emails and stored notifications.
+            { source: "/projects", destination: "/matters", permanent: false },
+            {
+                source: "/projects/:id",
+                destination: "/matters/:id/documents",
+                permanent: false,
+            },
+            {
+                source: "/projects/:id/:path(assistant|folders|tabular-reviews|tasks)/:rest*",
+                destination: "/matters/:id/:path/:rest*",
+                permanent: false,
+            },
             {
                 source: "/account",
                 destination: "/settings",

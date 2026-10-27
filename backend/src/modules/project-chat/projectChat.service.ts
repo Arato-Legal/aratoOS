@@ -199,7 +199,7 @@ export async function prepareProjectChatStream(
         db,
     );
     if (!projectAccess.ok)
-        return { ok: false, status: 404, detail: "Project not found" };
+        return { ok: false, status: 404, detail: "Matter not found" };
     // Memory bookkeeping never decides whether the user gets an answer: a
     // database error in the audience check is reported as a normal internal
     // failure instead of escaping as a rejected promise.
@@ -301,7 +301,7 @@ export async function prepareProjectChatStream(
         return {
             ok: false,
             status: 403,
-            detail: "You do not have permission to write in this project.",
+            detail: "You do not have permission to write in this matter.",
         };
 
     // A project chat draws on its project, and on attachments from the

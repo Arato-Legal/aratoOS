@@ -148,7 +148,7 @@ describe("privacy-data async exports", () => {
         clearToasts();
     });
 
-    it("exports app and project memory as a ZIP archive", async () => {
+    it("exports app and matter memory as a ZIP archive", async () => {
         mockedStart.mockResolvedValue({ export_id: "job-memory" });
         mockedStatus.mockResolvedValue({
             status: "done",
@@ -187,7 +187,7 @@ describe("privacy-data async exports", () => {
         expect(screen.queryByText(/Deletes data in/)).toBeNull();
         expect(screen.queryByText(/other workspaces/)).toBeNull();
         expect(
-            screen.getAllByText(/private projects you created/i),
+            screen.getAllByText(/private matters you created/i),
         ).toHaveLength(2);
         const confirmButtons = screen.getAllByRole("button", {
             name: "Delete",
@@ -234,7 +234,7 @@ describe("privacy-data async exports", () => {
             screen.getByText("Permanently delete your memory in Acme LLP."),
         ).toBeVisible();
         expect(
-            screen.queryByText(/private projects you created/i),
+            screen.queryByText(/private matters you created/i),
         ).not.toBeInTheDocument();
 
         await userEvent.click(

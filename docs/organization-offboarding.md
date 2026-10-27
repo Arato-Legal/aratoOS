@@ -11,8 +11,8 @@ account. An organization never acquires someone's personal workspace.
 | Public or shared with remaining members, without another owner | Transfer to one selected member; default to a remaining organization owner. |
 | Private and unshared, without another owner | Archive for 30 days, then permanently delete. |
 
-The rules cover projects, workflows, standalone chats, tabular reviews and
-uploaded library documents. Project and workflow contents follow their parent.
+The rules cover matters, workflows, standalone chats, tabular reviews and
+uploaded library documents. Matter and workflow contents follow their parent.
 Library files referenced by retained conversations or reviews are retained too.
 Recovering archived work also recovers its archived library dependencies when
 those dependencies are still within their recovery period.
@@ -136,7 +136,7 @@ No additional service or production dependency is required.
 
 Owners open active private organization items from **Organization → Audit log →
 Event details**, using the footer's Open button. There is no separate Private
-Content page; its former URL redirects to the audit log. Projects, workflows,
+Content page; its former URL redirects to the audit log. Matters, workflows,
 chats, reviews and documents are supported. Personal workspaces are excluded.
 Admins do not receive private access automatically; existing explicit private
 content permissions continue to apply. The permissions API remains available,

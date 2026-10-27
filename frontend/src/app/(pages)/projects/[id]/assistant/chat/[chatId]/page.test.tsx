@@ -246,7 +246,7 @@ beforeEach(() => {
     state.attachmentFilename = "Budget.xlsx";
     state.projectChats = [];
     state.loadChats.mockResolvedValue(undefined);
-    window.history.replaceState(null, "", "/projects/p1/assistant/chat");
+    window.history.replaceState(null, "", "/matters/p1/assistant/chat");
 });
 
 async function renderWorkspace(canSend = true, strict = false) {
@@ -266,7 +266,7 @@ async function renderWorkspace(canSend = true, strict = false) {
     });
 }
 
-describe("project side chat menu", () => {
+describe("matter side chat menu", () => {
     it("closes the side chat from the main chat and offers opening it again", async () => {
         await renderWorkspace();
         const primary = screen
@@ -291,14 +291,14 @@ describe("project side chat menu", () => {
         fireEvent.click(await screen.findByRole("menuitem", { name: "Close side chat" }));
         expect(screen.getAllByRole("button", { name: "Send question" })).toHaveLength(1);
         expect(window.location.search).toBe("");
-        expect(window.location.pathname).toBe("/projects/p1/assistant/chat");
+        expect(window.location.pathname).toBe("/matters/p1/assistant/chat");
 
         openActions();
         expect(await screen.findByRole("menuitem", { name: "Open side chat" })).toBeInTheDocument();
     });
 });
 
-describe("project document deletion", () => {
+describe("matter document deletion", () => {
     async function openMenu() {
         fireEvent.click(screen.getByRole("button", { name: "Open draft" }));
         await act(async () => {});
@@ -420,7 +420,7 @@ describe("closing document tabs", () => {
 });
 
 describe("document viewer drops", () => {
-    it("opens project documents from a drop and reuses their tabs", async () => {
+    it("opens matter documents from a drop and reuses their tabs", async () => {
         await renderWorkspace();
         const viewer = screen.getByRole("region", { name: "Document viewer" });
         const dataTransfer = {
@@ -444,7 +444,7 @@ describe("document viewer drops", () => {
         expect(state.uploadProjectDocuments).not.toHaveBeenCalled();
     });
 
-    it("opens all documents from a multi-row drop without adding existing files to the project", async () => {
+    it("opens all documents from a multi-row drop without adding existing files to the matter", async () => {
         state.getDocument.mockResolvedValueOnce({
             id: "excel",
             filename: "Budget.xlsx",
@@ -472,7 +472,7 @@ describe("document viewer drops", () => {
         expect(state.uploadProjectDocuments).not.toHaveBeenCalled();
     });
 
-    it("uploads external files through the project flow and opens the result", async () => {
+    it("uploads external files through the matter flow and opens the result", async () => {
         state.uploadProjectDocuments.mockResolvedValueOnce([
             {
                 status: "completed",
@@ -508,7 +508,7 @@ describe("document viewer drops", () => {
         );
     });
 
-    it("keeps the upload permission boundary for read-only projects", async () => {
+    it("keeps the upload permission boundary for read-only matters", async () => {
         vi.mocked(getProject).mockResolvedValueOnce({
             id: "p1",
             name: "Matter",
@@ -534,7 +534,7 @@ describe("document viewer drops", () => {
                 },
             },
         );
-        await screen.findByText(/upload documents to this project/);
+        await screen.findByText(/upload documents to this matter/);
         expect(state.uploadProjectDocuments).not.toHaveBeenCalled();
     });
 
@@ -798,7 +798,7 @@ describe("explorer uploads", () => {
     });
 });
 
-describe("project chat workspace lifecycle", () => {
+describe("matter chat workspace lifecycle", () => {
     it("marks the selected citation pill active until a regular document view opens", async () => {
         const citation: Citation = {
             type: "citation_data",
@@ -827,7 +827,7 @@ describe("project chat workspace lifecycle", () => {
             ],
         });
 
-        window.history.replaceState(null, "", "/projects/p1/assistant/chat/c1");
+        window.history.replaceState(null, "", "/matters/p1/assistant/chat/c1");
 
         await act(async () => {
             render(
@@ -860,7 +860,7 @@ describe("project chat workspace lifecycle", () => {
         expect(pill).toHaveAttribute("data-active", "false");
     });
 
-    it("hides the composer until the chat and project access both resolve", async () => {
+    it("hides the composer until the chat and matter access both resolve", async () => {
         let resolveChat!: (loaded: {
             chat: Record<string, unknown>;
             messages: Message[];
@@ -881,7 +881,7 @@ describe("project chat workspace lifecycle", () => {
                 }),
         );
 
-        window.history.replaceState(null, "", "/projects/p1/assistant/chat/c1");
+        window.history.replaceState(null, "", "/matters/p1/assistant/chat/c1");
 
         await act(async () => {
             render(
@@ -991,7 +991,7 @@ describe("project chat workspace lifecycle", () => {
         expect(state.getChat).not.toHaveBeenCalled();
         expect(state.replace).not.toHaveBeenCalled();
         expect(window.location.pathname).toBe(
-            "/projects/p1/assistant/chat/created-chat",
+            "/matters/p1/assistant/chat/created-chat",
         );
         act(() => {
             stream.enqueue(
@@ -1018,7 +1018,7 @@ describe("project chat workspace lifecycle", () => {
         expect(state.getChat).not.toHaveBeenCalled();
     });
 
-    it("lists project chats by latest activity after merging both history sources", async () => {
+    it("lists matter chats by latest activity after merging both history sources", async () => {
         state.chats = [
             {
                 id: "older",
@@ -1092,7 +1092,7 @@ it.each(["Budget.xlsx", "Budget"])(
     },
 );
 
-describe("leaving a project chat mid-stream", () => {
+describe("leaving a matter chat mid-stream", () => {
     /**
      * A response body that reports whether the page cancelled its reader.
      * Cancelling closes the socket, and the backend reads a closed socket as
@@ -1179,7 +1179,7 @@ describe("leaving a project chat mid-stream", () => {
         );
         await waitFor(() =>
             expect(window.location.pathname).toBe(
-                "/projects/p1/assistant/chat/other",
+                "/matters/p1/assistant/chat/other",
             ),
         );
 
@@ -1275,7 +1275,7 @@ describe("leaving a project chat mid-stream", () => {
         );
         await waitFor(() =>
             expect(window.location.pathname).toBe(
-                "/projects/p1/assistant/chat/created-chat",
+                "/matters/p1/assistant/chat/created-chat",
             ),
         );
         // The history is requested at once instead of after the stream ends.
@@ -1342,7 +1342,7 @@ describe("leaving a project chat mid-stream", () => {
         fireEvent.click(screen.getByRole("button", { name: "New chat" }));
         await waitFor(() =>
             expect(window.location.pathname).toBe(
-                "/projects/p1/assistant/chat",
+                "/matters/p1/assistant/chat",
             ),
         );
 
@@ -1358,7 +1358,7 @@ describe("leaving a project chat mid-stream", () => {
     });
 });
 
-describe("project explorer root drop", () => {
+describe("matter explorer root drop", () => {
     // Dropping a document on the panel outside the tree moved it to the root
     // optimistically; a failed request left it shown at the root with no
     // word to the user.

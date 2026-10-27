@@ -249,7 +249,7 @@ chatRouter.post("/:chatId/turn/:turnId/stop", requireAuth, asyncRoute(async (req
     if (!access.isCreator && !can(access.projectRole, "content.edit")) {
         return void res.status(403).json({
             code: "chat_write_forbidden",
-            detail: "Only the chat's creator or a project editor can stop this response.",
+            detail: "Only the chat's creator or a matter editor can stop this response.",
         });
     }
     const run = getAssistantTurnRun(turnId);
@@ -334,7 +334,7 @@ chatRouter.post("/:chatId/access", requireAuth, asyncRoute(async (req, res) => {
     if (access.chat.project_id)
         return void res.status(409).json({
             code: "access_inherited",
-            detail: "Project-owned chats inherit access from their project.",
+            detail: "Matter-owned chats inherit access from their matter.",
         });
     const email = normalizeEmail(
         typeof req.body?.email === "string" ? req.body.email : null,
@@ -378,7 +378,7 @@ chatRouter.delete("/:chatId/access/:email", requireAuth, asyncRoute(async (req, 
     if (access.chat.project_id)
         return void res.status(409).json({
             code: "access_inherited",
-            detail: "Project-owned chats inherit access from their project.",
+            detail: "Matter-owned chats inherit access from their matter.",
         });
     const result = await revokeChatAccess(db, {
         chatId,

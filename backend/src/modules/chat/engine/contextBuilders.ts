@@ -6,6 +6,7 @@ import { listWorkspaceWorkflows } from "../../../lib/workflowWorkspace";
 import { teamOrgIdOf } from "../../../lib/personalOrgs";
 import { ensureDocAccess } from "../../../lib/access";
 import { attachActiveVersionPaths } from "../../../lib/documentVersions";
+import { listSharedSiblingMatters } from "../../../lib/clientSharing";
 import {
   type DocStore,
   type DocIndex,
@@ -1557,6 +1558,50 @@ export async function buildProjectDocContext(
     });
     const path = resolvePath(doc.folder_id ?? null);
     if (path) folderPaths.set(docLabel, path);
+  }
+
+  // Documents of the client's other matters that chose to share with it,
+  // read-only and labelled with their source matter.
+  const siblings = await listSharedSiblingMatters(db, projectId);
+  if (siblings.length > 0) {
+    const { data: sharedDocs } = await db
+      .from("documents")
+      .select("id, current_version_id, status, project_id")
+      .in("project_id", siblings.map((s) => s.id))
+      .eq("status", "ready")
+      .order("created_at", { ascending: true });
+    const sharedList = (sharedDocs ?? []) as unknown as {
+      id: string;
+      filename?: string | null;
+      file_type?: string | null;
+      current_version_id?: string | null;
+      active_version_number?: number | null;
+      project_id: string;
+      storage_path?: string | null;
+    }[];
+    await attachActiveVersionPaths(db, sharedList);
+    const matterName = new Map(siblings.map((s) => [s.id, s.name]));
+    let n = 0;
+    for (const doc of sharedList) {
+      if (!doc.storage_path) continue;
+      const docLabel = `shared-${n++}`;
+      const filename = doc.filename?.trim() || "Untitled document";
+      docIndex[docLabel] = {
+        document_id: doc.id,
+        filename,
+        version_id: doc.current_version_id ?? null,
+        version_number: doc.active_version_number ?? null,
+      };
+      docStore.set(docLabel, {
+        storage_path: doc.storage_path,
+        file_type: doc.file_type ?? "",
+        filename,
+      });
+      folderPaths.set(
+        docLabel,
+        `Shared from matter: ${matterName.get(doc.project_id) ?? "other matter"}`,
+      );
+    }
   }
 
   // Direct attachments keep their existing project membership. Reuse the

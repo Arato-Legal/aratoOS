@@ -50,7 +50,7 @@ export function mergeProjectRecentItems(
                 kind: "chat",
                 id: chat.id,
                 title: chat.title?.trim() || "Untitled chat",
-                href: `/projects/${projectId}/assistant/chat/${chat.id}`,
+                href: `/matters/${projectId}/assistant/chat/${chat.id}`,
                 activityAt: chat.updated_at ?? chat.created_at,
             }),
         ),
@@ -59,7 +59,7 @@ export function mergeProjectRecentItems(
                 kind: "review",
                 id: review.id,
                 title: review.title?.trim() || "Untitled review",
-                href: `/projects/${projectId}/tabular-reviews/${review.id}`,
+                href: `/matters/${projectId}/tabular-reviews/${review.id}`,
                 activityAt: review.updated_at ?? review.created_at,
             }),
         ),
@@ -136,7 +136,7 @@ export function SidebarProjectItem({
     onExpandedChange,
     onOpenProject,
 }: Props) {
-    const projectPath = `/projects/${project.id}`;
+    const projectPath = `/matters/${project.id}/documents`;
     const isActive =
         pathname === projectPath || pathname.startsWith(`${projectPath}/`);
     const [data, setData] = useState<ProjectItemsData | null>(

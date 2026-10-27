@@ -445,7 +445,7 @@ export async function listProjectReviewCreators(
         args.userEmail,
         db,
     );
-    if (!access.ok) return failure("not_found", "Project not found");
+    if (!access.ok) return failure("not_found", "Matter not found");
     const { data, error } = await db
         .from("tabular_reviews")
         .select("user_id")
@@ -559,11 +559,11 @@ export async function createTabularReview(
         );
         // A Viewer can open the project, so "not found" would be a lie; the
         // read-only tier gets a refusal that names itself.
-        if (!access.ok) return failure("not_found", "Project not found");
+        if (!access.ok) return failure("not_found", "Matter not found");
         if (!can(access.projectRole, "content.edit"))
             return failure(
                 "forbidden",
-                "You do not have permission to write in this project.",
+                "You do not have permission to write in this matter.",
             );
         projectOrgId = access.project.org_id ?? null;
     }
@@ -906,7 +906,7 @@ export async function grantTabularReviewAccess(
     if (gate.review.project_id)
         return failure(
             "conflict",
-            "Project-owned reviews inherit access from their project.",
+            "Matter-owned reviews inherit access from their matter.",
             "access_inherited",
         );
     const email = normalizeEmail(
@@ -960,7 +960,7 @@ export async function revokeTabularReviewAccess(
     if (gate.review.project_id)
         return failure(
             "conflict",
-            "Project-owned reviews inherit access from their project.",
+            "Matter-owned reviews inherit access from their matter.",
             "access_inherited",
         );
     const result = await deleteContentGrant(db, {
@@ -1123,7 +1123,7 @@ export async function updateTabularReview(
                 db,
             );
             if (!projectAccess.ok) {
-                return failure("not_found", "Target project not found");
+                return failure("not_found", "Target matter not found");
             }
             // …and where it is going: a move contributes the review to the
             // destination's members exactly as creating it there would, so it
@@ -1131,7 +1131,7 @@ export async function updateTabularReview(
             if (!can(projectAccess.projectRole, "content.edit")) {
                 return failure(
                     "forbidden",
-                    "You do not have permission to write in this project.",
+                    "You do not have permission to write in this matter.",
                 );
             }
         }
@@ -1157,7 +1157,7 @@ export async function updateTabularReview(
             if (currentOrgId && movedOrg.orgId !== currentOrgId)
                 return failure(
                     "validation",
-                    "This review belongs to an organization and can only be moved to a project in the same organization.",
+                    "This review belongs to an organization and can only be moved to a matter in the same organization.",
                 );
             updates.org_id = movedOrg.orgId;
         } else {
@@ -1198,7 +1198,7 @@ export async function updateTabularReview(
                 return failure(
                     "validation",
                     moved
-                        ? "This review uses documents from the workspace it is in, so it cannot be moved to a project in another one."
+                        ? "This review uses documents from the workspace it is in, so it cannot be moved to a matter in another one."
                         : DOCUMENT_WORKSPACE_MISMATCH_DETAIL,
                     DOCUMENT_WORKSPACE_MISMATCH_CODE,
                 );

@@ -34,7 +34,7 @@ export function AccessVisibilityField({
     visibility: ContentVisibility;
     onChange: (visibility: ContentVisibility) => void;
     organizationName?: string | null;
-    resourceNoun: "project" | "workflow" | "playbook";
+    resourceNoun: "matter" | "workflow" | "playbook";
     disabled?: boolean;
 }) {
     const labelId = useId();

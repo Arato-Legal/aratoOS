@@ -19,6 +19,8 @@ export type ClientRow = {
   source: string | null;
   notes: string | null;
   custom_fields: Record<string, unknown>;
+  drive_folder_id: string | null;
+  drive_folder_name: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -40,6 +42,7 @@ export type ClientMatter = {
   name: string;
   cm_number: string | null;
   practice: string | null;
+  share_with_client: boolean;
   updated_at: string;
 };
 
@@ -49,7 +52,7 @@ export type ClientDetail = ClientRow & {
 };
 
 export const CLIENT_COLUMNS =
-  "id, user_id, org_id, name, kind, status, email, phone, address, source, notes, custom_fields, created_at, updated_at";
+  "id, user_id, org_id, name, kind, status, email, phone, address, source, notes, custom_fields, drive_folder_id, drive_folder_name, created_at, updated_at";
 export const CONTACT_COLUMNS =
   "id, client_id, name, role, email, phone, notes, created_at, updated_at";
 

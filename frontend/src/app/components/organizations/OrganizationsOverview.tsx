@@ -181,7 +181,7 @@ export function OrganizationsOverview() {
           </GlassCardUI>
         ) : listedOrgs.length === 0 ? (
           <SettingsDescription>
-            No organizations yet. Create one to share projects and
+            No organizations yet. Create one to share matters and
             workflows with your team.
           </SettingsDescription>
         ) : (

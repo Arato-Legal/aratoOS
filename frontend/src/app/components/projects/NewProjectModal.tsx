@@ -289,7 +289,7 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
                         (file) => !uploadedFilesRef.current.has(file),
                     ).length;
                 setError(
-                    `Project created, but access was not granted to ${grantFailures
+                    `Matter created, but access was not granted to ${grantFailures
                         .map((failure) => failure.email)
                         .join(", ")}: ${grantFailures[0].detail}${
                         stillPending > 0
@@ -388,7 +388,7 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
             const failureMessage = [
                 uploadFailure,
                 failedLinkNames.length > 0
-                    ? `${failedLinkNames.join(", ")} could not be added to the project.`
+                    ? `${failedLinkNames.join(", ")} could not be added to the matter.`
                     : null,
             ]
                 .filter(Boolean)
@@ -437,7 +437,7 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
 
             finishCreation({ ...stamped, document_count: attachedCount });
         } catch (err: unknown) {
-            setError(userFacingApiError(err, "Failed to create project"));
+            setError(userFacingApiError(err, "Failed to create matter"));
         } finally {
             setLoading(false);
         }
@@ -481,8 +481,8 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
             open={open}
             onClose={handleClose}
             breadcrumbs={[
-                "Projects",
-                "New project",
+                "Matters",
+                "New matter",
                 step === "details"
                     ? "Details"
                     : step === "access"
@@ -554,7 +554,7 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
                                 ? "Creating…"
                                 : pendingProject
                                   ? "Continue"
-                                  : "Create project",
+                                  : "Create matter",
                             type: "button",
                             onClick: () => void createProjectFromDocuments(),
                             disabled: !name.trim() || loading,
@@ -577,14 +577,14 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
                     <div className="space-y-6">
                         <div>
                             <FieldLabel htmlFor="new-project-name">
-                                Project name
+                                Matter name
                             </FieldLabel>
                             <FormTextInput
                                 id="new-project-name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Add project name"
+                                placeholder="Add matter name"
                                 variant="minimal"
                                 // Once the project EXISTS the retry reuses
                                 // `createdProjectRef` and never reads these
@@ -640,28 +640,28 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
                                     setOrgOverrides([]);
                                 }}
                                 organizationName={organizationName}
-                                resourceNoun="project"
+                                resourceNoun="matter"
                                 disabled={loading}
                             />
                         ) : null}
                         {projectExists && (
                             <p className="text-sm text-gray-500">
-                                The project has been created, so its name, CM
+                                The matter has been created, so its name, CM
                                 number and practice can no longer be changed
-                                here. Edit them from the project once this
+                                here. Edit them from the matter once this
                                 finishes.
                             </p>
                         )}
 
                         <div>
-                            <FieldLabel as="p">Project memory</FieldLabel>
+                            <FieldLabel as="p">Matter memory</FieldLabel>
                             <ToggleSwitchUI
                                 checked={memoryEnabled}
                                 onCheckedChange={(enabled) => {
                                     memoryEditedRef.current = true;
                                     setMemoryEnabled(enabled);
                                 }}
-                                aria-label="Enable project memory"
+                                aria-label="Enable matter memory"
                             >
                                 {memoryEnabled ? "On" : "Off"}
                             </ToggleSwitchUI>
@@ -678,7 +678,7 @@ export function NewProjectModal({ open, onClose, onCreated }: Props) {
                         onDirectGrantsChange={setSharedUsers}
                         orgOverrides={orgOverrides}
                         onOrgOverridesChange={setOrgOverrides}
-                        ownerLabel="Project owners"
+                        ownerLabel="Matter owners"
                         visibility={visibility}
                     />
                 ) : (

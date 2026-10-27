@@ -80,7 +80,7 @@ const NAV_ITEMS = [
     { href: "/assistant", label: "Assistant", icon: ChatSkeuoIcon },
     { href: "/ide", label: "IDE", icon: IdeSkeuoIcon },
     { href: "/clients", label: "Clients", icon: Users },
-    { href: "/projects", label: "Projects", icon: FolderSkeuoIcon },
+    { href: "/matters", label: "Matters", icon: FolderSkeuoIcon },
     { href: "/library", label: "Library", icon: LibrarySkeuoIcon },
     {
         href: "/tabular-reviews",
@@ -136,7 +136,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
         }
 
         const projectChatMatch = pathname.match(
-            /^\/projects\/[^/]+\/assistant\/chat\/([^/]+)/,
+            /^\/matters\/[^/]+\/assistant\/chat\/([^/]+)/,
         );
         return projectChatMatch?.[1] ?? null;
     }, [pathname]);
@@ -177,7 +177,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
     const [toggleHoverSuppressed, setToggleHoverSuppressed] = useState(false);
     const [projectsCollapsed, setProjectsCollapsed] = useState(false);
     const [historyCollapsed, setHistoryCollapsed] = useState(false);
-    const activeProjectId = pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? null;
+    const activeProjectId = pathname.match(/^\/matters\/([^/]+)/)?.[1] ?? null;
     const [expandedProjectIds, setExpandedProjectIds] = useState<
         ReadonlySet<string>
     >(() => new Set(activeProjectId ? [activeProjectId] : []));
@@ -337,7 +337,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                 // An empty Projects section reads as "you have no projects",
                 // which is the one thing this failure does not mean.
                 notifyError(error, {
-                    action: "load your recent projects",
+                    action: "load your recent matters",
                     dedupeKey: "sidebar-recent-projects",
                     onRetry: () =>
                         setRecentProjectsAttempt((attempt) => attempt + 1),
@@ -400,7 +400,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
             // The current page survives; the user is told the next one did
             // not arrive instead of scrolling at a list that stopped growing.
             notifyError(error, {
-                action: "load more projects",
+                action: "load more matters",
                 dedupeKey: "sidebar-recent-projects-more",
                 onRetry: () => retryLoadMoreRecentProjectsRef.current?.(),
             });
@@ -575,7 +575,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                             const isActive =
                                 href === "/assistant"
                                     ? pathname === href
-                                    : href === "/projects"
+                                    : href === "/matters"
                                       ? pathname === href
                                       : pathname === href ||
                                         pathname.startsWith(href + "/");
@@ -626,7 +626,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                         shouldAnimate ? "sidebar-fade-in" : ""
                                     }`}
                                 >
-                                    <span>Recent Projects</span>
+                                    <span>Recent Matters</span>
                                     <ChevronDown
                                         className={`h-3.5 w-3.5 transition-transform ${
                                             projectsCollapsed ? "-rotate-90" : ""
@@ -670,7 +670,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                                         : ""
                                                 }`}
                                             >
-                                                No projects yet
+                                                No matters yet
                                             </div>
                                         ) : (
                                             <div
@@ -699,7 +699,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                                             }
                                                             onOpenProject={() =>
                                                                 router.push(
-                                                                    `/projects/${project.id}`,
+                                                                    `/matters/${project.id}/documents`,
                                                                 )
                                                             }
                                                         />
@@ -792,7 +792,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                                         const projectName = review.project_name?.trim();
                                                         const fullTitle = projectName ? `${projectName}: ${title}` : title;
                                                         const href = review.project_id
-                                                            ? `/projects/${review.project_id}/tabular-reviews/${review.id}`
+                                                            ? `/matters/${review.project_id}/tabular-reviews/${review.id}`
                                                             : `/tabular-reviews/${review.id}`;
                                                         const active = pathname === href || pathname.startsWith(`${href}/`);
                                                         const status = reviewStatuses.statuses[review.id];
@@ -879,7 +879,7 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                                             );
                                                             router.push(
                                                                 chat.project_id
-                                                                    ? `/projects/${chat.project_id}/assistant/chat/${chat.id}`
+                                                                    ? `/matters/${chat.project_id}/assistant/chat/${chat.id}`
                                                                     : `/assistant/chat/${chat.id}`,
                                                             );
                                                         }}

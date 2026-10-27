@@ -264,7 +264,7 @@ describe("MyActivitySettingsPage", () => {
     const row = screen.getByRole("button", {
       name: `View details for ${EVENT.title}`,
     });
-    expect(within(row).getByText("Project", { exact: true })).toBeVisible();
+    expect(within(row).getByText("Matter", { exact: true })).toBeVisible();
   });
 
   it("defaults to the previous 30 days and sends header controls to the audit query", async () => {
@@ -481,8 +481,8 @@ describe("MyActivitySettingsPage", () => {
     await user.keyboard("{Enter}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("menuitem", { name: "Open project" }),
-    ).toHaveAttribute("href", "/projects/project-1");
+      screen.getByRole("menuitem", { name: "Open matter" }),
+    ).toHaveAttribute("href", "/matters/project-1/documents");
     await user.click(screen.getByRole("menuitem", { name: "View details" }));
     expect(
       screen.getByRole("dialog", { name: "Event details" }),
@@ -947,9 +947,9 @@ describe("MyActivitySettingsPage", () => {
     expect(metadata).toBeVisible();
     expect(modal.getByText("gpt-5")).toBeInTheDocument();
     expect(modal.getByText(/"mode": "review"/)).toBeInTheDocument();
-    expect(modal.getByRole("link", { name: "Open project" })).toHaveAttribute(
+    expect(modal.getByRole("link", { name: "Open matter" })).toHaveAttribute(
       "href",
-      "/projects/project-1",
+      "/matters/project-1/documents",
     );
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

@@ -312,7 +312,7 @@ export function ProjectAssistantTable({
                     <EmptyState
                         icon={<ChatSkeuoIcon />}
                         title="Assistant"
-                        description="Ask questions and get answers grounded in the documents in this project."
+                        description="Ask questions and get answers grounded in the documents in this matter."
                         action={
                             <PillButtonUI
                                 tone="black"

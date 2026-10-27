@@ -45,7 +45,7 @@ type ReviewScope = TabularReviewScope;
 
 const REVIEW_SCOPES: { id: ReviewScope; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "in-project", label: "In Project" },
+    { id: "in-project", label: "In Matter" },
     { id: "standalone", label: "Standalone" },
 ];
 const REVIEW_SCOPE_IDS = REVIEW_SCOPES.map((scope) => scope.id);
@@ -254,7 +254,7 @@ function TabularReviewsWorkspacePage({ workspace }: { workspace?: string }) {
             createdReviewRef.current = null;
             router.push(
                 projectId
-                    ? `/projects/${projectId}/tabular-reviews/${review.id}`
+                    ? `/matters/${projectId}/tabular-reviews/${review.id}`
                     : `/tabular-reviews/${review.id}`,
             );
         } finally {
@@ -449,7 +449,7 @@ function TabularReviewsWorkspacePage({ workspace }: { workspace?: string }) {
                 onOpenReview={(review) =>
                     router.push(
                         review.project_id
-                            ? `/projects/${review.project_id}/tabular-reviews/${review.id}`
+                            ? `/matters/${review.project_id}/tabular-reviews/${review.id}`
                             : `/tabular-reviews/${review.id}`,
                     )
                 }

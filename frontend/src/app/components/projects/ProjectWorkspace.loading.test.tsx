@@ -74,7 +74,7 @@ vi.mock("./ProjectPageParts", () => ({
     }) => (
         <div>
             <span data-testid="role-known">{String(roleKnown)}</span>
-            <button onClick={onDeleteProject}>delete project</button>
+            <button onClick={onDeleteProject}>delete matter</button>
             <button onClick={onNewChat}>new chat</button>
             <button onClick={onNewReview}>new review</button>
         </div>
@@ -110,7 +110,7 @@ const OWNER_PROJECT = {
     folders: [],
 } as unknown as Project;
 
-describe("ProjectWorkspace while the project is still loading", () => {
+describe("ProjectWorkspace while the matter is still loading", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -131,11 +131,11 @@ describe("ProjectWorkspace while the project is still loading", () => {
         vi.mocked(getProject).mockReturnValue(new Promise(() => {}));
         renderWorkspace();
 
-        fireEvent.click(screen.getByText("delete project"));
+        fireEvent.click(screen.getByText("delete matter"));
 
         // Not the old fail-open: no confirmation for an action we cannot
         // know is allowed …
-        expect(screen.queryByText("Delete project?")).not.toBeInTheDocument();
+        expect(screen.queryByText("Delete matter?")).not.toBeInTheDocument();
         // … and not a false accusation either, because the affordance that
         // produced this click is disabled in the real header.
         expect(
@@ -163,8 +163,8 @@ describe("ProjectWorkspace while the project is still loading", () => {
         expect(screen.getByTestId("can-delete")).toHaveTextContent("true");
         expect(screen.getByTestId("role-known")).toHaveTextContent("true");
 
-        fireEvent.click(screen.getByText("delete project"));
-        expect(screen.getByText("Delete project?")).toBeInTheDocument();
+        fireEvent.click(screen.getByText("delete matter"));
+        expect(screen.getByText("Delete matter?")).toBeInTheDocument();
     });
 
     it("refuses a viewer's new chat and explains the editor requirement", async () => {
@@ -176,7 +176,7 @@ describe("ProjectWorkspace while the project is still loading", () => {
         expect(screen.getByText("Only an editor can create a chat.")).toBeInTheDocument();
     });
 
-    it("opens an empty project chat without creating a database row", async () => {
+    it("opens an empty matter chat without creating a database row", async () => {
         vi.mocked(getProject).mockResolvedValue(OWNER_PROJECT);
         renderWorkspace();
 
@@ -186,12 +186,12 @@ describe("ProjectWorkspace while the project is still loading", () => {
         fireEvent.click(screen.getByText("new chat"));
 
         expect(routerPush).toHaveBeenCalledWith(
-            "/projects/p1/assistant/chat",
+            "/matters/p1/assistant/chat",
         );
         expect(saveChat).not.toHaveBeenCalled();
     });
 
-    it("forgets the previous project's role the moment the id changes", async () => {
+    it("forgets the previous matter's role the moment the id changes", async () => {
         // The provider lives in the [id] layout, which the App Router keeps
         // mounted across dynamic-param navigation. Navigating from a project
         // you administer to one you can only view used to keep the OLD row —
@@ -230,8 +230,8 @@ describe("ProjectWorkspace while the project is still loading", () => {
         expect(screen.getByTestId("can-delete")).toHaveTextContent("false");
         expect(screen.getByTestId("role-known")).toHaveTextContent("false");
 
-        fireEvent.click(screen.getByText("delete project"));
-        expect(screen.queryByText("Delete project?")).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText("delete matter"));
+        expect(screen.queryByText("Delete matter?")).not.toBeInTheDocument();
         expect(
             screen.queryByText(/Only an admin can/),
         ).not.toBeInTheDocument();
@@ -256,9 +256,9 @@ describe("ProjectWorkspace while the project is still loading", () => {
             expect(screen.getByTestId("role")).toHaveTextContent("viewer"),
         );
 
-        fireEvent.click(screen.getByText("delete project"));
+        fireEvent.click(screen.getByText("delete matter"));
         expect(
-            screen.getByText("Only an owner can delete this project."),
+            screen.getByText("Only an owner can delete this matter."),
         ).toBeInTheDocument();
         expect(
             screen.getByText(/Dana Reyes \(dana@firm.test\)/),

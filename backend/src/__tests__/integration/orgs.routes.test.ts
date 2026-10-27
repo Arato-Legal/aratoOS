@@ -674,7 +674,7 @@ describe("org membership", () => {
 });
 
 describe("organization workspace", () => {
-    it("lists only organization-scoped projects and workflows", async () => {
+    it("lists only organization-scoped matters and workflows", async () => {
         as("member-1", "member@firm.example");
         const res = await request(app)
             .get("/orgs/org-1/resources")
@@ -991,7 +991,7 @@ describe("organization invitations", () => {
 // Project organization access overrides
 // ---------------------------------------------------------------------------
 
-describe("project organization overrides over HTTP", () => {
+describe("matter organization overrides over HTTP", () => {
     it("an owner assigns an organization member a chosen resource role", async () => {
         const res = await request(app)
             .post("/projects/proj-1/access")
@@ -1042,7 +1042,7 @@ describe("project organization overrides over HTTP", () => {
         });
     };
 
-    it("does not allow an organization owner to be overridden on a public project", async () => {
+    it("does not allow an organization owner to be overridden on a public matter", async () => {
         // An organization owner owns every public project, so there is
         // nothing to give them there and nothing that can be taken away.
         addColleague("owner");
@@ -1059,7 +1059,7 @@ describe("project organization overrides over HTTP", () => {
         expect(tables.project_org_access_overrides).toEqual([]);
     });
 
-    it("shares a private project with an organization owner like any other member", async () => {
+    it("shares a private matter with an organization owner like any other member", async () => {
         // A private project is not an organization owner's by office, so
         // its creator gives them a role the way they would anyone.
         addColleague("owner");
@@ -1080,7 +1080,7 @@ describe("project organization overrides over HTTP", () => {
         ]);
     });
 
-    it("walls an organization admin off a project like any other member", async () => {
+    it("walls an organization admin off a matter like any other member", async () => {
         // Administering the organization gives no standing on its content.
         addColleague("admin");
 
@@ -1107,7 +1107,7 @@ describe("project organization overrides over HTTP", () => {
             .send({ email: "counsel@outside.example", role: "viewer" });
         expect(res.status).toBe(403);
         expect(res.body.detail).toBe(
-            "Only a project owner can change who has access.",
+            "Only a matter owner can change who has access.",
         );
     });
 
@@ -1145,7 +1145,7 @@ describe("project organization overrides over HTTP", () => {
             .set(...AUTH);
         expect(res.status).toBe(403);
         expect(res.body.detail).toBe(
-            "Only a project owner can change who has access.",
+            "Only a matter owner can change who has access.",
         );
         expect(res.body.grants).toBeUndefined();
     });
@@ -1187,7 +1187,7 @@ describe("project organization overrides over HTTP", () => {
         expect(missing.status).toBe(404);
     });
 
-    it("does not let a direct grant cross into an organization project", async () => {
+    it("does not let a direct grant cross into an organization matter", async () => {
         const grant = await request(app)
             .post("/projects/proj-1/access")
             .set(...AUTH)
@@ -1231,7 +1231,7 @@ describe("GET /projects/:projectId admin contacts", () => {
 // proj-1 is seeded public. owner-1 created it and owns the organization;
 // member-1 is a plain member with no override.
 
-describe("project visibility over HTTP", () => {
+describe("matter visibility over HTTP", () => {
     const setVisibility = (visibility: unknown) =>
         request(app)
             .patch("/projects/proj-1")
@@ -1248,7 +1248,7 @@ describe("project visibility over HTTP", () => {
         ];
     };
 
-    it("lets every member open a public project, and lists them on its roster", async () => {
+    it("lets every member open a public matter, and lists them on its roster", async () => {
         expect(await peopleEmails()).toEqual([
             "owner@firm.example",
             "member@firm.example",
@@ -1259,7 +1259,7 @@ describe("project visibility over HTTP", () => {
         expect(res.body.access_role).toBe("editor");
     });
 
-    it("closes the project to members it was not shared with when made private", async () => {
+    it("closes the matter to members it was not shared with when made private", async () => {
         const res = await setVisibility("private");
         expect(res.status).toBe(200);
         expect(res.body.visibility).toBe("private");
@@ -1283,7 +1283,7 @@ describe("project visibility over HTTP", () => {
         expect(resources.body.projects).toEqual([]);
     });
 
-    it("admits a member to a private project at the role it was shared with them", async () => {
+    it("admits a member to a private matter at the role it was shared with them", async () => {
         await setVisibility("private");
         const grant = await request(app)
             .post("/projects/proj-1/access")
@@ -1318,7 +1318,7 @@ describe("project visibility over HTTP", () => {
         expect(tables.project_org_access_overrides).toEqual([]);
     });
 
-    it("leaves who can open a project to its owners", async () => {
+    it("leaves who can open a matter to its owners", async () => {
         as("member-1", "member@firm.example");
         const res = await setVisibility("private");
         expect(res.status).toBe(403);
@@ -1331,7 +1331,7 @@ describe("project visibility over HTTP", () => {
         expect(tables.projects[0].visibility).toBe("organization");
     });
 
-    it("refuses to open a personal project to an organization", async () => {
+    it("refuses to open a personal matter to an organization", async () => {
         tables.projects[0].org_id = null;
         tables.projects[0].visibility = "private";
         const res = await setVisibility("organization");
@@ -1339,7 +1339,7 @@ describe("project visibility over HTTP", () => {
         expect(tables.projects[0].visibility).toBe("private");
     });
 
-    describe("a second organization owner, who did not create the project and was never shared it", () => {
+    describe("a second organization owner, who did not create the matter and was never shared it", () => {
         beforeEach(() => {
             tables.org_members.push({
                 id: "m-3",

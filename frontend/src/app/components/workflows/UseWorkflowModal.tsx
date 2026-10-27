@@ -245,7 +245,7 @@ function UseWorkflowModalForWorkspace({ workflow, onClose, skipSelect = false }:
                 },
             ]);
             handleClose();
-            router.push(projectId ? `/projects/${projectId}/assistant/chat/${chatId}` : `/assistant/chat/${chatId}`);
+            router.push(projectId ? `/matters/${projectId}/assistant/chat/${chatId}` : `/assistant/chat/${chatId}`);
         } finally {
             setSaving(false);
         }
@@ -272,7 +272,7 @@ function UseWorkflowModalForWorkspace({ workflow, onClose, skipSelect = false }:
             if (!active.current) return;
             handleClose();
             router.push(
-                projectId ? `/projects/${projectId}/tabular-reviews/${review.id}` : `/tabular-reviews/${review.id}`,
+                projectId ? `/matters/${projectId}/tabular-reviews/${review.id}` : `/tabular-reviews/${review.id}`,
             );
         } finally {
             setSaving(false);
@@ -290,13 +290,13 @@ function UseWorkflowModalForWorkspace({ workflow, onClose, skipSelect = false }:
         wf.metadata.type === "assistant"
             ? [
                   { value: "workspace" as const, label: "Assistant" },
-                  { value: "project" as const, label: "Project assistant" },
+                  { value: "project" as const, label: "Matter assistant" },
               ]
             : [
                   { value: "workspace" as const, label: "Tabular reviews" },
                   {
                       value: "project" as const,
-                      label: "Project tabular reviews",
+                      label: "Matter tabular reviews",
                   },
               ];
 
@@ -426,7 +426,7 @@ function UseWorkflowModalForWorkspace({ workflow, onClose, skipSelect = false }:
 
                         {inProject && (
                             <div>
-                                <FieldLabel htmlFor="workflow-project">Project</FieldLabel>
+                                <FieldLabel htmlFor="workflow-project">Matter</FieldLabel>
                                 <ModalSelect
                                     id="workflow-project"
                                     value={selectedProjectId ?? ""}
@@ -440,10 +440,10 @@ function UseWorkflowModalForWorkspace({ workflow, onClose, skipSelect = false }:
                                     }}
                                     placeholder={
                                         dirLoading
-                                            ? "Loading projects..."
+                                            ? "Loading matters..."
                                             : projects.length
-                                              ? "Select project..."
-                                              : "No projects found"
+                                              ? "Select matter..."
+                                              : "No matters found"
                                     }
                                     disabled={dirLoading || projects.length === 0}
                                 />

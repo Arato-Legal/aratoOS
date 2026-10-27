@@ -150,7 +150,7 @@ describe("setVersionReviewState", () => {
     expect(mocks.notify.mock.calls[0][1]).toMatchObject({
       kind: "document.review_requested",
       title: "Review requested: return.pdf (version 2)",
-      href: "/projects/p1",
+      href: "/matters/p1/documents",
     });
   });
 

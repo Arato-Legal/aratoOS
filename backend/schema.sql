@@ -1126,6 +1126,26 @@ alter table public.projects
     or (drive_folder_id is not null and length(drive_folder_id) <= 200)
   );
 
+-- Client Drive folder and per-matter client sharing
+-- (backend/migrations/20261026_05_client_matter_sharing.sql)
+alter table public.clients
+  add column if not exists drive_folder_id text,
+  add column if not exists drive_folder_name text;
+
+alter table public.clients
+  drop constraint if exists clients_drive_folder_check;
+alter table public.clients
+  add constraint clients_drive_folder_check
+  check (
+    (drive_folder_id is null and drive_folder_name is null)
+    or (drive_folder_id is not null and length(drive_folder_id) <= 200)
+  );
+
+-- When true, the other matters of the same client may read this matter's
+-- data (documents, chats, tasks, tabular reviews), read-only.
+alter table public.projects
+  add column if not exists share_with_client boolean not null default true;
+
 -- ---------------------------------------------------------------------------
 -- project_access_grants — direct, role-aware sharing
 -- ---------------------------------------------------------------------------
@@ -11396,5 +11416,6 @@ insert into public.schema_migrations (filename) values
   ('20261026_01_clients.sql'),
   ('20261026_02_matter_drive_folder.sql'),
   ('20261026_03_document_drive_links.sql'),
-  ('20261026_04_crm_sync.sql')
+  ('20261026_04_crm_sync.sql'),
+  ('20261026_05_client_matter_sharing.sql')
 on conflict (filename) do nothing;

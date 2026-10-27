@@ -48,7 +48,7 @@ export function sendOrgFailure(
             // The client asks who takes over, and sends the removal again.
             return void res.status(409).json({
                 code: "handover_required",
-                detail: "Choose a member to take over their projects and workflows first.",
+                detail: "Choose a member to take over their matters and workflows first.",
                 projects: result.projects,
                 workflows: result.workflows,
             });

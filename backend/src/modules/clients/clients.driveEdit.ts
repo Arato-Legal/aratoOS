@@ -90,9 +90,9 @@ async function authorizeProjectEdit(
   db: Db,
   args: { userId: string; userEmail?: string | null; projectId: string },
 ): Promise<ServiceResult<EditContext>> {
-  if (!isUuid(args.projectId)) return failure("not_found", "Project not found");
+  if (!isUuid(args.projectId)) return failure("not_found", "Matter not found");
   const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "content.edit"))
     return failure("forbidden", "You need edit access to this matter.");
   return ok({

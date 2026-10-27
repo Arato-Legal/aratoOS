@@ -20,7 +20,7 @@ token: `COURTLISTENER_API_TOKEN` is no longer read from `backend/.env`.
 Once added, CourtListener appears under **Installed**. Its switch turns case-law
 research on or off for that workspace, and **Manage** replaces or deletes the
 user's own token. The assistant is given the CourtListener tools in assistant
-and project chats only while the workspace's switch is on and the connector is
+and matter chats only while the workspace's switch is on and the connector is
 installed there. Tabular review and the Word add-in do not offer it. Opening a
 cited case uses the token of the workspace the citation came from.
 

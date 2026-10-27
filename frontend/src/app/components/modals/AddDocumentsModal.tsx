@@ -138,7 +138,7 @@ function AddDocumentsModalForWorkspace({
                 setProjectDocuments([]);
                 setProjectFolders([]);
                 notifyError(error, {
-                    action: "load this project's files",
+                    action: "load this matter's files",
                     dedupeKey: `add-documents-directory:${projectId}`,
                     onRetry: () => setDirectoryReloadKey((key) => key + 1),
                 });
@@ -257,9 +257,9 @@ function AddDocumentsModalForWorkspace({
         notifyError(firstFailure?.reason, {
             action:
                 failed.length === 1
-                    ? `add ${names} to this project`
-                    : `add ${failed.length} of ${toAssign.length} files to this project`,
-            fallback: `${names} could not be added to this project. Try again.`,
+                    ? `add ${names} to this matter`
+                    : `add ${failed.length} of ${toAssign.length} files to this matter`,
+            fallback: `${names} could not be added to this matter. Try again.`,
             // A second Confirm, or a Retry that fails again, replaces this
             // notice: an older one's Retry would resend its own stale sets.
             dedupeKey: `add-documents-assign:${targetProjectId}`,

@@ -286,12 +286,12 @@ export function ReviewsListTable({
                     {projectColumn && (
                         <TableHeaderCell className="w-52">
                             <div className="flex items-center gap-1">
-                                <span>Project</span>
+                                <span>Matter</span>
                                 {!loading && (
                                     <TableFilters
-                                        label="Filter by project"
+                                        label="Filter by matter"
                                         value={projectColumn.filter}
-                                        allLabel="All Projects"
+                                        allLabel="All Matters"
                                         options={projectColumn.projects.map(
                                             (project) => ({
                                                 value: project.id,

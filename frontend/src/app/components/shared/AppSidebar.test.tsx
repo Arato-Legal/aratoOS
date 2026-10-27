@@ -69,19 +69,19 @@ describe("AppSidebar failures", () => {
 
     // The old catch emptied the section, so a failed request looked exactly
     // like an account with no projects.
-    it("tells the user when recent projects cannot be loaded", async () => {
+    it("tells the user when recent matters cannot be loaded", async () => {
         vi.mocked(listProjectsPage).mockRejectedValue(new Error("boom"));
 
         renderSidebar();
 
         await waitFor(() =>
             expect(screen.getByRole("alert")).toHaveTextContent(
-                "Couldn't load your recent projects",
+                "Couldn't load your recent matters",
             ),
         );
     });
 
-    it("retries the recent projects load from the toast", async () => {
+    it("retries the recent matters load from the toast", async () => {
         const user = userEvent.setup();
         vi.mocked(listProjectsPage).mockRejectedValueOnce(
             new Error("boom"),

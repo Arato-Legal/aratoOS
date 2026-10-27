@@ -234,7 +234,7 @@ describe("TabularReviewView details gate", () => {
     // shown on permission refusals, so a silent failure reads as "this review
     // has no project". #496 keeps that coverage and moves the surface from a
     // blocking popup to the shared toast.
-    it("reports a review project that could not be loaded", async () => {
+    it("reports a review matter that could not be loaded", async () => {
         mockDetail({ access_role: "editor", project_id: "p1" });
         vi.mocked(getProject).mockRejectedValue(new Error("network unavailable"));
 
@@ -246,7 +246,7 @@ describe("TabularReviewView details gate", () => {
         );
 
         const alert = await screen.findByRole("alert");
-        expect(alert).toHaveTextContent("Couldn't load this review's project");
+        expect(alert).toHaveTextContent("Couldn't load this review's matter");
     });
 
 
@@ -265,7 +265,7 @@ describe("TabularReviewView details gate", () => {
         expect(screen.queryByTestId("details-can-edit")).not.toBeInTheDocument();
     });
 
-    it("refuses a non-creator admin the project move the server reserves for the creator", async () => {
+    it("refuses a non-creator admin the matter move the server reserves for the creator", async () => {
         // `creatorScopedAllowed` — the review's creator, or an admin only once
         // the creator's account is gone. Gating this on access.manage let an
         // admin who did not create the review through to a 403.
@@ -278,7 +278,7 @@ describe("TabularReviewView details gate", () => {
 
         expect(
             await screen.findByText(
-                "Only the person who created this review can move it to another project.",
+                "Only the person who created this review can move it to another matter.",
             ),
         ).toBeInTheDocument();
         expect(updateTabularReview).not.toHaveBeenCalled();

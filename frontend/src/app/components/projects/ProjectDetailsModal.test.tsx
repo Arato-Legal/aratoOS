@@ -46,7 +46,7 @@ describe("ProjectDetailsModal", () => {
         ]);
     });
 
-    it("shows the current organisation in project details", async () => {
+    it("shows the current organisation in matter details", async () => {
         render(
             <ProjectDetailsModal
                 open
@@ -97,18 +97,18 @@ describe("ProjectDetailsModal", () => {
                     .mockRejectedValue(
                         new MikeApiError({
                             status: 409,
-                            message: "A project with that CM number exists.",
+                            message: "A matter with that CM number exists.",
                         }),
                     )}
             />,
         );
 
-        await user.clear(screen.getByLabelText("Project name"));
-        await user.type(screen.getByLabelText("Project name"), "Renamed");
+        await user.clear(screen.getByLabelText("Matter name"));
+        await user.type(screen.getByLabelText("Matter name"), "Renamed");
         await user.click(screen.getByRole("button", { name: "Update" }));
 
         expect(
-            await screen.findByText("A project with that CM number exists."),
+            await screen.findByText("A matter with that CM number exists."),
         ).toBeInTheDocument();
     });
 
@@ -124,7 +124,7 @@ describe("ProjectDetailsModal", () => {
                 ...overrides,
             }) as Project;
 
-        it("shows the project's current setting and saves a change with the other details", async () => {
+        it("shows the matter's current setting and saves a change with the other details", async () => {
             const user = userEvent.setup();
             const onSave = vi.fn().mockResolvedValue(undefined);
             render(
@@ -148,7 +148,7 @@ describe("ProjectDetailsModal", () => {
             await user.click(toggle);
             expect(
                 screen.getByText(
-                    "Everyone in Elite Law LLP can open and edit this project.",
+                    "Everyone in Elite Law LLP can open and edit this matter.",
                 ),
             ).toBeInTheDocument();
             await user.click(screen.getByRole("button", { name: "Update" }));
@@ -161,7 +161,7 @@ describe("ProjectDetailsModal", () => {
             });
         });
 
-        it("makes a public project private again", async () => {
+        it("makes a public matter private again", async () => {
             const user = userEvent.setup();
             const onSave = vi.fn().mockResolvedValue(undefined);
             render(
@@ -198,7 +198,7 @@ describe("ProjectDetailsModal", () => {
                 />,
             );
 
-            const name = screen.getByLabelText("Project name");
+            const name = screen.getByLabelText("Matter name");
             await user.clear(name);
             await user.type(name, "Renamed");
             await user.click(screen.getByRole("button", { name: "Update" }));
@@ -207,7 +207,7 @@ describe("ProjectDetailsModal", () => {
             expect(onSave.mock.calls[0][0]).not.toHaveProperty("visibility");
         });
 
-        it("shows the setting, unchangeable, to somebody who cannot edit the project", () => {
+        it("shows the setting, unchangeable, to somebody who cannot edit the matter", () => {
             render(
                 <ProjectDetailsModal
                     open
@@ -223,7 +223,7 @@ describe("ProjectDetailsModal", () => {
             expect(screen.getByRole("button", { name: "Private" })).toBeDisabled();
         });
 
-        it("is not offered for a personal project", () => {
+        it("is not offered for a personal matter", () => {
             render(
                 <ProjectDetailsModal
                     open

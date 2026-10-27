@@ -54,7 +54,7 @@ every member; unlike a workflow, members do not get Editor by default, so
 editing is granted person by person, and members can be put on a deny list.
 The organization's owners own every public playbook. A **Private** one is
 open only to the people it is shared with. Sharing sends no email
-notification. Unlike projects and workflows, an organization's owners do not
+notification. Unlike matters and workflows, an organization's owners do not
 take over a private playbook whose creator has left.
 
 When a creator deletes their account, each of their public organization
@@ -204,7 +204,7 @@ on the right. The list starts with the Word or PDF file the playbook was compile
 from, if any, followed by up to 20 supplementary `.docx` or `.pdf` documents
 the rules can refer to, such as a data protection policy or a clause template.
 An editor adds supplementary documents with **+** or **Upload** (upload a
-file, or choose one from the library or a project) and removes them from each
+file, or choose one from the library or a matter) and removes them from each
 document's menu; the imported file changes only through **Replace from
 file**.
 

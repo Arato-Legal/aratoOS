@@ -98,11 +98,11 @@ export function ProjectMemoryModal({
         loadMemory,
         saveMemory,
         conflictLoadError:
-            "Project memory changed while you were editing. Reopen memory before saving again.",
+            "Matter memory changed while you were editing. Reopen memory before saving again.",
         saveError:
-            "Project memory could not be saved. Your draft has been kept.",
+            "Matter memory could not be saved. Your draft has been kept.",
         disabledError:
-            "Project memory was turned off while you were editing, so your changes were not saved.",
+            "Matter memory was turned off while you were editing, so your changes were not saved.",
         onCurrentChange: handleCurrentChange,
     });
 
@@ -126,14 +126,14 @@ export function ProjectMemoryModal({
             const current = await setProjectMemoryEnabled(projectId, enabled);
             syncCurrent(current);
             setDisableMemoryConfirmOpen(false);
-            setSavedNotice(enabled ? "Project memory enabled" : null);
+            setSavedNotice(enabled ? "Matter memory enabled" : null);
         } catch (cause) {
             setError(
                 userFacingApiError(
                     cause,
                     enabled
-                        ? "Project memory could not be enabled. Please try again."
-                        : "Project memory could not be disabled. Please try again.",
+                        ? "Matter memory could not be enabled. Please try again."
+                        : "Matter memory could not be disabled. Please try again.",
                 ),
             );
             setDisableMemoryConfirmOpen(false);
@@ -179,9 +179,9 @@ export function ProjectMemoryModal({
             open={open}
             onClose={requestClose}
             breadcrumbs={[
-                "Projects",
-                projectName ?? "Project",
-                "Project Memory",
+                "Matters",
+                projectName ?? "Matter",
+                "Matter Memory",
             ]}
             headerAction={
                 memory?.enabled && memoryActivityLabel(memory) ? (
@@ -225,8 +225,8 @@ export function ProjectMemoryModal({
                     <GlassCardUI>
                         <EmptyState
                             icon={<Brain />}
-                            title="Project memory could not be loaded"
-                            description="Try again to inspect this project's shared memory."
+                            title="Matter memory could not be loaded"
+                            description="Try again to inspect this matter's shared memory."
                             tone="error"
                             className="px-5 py-8"
                             action={
@@ -244,10 +244,10 @@ export function ProjectMemoryModal({
                     <>
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <FieldLabel as="p">Project memory</FieldLabel>
+                                <FieldLabel as="p">Matter memory</FieldLabel>
                                 <p className="text-sm text-gray-500">
-                                    Consists of shared project context curated
-                                    from chats in this project.
+                                    Consists of shared matter context curated
+                                    from chats in this matter.
                                 </p>
                             </div>
                             <ToggleSwitchUI
@@ -269,7 +269,7 @@ export function ProjectMemoryModal({
                                     disableMemoryConfirmOpen ||
                                     discardConfirmOpen
                                 }
-                                aria-label="Enable project memory"
+                                aria-label="Enable matter memory"
                                 aria-busy={settingsMutation !== null}
                             />
                         </div>
@@ -278,11 +278,11 @@ export function ProjectMemoryModal({
                             <GlassCardUI>
                                 <EmptyState
                                     icon={<Brain />}
-                                    title="Project memory is off"
+                                    title="Matter memory is off"
                                     description={
                                         canManage
-                                            ? "Turn it on to start a new shared project memory.md for future conversations."
-                                            : "A project owner can enable memory for future project conversations."
+                                            ? "Turn it on to start a new shared matter memory.md for future conversations."
+                                            : "A matter owner can enable memory for future matter conversations."
                                     }
                                     className="px-5 py-8"
                                 />
@@ -319,7 +319,7 @@ export function ProjectMemoryModal({
                                             disableMemoryConfirmOpen ||
                                             discardConfirmOpen
                                         }
-                                        ariaLabel="Project memory"
+                                        ariaLabel="Matter memory"
                                         className="h-full"
                                         allowTables={false}
                                     />
@@ -332,8 +332,8 @@ export function ProjectMemoryModal({
 
             <ConfirmPopup
                 open={disableMemoryConfirmOpen}
-                title="Turn off project memory?"
-                message={`This will delete the existing project memory.md file${dirty ? " and your unsaved draft" : ""}, cancel pending memory updates, and stop future memory updates until you turn project memory on again.`}
+                title="Turn off matter memory?"
+                message={`This will delete the existing matter memory.md file${dirty ? " and your unsaved draft" : ""}, cancel pending memory updates, and stop future memory updates until you turn matter memory on again.`}
                 confirmLabel="Disable"
                 confirmVariant="danger"
                 confirmStatus={
@@ -348,7 +348,7 @@ export function ProjectMemoryModal({
             <ConfirmPopup
                 open={discardConfirmOpen}
                 title="Close without saving?"
-                message="The latest changes could not be saved to this project's memory.md. Closing now discards them."
+                message="The latest changes could not be saved to this matter's memory.md. Closing now discards them."
                 confirmLabel="Close without saving"
                 confirmVariant="danger"
                 onConfirm={() => {
@@ -368,7 +368,7 @@ export function ProjectMemoryModal({
 
 function ProjectMemorySkeleton() {
     return (
-        <div className="space-y-4" aria-label="Loading project memory">
+        <div className="space-y-4" aria-label="Loading matter memory">
             <div className="space-y-2">
                 <div className="h-3 w-full max-w-xl animate-pulse rounded bg-gray-100" />
                 <div className="h-3 w-40 animate-pulse rounded bg-gray-100" />

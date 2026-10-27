@@ -366,7 +366,7 @@ export async function renameProjectDocument(
       return { ok: false, kind: "db_error", error: result.error };
     // renameDocument answers not_found when checkProjectAccess refuses and
     // forbidden when the caller can see the project but may not organize it.
-    if (result.kind === "not_found" && result.detail === "Project not found")
+    if (result.kind === "not_found" && result.detail === "Matter not found")
       return { ok: false, kind: "forbidden" };
     if (result.kind === "forbidden")
       return { ok: false, kind: "role_forbidden", detail: result.detail };

@@ -62,12 +62,12 @@ export const ACTION_LABELS: Record<string, string> = {
   "org.member.removed": "Member removed",
   "org.member.left": "Member left",
   "org.data.deleted": "Organization data deleted",
-  "project.created": "Project created",
-  "project.updated": "Project settings changed",
-  "project.visibility_changed": "Project visibility changed",
-  "project.deleted": "Project deleted",
-  "project.access.granted": "Project shared",
-  "project.access.revoked": "Project access removed",
+  "project.created": "Matter created",
+  "project.updated": "Matter settings changed",
+  "project.visibility_changed": "Matter visibility changed",
+  "project.deleted": "Matter deleted",
+  "project.access.granted": "Matter shared",
+  "project.access.revoked": "Matter access removed",
   "chat.message": "Chat message sent",
   "document.uploaded": "Document uploaded",
   "document.generated": "Document generated",
@@ -94,7 +94,7 @@ export const ACTION_LABELS: Record<string, string> = {
 
 export const SURFACE_LABELS: Record<string, string> = {
   assistant: "Assistant",
-  project: "Project",
+  project: "Matter",
   word: "Word",
   tabular: "Tabular",
   playbooks: "Playbooks",
@@ -114,12 +114,12 @@ export function auditAction(event: AuditEvent): string {
   // Failed or cancelled operations must not read as successful changes.
   if (event.status === "completed") return label;
   const operations: Record<string, string> = {
-    "project.created": "Project creation",
-    "project.updated": "Project settings change",
-    "project.visibility_changed": "Project visibility change",
-    "project.deleted": "Project deletion",
-    "project.access.granted": "Project sharing",
-    "project.access.revoked": "Project access removal",
+    "project.created": "Matter creation",
+    "project.updated": "Matter settings change",
+    "project.visibility_changed": "Matter visibility change",
+    "project.deleted": "Matter deletion",
+    "project.access.granted": "Matter sharing",
+    "project.access.revoked": "Matter access removal",
     "chat.message": "Chat message",
     "document.uploaded": "Document upload",
     "document.generated": "Document generation",
@@ -183,7 +183,7 @@ export function auditSubject(event: AuditEvent) {
     type = auditLabel(detailText(event, "kind") ?? "item");
   else if (action.startsWith("org.")) type = "Organization";
   else if (action.startsWith("project.access.")) type = "Recipient";
-  else if (action.startsWith("project.")) type = "Project";
+  else if (action.startsWith("project.")) type = "Matter";
   else if (action.startsWith("document.")) type = "Document";
   else if (action.startsWith("task.")) type = "Task";
   else if (action.startsWith("chat.")) type = "Chat";
@@ -341,9 +341,9 @@ export function auditSummary(event: AuditEvent, personal: boolean): string {
   if (event.action === "project.created") return `${actor} created ${name}.`;
   if (event.action === "project.deleted") return `${actor} deleted ${name}.`;
   if (event.action === "project.access.granted")
-    return `${actor} shared the project with ${name}.`;
+    return `${actor} shared the matter with ${name}.`;
   if (event.action === "project.access.revoked")
-    return `${actor} removed project access for ${name}.`;
+    return `${actor} removed matter access for ${name}.`;
   if (event.action === "document.uploaded") return `${actor} uploaded ${name}.`;
   if (event.action === "document.edited") return `${actor} edited ${name}.`;
   if (event.action === "document.generated")
@@ -362,24 +362,24 @@ export function auditDestination(
   if (event.chat_id && event.surface !== "word")
     return {
       href: event.project_id
-        ? `/projects/${encodeURIComponent(event.project_id)}/assistant/chat/${encodeURIComponent(event.chat_id)}`
+        ? `/matters/${encodeURIComponent(event.project_id)}/assistant/chat/${encodeURIComponent(event.chat_id)}`
         : `/assistant/chat/${encodeURIComponent(event.chat_id)}`,
       label: "Open chat",
     };
   if (event.project_id)
     return {
-      href: `/projects/${encodeURIComponent(event.project_id)}`,
-      label: "Open project",
+      href: `/matters/${encodeURIComponent(event.project_id)}/documents`,
+      label: "Open matter",
     };
   const access = auditPrivateAccess(event);
   if (access && ["project", "chat", "tabular_review"].includes(access.kind)) {
     const target = {
-      project: { path: "/projects/", label: "Open project" },
+      project: { path: "/matters/", suffix: "/documents", label: "Open matter" },
       chat: { path: "/assistant/chat/", label: "Open chat" },
       tabular_review: { path: "/tabular-reviews/", label: "Open review" },
     }[access.kind as "project" | "chat" | "tabular_review"];
     return {
-      href: `${target.path}${encodeURIComponent(access.item_id)}`,
+      href: `${target.path}${encodeURIComponent(access.item_id)}${"suffix" in target ? target.suffix : ""}`,
       label: target.label,
     };
   }

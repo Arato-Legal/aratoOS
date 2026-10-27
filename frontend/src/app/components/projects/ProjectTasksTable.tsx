@@ -378,8 +378,8 @@ export function ProjectTasksTable({
                             title="Tasks"
                             description={
                                 filter === "open"
-                                    ? "Deadlines and to-dos for this project, with an owner and a due date. Nothing is open."
-                                    : "Deadlines and to-dos for this project, with an owner and a due date."
+                                    ? "Deadlines and to-dos for this matter, with an owner and a due date. Nothing is open."
+                                    : "Deadlines and to-dos for this matter, with an owner and a due date."
                             }
                             action={
                                 canEdit ? (

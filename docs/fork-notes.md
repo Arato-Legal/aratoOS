@@ -25,7 +25,8 @@ Mostly new files, in new modules, so most upstream updates do not touch them.
 
 Migrations the fork added, which must stay in this order after Mike's:
 `20261025_01` to `_03` (ported from TaxOSS) and `20261026_01` to `_04`
-(clients, matter Drive folder, document Drive links, CRM sync).
+(clients, matter Drive folder, document Drive links, CRM sync) and `20261026_05`
+(client Drive folder, per-matter client sharing).
 
 ## Mike's own files the fork changed
 
@@ -38,7 +39,7 @@ small and additive.
   `backend/src/lib/observability/sentryPrivacy.ts` and
   `frontend/src/shared/lib/sentryPrivacy.ts`, `frontend/src/app/lib/mikeApi.ts`
   (API functions at the end), `frontend/src/app/components/shared/types.ts`.
-- **Wiring:** `backend/src/app.ts` (routers and rate limits),
+- **Wiring:** `frontend/next.config.ts` (the `/matters` rewrites and `/projects` redirects), `backend/src/app.ts` (routers and rate limits),
   `backend/src/index.ts`, `backend/src/workerRuntime.ts`,
   `backend/src/jobs/registry.ts`, `backend/src/jobs/maintenance.ts`,
   `docker-compose.yml`, `backend/.env.example`.
@@ -54,6 +55,15 @@ small and additive.
 - **Frontend screens:** `AppSidebar.tsx`, `ProjectWorkspace.tsx`,
   `ProjectPageParts.tsx`, `DocTable.tsx`, `settings/layout.tsx`,
   `history/auditPresentation.ts`.
+
+- **"Matter" wording:** the UI says "Matter" while code, the database, the API
+  and URLs keep `projects`, so upstream merges stay clean. Only user-visible
+  strings changed (labels, headings, buttons, placeholders, toasts, aria-labels,
+  error and notification text, and docs prose), across frontend components and
+  pages, the Word add-in, backend error and notification messages, their tests,
+  the e2e specs and the docs. Model prompts and tool descriptions still say
+  "project". A merge conflict in such a string resolves to Mike's text with
+  "project" changed to "matter".
 
 Not taken from TaxOSS on purpose: its change that lets an operator trust private
 network addresses for connector URLs. It loosens a security safeguard, so it
