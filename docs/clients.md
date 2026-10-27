@@ -202,6 +202,42 @@ An organization admin sets these at `/clients/sync` (**Links back to Hubflo**,
 | --- | --- |
 | `GET/PUT /clients/integrations?workspace=` | Read or change the templates and Drive sharing (admins) |
 
+## Assistant sessions at client and matter level
+
+An assistant session runs at one of two levels, and the composer offers the
+same five modes at both: **Chat**, **Workflow**, **Playbook**, **Tabular
+review** and **Library search**. A mode applies to the next message only, then
+the composer returns to Chat. It tells the model which tool the user reached
+for (`list_workflows`/`read_workflow`, `list_playbooks`/`run_playbook`,
+`create_tabular_review`, `find_documents` over the library); every tool stays
+available in Chat.
+
+- **Matter level** is the existing matter chat (`/matters/:id/assistant`).
+- **Client level** is a chat started from the client page (**Assistant**,
+  `/clients/:id/assistant`). It is a standalone chat that records
+  `chats.client_id` (migration `20261026_07_client_chats.sql`), so it stays
+  its author's, like any standalone chat. It reads the documents and memory of
+  the client's matters whose sharing is on **and** that the caller can open, so
+  it never widens access. It cannot write into any matter.
+- **Memory is read through, not copied.** A matter session reads its own
+  memory plus the memory of sibling matters that share with the client; a
+  client session reads the memory of the readable sharing-on matters. Turning a
+  matter's sharing off removes it from both at once (the "firewall"). Memory is
+  still written only by the curator, at the level the conversation ran.
+  A separate client memory file is not built yet.
+- **Other matters' documents are read-only** in a session: `edit_document` and
+  `run_playbook` refuse them (copy one with `replicate_document` first).
+- **`create_tabular_review`** saves a review in a matter: the current one in a
+  matter session, or the one named in `matter_name` (a readable client matter)
+  in a client session. It only sets the review up; the user starts extraction
+  with Generate on the review page.
+
+| Route | Purpose |
+| --- | --- |
+| `POST /chat` with `client_id` and optional `mode` | Run a client-level turn |
+| `POST /projects/:id/chat` with optional `mode` | Run a matter turn in a mode |
+| `GET /clients/:clientId/chats` | The caller's own client-level chats |
+
 ## URLs
 
 Matter pages are served at `/matters/:id` (dashboard), `/matters/:id/documents`,

@@ -1,3 +1,4 @@
+import { parseAssistantMode } from "../../lib/assistantModes";
 import { abortable } from "../../lib/abortable";
 import {
     attachAssistantTurnSse,
@@ -73,6 +74,10 @@ projectChatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
     if (!parsedChatId.ok) {
         return void res.status(400).json({ detail: parsedChatId.detail });
     }
+    const parsedMode = parseAssistantMode(body.mode);
+    if (!parsedMode.ok) {
+        return void res.status(400).json({ detail: parsedMode.detail });
+    }
     const parsedModel = parseOptionalModel(body.model);
     if (!parsedModel.ok) {
         return void res.status(400).json({ detail: parsedModel.detail });
@@ -128,6 +133,7 @@ projectChatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
         requestedModel: model,
         requestedReasoning: parsedReasoning.value,
         requestedTimeZone: req.body?.time_zone,
+        mode: parsedMode.value,
     });
     if (!prep.ok) {
         if ("internal" in prep) return void sendInternalError(res, prep.error);
@@ -278,6 +284,7 @@ projectChatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
                 projectId,
                 conversationId: chatId,
                 includeMemory: true,
+                includeTabularCreate: true,
                 connectorApprovals: true,
                 memoryProjectId: projectId,
                 memorySharedAudience,

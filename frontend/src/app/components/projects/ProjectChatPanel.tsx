@@ -978,6 +978,7 @@ export function ProjectChatPanel({
                                 onCancel={cancel}
                             >
                                 <ChatInput
+                                    showModePicker
                                     key={`${activeChatId || "new"}:${composerResetKey}`}
                                     ref={chatInputRef}
                                     onSubmit={handleSubmit}

@@ -51,7 +51,8 @@ import {
     isModelAvailable,
     type ModelProvider,
 } from "@/app/lib/modelAvailability";
-import type { Document, Message, Workflow } from "../shared/types";
+import { AssistantModePicker } from "./AssistantModePicker";
+import type { AssistantMode, Document, Message, Workflow } from "../shared/types";
 import type { DirectoryTab } from "../shared/useDirectoryData";
 import { cn } from "@/app/lib/utils";
 import { LIQUID_GLASS_TRANSLUCENT_CLASS } from "@/app/components/ui/liquid-surface";
@@ -124,6 +125,8 @@ interface Props {
     chatLoading?: boolean;
     hideAddDocButton?: boolean;
     hideWorkflowButton?: boolean;
+    /** Offer the session modes (workflow, playbook, tabular review, library search). */
+    showModePicker?: boolean;
     projectName?: string;
     projectCmNumber?: string | null;
     projectId?: string;
@@ -172,6 +175,7 @@ function ChatInputForChatImpl(
         chatLoading = false,
         hideAddDocButton,
         hideWorkflowButton,
+        showModePicker,
         projectName,
         projectCmNumber,
         projectId,
@@ -249,6 +253,7 @@ function ChatInputForChatImpl(
         title: string;
     } | null>(null);
     const [playbookModalOpen, setPlaybookModalOpen] = useState(false);
+    const [mode, setMode] = useState<AssistantMode>("chat");
     const [playbookModalInitialId, setPlaybookModalInitialId] = useState<
         string | undefined
     >(undefined);
@@ -652,8 +657,11 @@ function ChatInputForChatImpl(
         setSelectedWorkflow(null);
         setSelectedPlaybook(null);
         setExcerpts([]);
+        const sentMode = showModePicker && mode !== "chat" ? mode : undefined;
+        setMode("chat");
 
         onSubmit?.({
+            ...(sentMode ? { mode: sentMode } : {}),
             role: "user",
             content: serializeExcerpts(excerpts, query),
             files: files.length > 0 ? files : undefined,
@@ -837,6 +845,14 @@ function ChatInputForChatImpl(
                                 />
                             ))}
                         </div>
+                    )}
+
+                    {showModePicker && (
+                        <AssistantModePicker
+                            mode={mode}
+                            onChange={setMode}
+                            disabled={!composerOpen}
+                        />
                     )}
 
                     {/* Input */}

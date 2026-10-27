@@ -106,6 +106,52 @@ export const TABULAR_TOOLS = [
   },
 ];
 
+// A tabular review asks the same questions of a set of documents. Created in a
+// matter (the current one, or one of the client's in a client session) and
+// started by the user from the review itself.
+export const TABULAR_CREATE_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "create_tabular_review",
+      description:
+        "Create a tabular review: one row per document, one column per question, saved in a matter. Use it when the user wants the same questions answered across several documents. It only sets the review up; the user starts the extraction from the review page. Returns the review's link and how many rows and columns it has.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "A short title for the review." },
+          doc_ids: {
+            type: "array",
+            items: { type: "string" },
+            description: "Document slugs to review (e.g. ['doc-0', 'shared-1']).",
+          },
+          columns: {
+            type: "array",
+            description: "The questions, one per column.",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string", description: "Short column heading." },
+                prompt: {
+                  type: "string",
+                  description: "The question to answer from each document.",
+                },
+              },
+              required: ["name", "prompt"],
+            },
+          },
+          matter_name: {
+            type: "string",
+            description:
+              "In a client-level session only: the name of the client's matter to save the review in. Not needed inside a matter.",
+          },
+        },
+        required: ["doc_ids", "columns"],
+      },
+    },
+  },
+];
+
 export const WORKFLOW_TOOLS = [
   {
     type: "function",

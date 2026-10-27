@@ -2862,6 +2862,21 @@ create table if not exists public.chats (
   updated_at timestamptz not null default now()
 );
 
+-- Chats run at the client level (backend/migrations/20261026_07_client_chats.sql)
+alter table public.chats
+  add column if not exists client_id uuid
+  references public.clients(id) on delete cascade;
+
+alter table public.chats
+  drop constraint if exists chats_scope_check;
+alter table public.chats
+  add constraint chats_scope_check
+  check (project_id is null or client_id is null);
+
+create index if not exists idx_chats_client
+  on public.chats(client_id) where client_id is not null;
+
+
 create index if not exists idx_chats_user
   on public.chats(user_id);
 
@@ -11449,5 +11464,6 @@ insert into public.schema_migrations (filename) values
   ('20261026_03_document_drive_links.sql'),
   ('20261026_04_crm_sync.sql'),
   ('20261026_05_client_matter_sharing.sql'),
-  ('20261026_06_hubflo_links_org_drive.sql')
+  ('20261026_06_hubflo_links_org_drive.sql'),
+  ('20261026_07_client_chats.sql')
 on conflict (filename) do nothing;

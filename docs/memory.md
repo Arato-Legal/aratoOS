@@ -97,6 +97,11 @@ the answer being shown to the user.
 - Organization matters and personal matters with any access grant may update
   matter memory only. Their conversations never update a participant's app
   memory.
+- Matter memory is also **read through** to the client's other sessions: a
+  matter conversation sees the memory of sibling matters that share with the
+  client, and a client-level conversation sees the memory of the sharing-on
+  matters its caller can open. Nothing is copied or written across matters, and
+  switching a matter's sharing off removes it at once.
 - A matter curator runs separately and never receives app memory. This
   prevents private app context from being copied into matter memory.
 - When facts conflict, the current conversation wins over matter memory, and

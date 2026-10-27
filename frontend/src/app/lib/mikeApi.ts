@@ -78,6 +78,7 @@ import type {
     ClientContact,
     ClientDetail,
     MatterDashboard,
+    AssistantMode,
     ClientFiles,
     IntegrationSettings,
     MatterWorkspace,
@@ -3330,6 +3331,10 @@ export async function streamChat(payload: {
     }[];
     chat_id?: string;
     project_id?: string;
+    /** Run the chat at a client's level instead of a matter's. */
+    client_id?: string;
+    /** What this message is for; plain chat when absent. */
+    mode?: AssistantMode;
     /**
      * The organization whose workspace the chat is in. It decides where a
      * NEW chat is filed; an existing chat keeps the organization it has.
@@ -3368,6 +3373,7 @@ export async function streamProjectChat(payload: {
     displayed_doc?: { filename: string; document_id: string };
     attached_documents?: { filename: string; document_id: string }[];
     ask_inputs_response?: AskInputsResponsePayload;
+    mode?: AssistantMode;
     signal?: AbortSignal;
 }): Promise<Response> {
     const { projectId, signal, ...body } = payload;
@@ -4962,6 +4968,13 @@ export async function setClientDriveFolder(
         `/clients/${clientId}/drive-folder`,
         jsonInit("PUT", { folder_id: folderId }),
     );
+}
+
+/** The caller's own assistant chats run at a client's level. */
+export async function listClientChats(
+    clientId: string,
+): Promise<{ id: string; title: string | null; updated_at: string }[]> {
+    return apiRequest(`/clients/${clientId}/chats`);
 }
 
 /** Hubflo link templates and the workspace-wide Drive connection (admins). */

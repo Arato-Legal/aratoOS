@@ -7,7 +7,7 @@
 // caller's own Google connection.
 
 import { checkProjectAccess, getOrgRole } from "../../lib/access";
-import { listSharedSiblingMatters } from "../../lib/clientSharing";
+import { checkClientAccess, listSharedSiblingMatters } from "../../lib/clientSharing";
 import { attachActiveVersionPaths } from "../../lib/documentVersions";
 import { can } from "../../lib/permissions";
 import { driveOwnerFor } from "./clients.integrations";
@@ -311,4 +311,31 @@ export async function createMatterDriveFolder(
     return driveFailure(error);
   }
   return getMatterWorkspace(db, args);
+}
+
+// ---------------------------------------------------------------------------
+// Client-level assistant chats
+// ---------------------------------------------------------------------------
+
+export type ClientChatSummary = { id: string; title: string | null; updated_at: string };
+
+// The caller's own assistant chats run at this client's level. Chats stay
+// their author's, like any standalone chat; the client only labels them.
+export async function listClientChats(
+  db: Db,
+  args: { userId: string; clientId: string },
+): Promise<ServiceResult<ClientChatSummary[]>> {
+  if (!isUuid(args.clientId)) return failure("not_found", "Client not found");
+  const access = await checkClientAccess(db, args.clientId, args.userId);
+  if (!access.ok) return failure("not_found", "Client not found");
+  const { data, error } = await db
+    .from("chats")
+    .select("id, title, updated_at")
+    .eq("client_id", args.clientId)
+    .eq("user_id", args.userId)
+    .is("archived_at", null)
+    .order("updated_at", { ascending: false })
+    .limit(100);
+  if (error) return internalFailure(error);
+  return ok((data ?? []) as ClientChatSummary[]);
 }

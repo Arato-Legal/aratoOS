@@ -20,7 +20,9 @@ import {
     type WebSearchSources,
 } from "../../lib/webSearch";
 import { resolveRequestTimeZone } from "../../lib/userTime";
-import { attachPriorReasoning, buildDocContext, buildMessages, buildUserPersonalisationPrompt, devLog, enrichWithPriorEvents, loadUserMessageSentTimes, buildWorkflowStore, appendAskInputsResponseToAssistantMessage, runApprovedConnectorActions, generateSpotlightNonce, type AskInputsResponseRequest, type ChatMessage, type SubagentDefaults } from "./engine/index";
+import { checkClientAccess } from "../../lib/clientSharing";
+import { modeDirective, type AssistantMode } from "../../lib/assistantModes";
+import { attachPriorReasoning, buildClientDocContext, buildDocContext, buildMessages, buildUserPersonalisationPrompt, devLog, enrichWithPriorEvents, loadUserMessageSentTimes, buildWorkflowStore, appendAskInputsResponseToAssistantMessage, runApprovedConnectorActions, generateSpotlightNonce, type AskInputsResponseRequest, type ChatMessage, type SubagentDefaults } from "./engine/index";
 import type { McpToolEvent } from "@mike/contracts";
 import { getUserModelSettings, resolveUserChatSelection } from "../user/user.service";
 import {
@@ -57,6 +59,7 @@ export type PreparedChatStream = {
     chatTitle: string | null;
     lastUser: ChatMessage | undefined;
     resolvedProjectId: string | null;
+    resolvedClientId: string | null;
     // Whether the turn that is about to stream has a durable row behind it.
     // An ask_inputs continuation that could not be appended is not durable,
     // and must not trigger memory consolidation.
@@ -109,6 +112,10 @@ export async function prepareChatStream(
         inputMessageId: string | null;
         projectIdProvided: boolean;
         projectId: string | null;
+        /** Run the chat at the client level; unvalidated until checked below. */
+        clientId?: string | null;
+        /** What the session was started to do; plain chat when absent. */
+        mode?: AssistantMode;
         // Parsed `ask_inputs_response` payload (answers to an ask_inputs
         // event emitted by the assistant in a prior turn). When present, the
         // user's answers are appended onto the previous assistant message
@@ -141,6 +148,7 @@ export async function prepareChatStream(
     let chatModel: string | null = null;
     let chatReasoningLevel: string | null = null;
     let resolvedProjectId: string | null = args.projectId;
+    let resolvedClientId: string | null = null;
     let canReadProjectMemory = false;
     let canCurateProjectMemory = false;
     let memorySharedAudience = false;
@@ -186,6 +194,15 @@ export async function prepareChatStream(
             };
         }
         resolvedProjectId = existingProjectId;
+        resolvedClientId =
+            (existing as { client_id?: string | null }).client_id ?? null;
+        if (args.clientId && args.clientId !== resolvedClientId) {
+            return {
+                ok: false,
+                status: 400,
+                detail: "client_id does not match chat",
+            };
+        }
         // A database error in the audience check must not escape as a
         // rejected promise: memory bookkeeping never decides whether the
         // user gets an answer, and an unhandled rejection here used to
@@ -253,7 +270,19 @@ export async function prepareChatStream(
                 status: projectAccess.status,
                 detail: projectAccess.detail,
             };
-        if (resolvedProjectId) {
+        if (args.clientId) {
+            if (resolvedProjectId)
+                return {
+                    ok: false,
+                    status: 400,
+                    detail: "A chat is run at the matter or the client level, not both.",
+                };
+            const clientAccess = await checkClientAccess(db, args.clientId, userId);
+            if (!clientAccess.ok)
+                return { ok: false, status: 404, detail: "Client not found" };
+            resolvedClientId = args.clientId;
+            contentOrgId = clientAccess.orgId;
+        } else if (resolvedProjectId) {
             const resolvedOrg = await resolveContentOrgId(db, {
                 projectId: resolvedProjectId,
             });
@@ -352,6 +381,7 @@ export async function prepareChatStream(
             .insert({
                 user_id: userId,
                 project_id: resolvedProjectId,
+                client_id: resolvedClientId,
                 model: selectedModel,
                 reasoning_level: selectedReasoningLevel,
                 org_id: contentOrgId,
@@ -475,6 +505,18 @@ export async function prepareChatStream(
             "chat_messages",
             userEmail,
         );
+        if (resolvedClientId) {
+            // A client session also sees the documents of the client's
+            // sharing-on matters that this caller can open.
+            const clientDocs = await buildClientDocContext(
+                resolvedClientId,
+                userId,
+                db,
+                userEmail,
+            );
+            Object.assign(docIndex, clientDocs.docIndex);
+            for (const [label, doc] of clientDocs.docStore) docStore.set(label, doc);
+        }
         const docAvailability = Object.entries(docIndex).map(([doc_id, info]) => ({
             doc_id,
             filename: info.filename,
@@ -515,7 +557,9 @@ export async function prepareChatStream(
         const apiMessages = buildMessages(
             enrichedMessages,
             docAvailability,
-            personalisationPrompt || undefined,
+            [personalisationPrompt, modeDirective(args.mode)]
+                .filter(Boolean)
+                .join("\n\n") || undefined,
             undefined,
             legalResearchUs,
             nonce,
@@ -532,6 +576,7 @@ export async function prepareChatStream(
                 chatTitle,
                 lastUser,
                 resolvedProjectId,
+                resolvedClientId,
                 completedTurnPersisted,
                 approvalEvents,
                 allowDocumentMutation,

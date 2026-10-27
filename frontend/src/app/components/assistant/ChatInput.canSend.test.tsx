@@ -551,4 +551,9 @@ describe("ChatInput canSend gating", () => {
         const pickerProps = vi.mocked(AddDocumentsModal).mock.calls.at(-1)?.[0];
         expect(pickerProps?.projectId).toBeUndefined();
     });
+
+    it("does not show the mode picker unless asked", () => {
+        renderInput(true);
+        expect(screen.queryByRole("radiogroup", { name: "Session mode" })).toBeNull();
+    });
 });

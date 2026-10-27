@@ -120,6 +120,7 @@ export function InitialView({
                     ref={chatInputRef}
                     onSubmit={onSubmit}
                     onDocumentClick={onDocumentClick}
+                    showModePicker
                     onCancel={() => {}}
                     isLoading={false}
                 />
