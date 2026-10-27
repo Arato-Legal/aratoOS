@@ -127,11 +127,25 @@ numbering, fields and revisions intact.
   internal to the Workspace domain or complete Google's verification.
 - **Public repo:** test documents must be synthetic or scrubbed.
 
+## Firm workflow (confirmed)
+
+The firm works in both formats interchangeably. Drafts start as DOCX, then
+are converted to Google Docs to share with clients. So:
+
+- DOCX is the drafting source; the Google Doc is the client-facing copy.
+- The conversion that matters most is DOCX -> Google Doc (what the client
+  sees), then Google Doc -> DOCX (client suggestions and comments coming
+  back). Both are tested, in that order, in Phase 2.
+- Client suggestions and comments made in Google Docs must arrive in the
+  DOCX as tracked changes and comments, with the client as author.
+- Numbering and cross-references must still be correct after the trip out
+  and back; a format that looks right only in Word is not enough.
+- Needed in Phase 1/2: a "Share to Google Docs" action (convert and upload,
+  remembering the link) and "Pull client changes" (reuses Update from Drive,
+  imports as a new version so nothing is overwritten).
+
 ## Open questions
 
-- Is Word the source of truth for the firm, with Google Docs as a
-  convenience, or the reverse? It sets how much Google round-trip loss is
-  acceptable.
 - Which templates carry the numbering styles that matter most?
 - Should assistant edits require lawyer approval before saving, or only be
   marked as suggestions?
