@@ -79,6 +79,7 @@ import type {
     ClientDetail,
     MatterDashboard,
     ClientFiles,
+    IntegrationSettings,
     MatterWorkspace,
     WorkspaceFile,
     DriveSyncStatus,
@@ -4835,6 +4836,7 @@ type ClientPayload = Partial<
         | "address"
         | "source"
         | "notes"
+        | "client_number"
         | "custom_fields"
     >
 >;
@@ -4959,6 +4961,30 @@ export async function setClientDriveFolder(
     return apiRequest(
         `/clients/${clientId}/drive-folder`,
         jsonInit("PUT", { folder_id: folderId }),
+    );
+}
+
+/** Hubflo link templates and the workspace-wide Drive connection (admins). */
+export async function getIntegrationSettings(
+    workspace: string,
+): Promise<IntegrationSettings> {
+    return apiRequest<IntegrationSettings>(
+        `/clients/integrations?workspace=${encodeURIComponent(workspace)}`,
+    );
+}
+
+export async function updateIntegrationSettings(
+    workspace: string,
+    patch: Partial<
+        Pick<
+            IntegrationSettings,
+            "hubflo_client_url" | "hubflo_matter_url" | "hubflo_contact_url"
+        > & { drive_shared: boolean }
+    >,
+): Promise<IntegrationSettings> {
+    return apiRequest<IntegrationSettings>(
+        `/clients/integrations?workspace=${encodeURIComponent(workspace)}`,
+        jsonInit("PUT", patch),
     );
 }
 

@@ -10,7 +10,7 @@
 
 import { checkProjectAccess } from "../../lib/access";
 import { can } from "../../lib/permissions";
-import { teamOrgIdOf } from "../../lib/personalOrgs";
+import { driveOwnerFor } from "./clients.integrations";
 import type { Db } from "../../lib/supabase";
 import {
   failure,
@@ -20,7 +20,6 @@ import {
 } from "../../lib/serviceResult";
 import { isUuid } from "../../lib/uuid";
 import { PERSONAL_WORKSPACE, type WorkspaceFilter } from "../../lib/workspace";
-import type { ConnectorOwner } from "../../lib/connectorOwner";
 import { GoogleDriveUserError } from "../../lib/integrations/googleDriveHttp";
 import {
   findWorkInProgressFolder,
@@ -82,13 +81,7 @@ function asDriveError(error: unknown): DriveError | null {
 }
 
 // The caller's connections in the workspace the matter lives in.
-async function ownerFor(
-  db: Db,
-  userId: string,
-  orgId: string | null | undefined,
-): Promise<ConnectorOwner> {
-  return { userId, orgId: await teamOrgIdOf(db, orgId ?? null) };
-}
+const ownerFor = driveOwnerFor;
 
 /** Folder browser for the "choose matter folder" dialog. */
 export async function browseDriveFolders(

@@ -29,6 +29,7 @@ import type {
 import {
     DashboardPage,
     DashboardSection,
+    HubfloLink,
     DashboardSkeleton,
     EditableField,
     SelectField,
@@ -116,9 +117,13 @@ export function ClientDashboard({ clientId }: { clientId: string }) {
                     <h1 className="break-words font-serif text-3xl text-gray-900">
                         {client.name}
                     </h1>
-                    <p className="mt-1 text-xs text-gray-500">
-                        {STATUS_LABELS[client.status]} · Added{" "}
-                        {formatDate(client.created_at)}
+                    <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-gray-500">
+                        <span>
+                            {client.client_number ? `${client.client_number} · ` : ""}
+                            {STATUS_LABELS[client.status]} · Added{" "}
+                            {formatDate(client.created_at)}
+                        </span>
+                        <HubfloLink href={client.hubflo_url} />
                     </p>
                 </div>
 
@@ -128,6 +133,11 @@ export function ClientDashboard({ clientId }: { clientId: string }) {
                             label="Name"
                             value={client.name}
                             onSave={(name) => (name ? save({ name }) : reload())}
+                        />
+                        <EditableField
+                            label="Client number"
+                            value={client.client_number}
+                            onSave={(client_number) => save({ client_number })}
                         />
                         <SelectField
                             label="Status"
@@ -301,6 +311,7 @@ function ContactsSection({
                                 <p className="break-all">{contact.email}</p>
                             )}
                             {contact.phone && <p>{contact.phone}</p>}
+                            <HubfloLink href={contact.hubflo_url} />
                         </div>
                         <PillButtonUI
                             tone="white"

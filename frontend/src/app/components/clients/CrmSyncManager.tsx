@@ -12,6 +12,7 @@ import {
     updateCrmSyncEndpoint,
 } from "@/app/lib/mikeApi";
 import { notifyError } from "@/app/lib/userFacingError";
+import { IntegrationSettingsSection } from "./IntegrationSettingsSection";
 import { useAuth } from "@/app/contexts/AuthContext";
 import {
     PERSONAL_WORKSPACE,
@@ -243,6 +244,8 @@ export function CrmSyncManager() {
                                 </div>
                             </section>
                         )}
+
+                        {isOrg && <IntegrationSettingsSection workspace={workspace} />}
 
                         <DashboardSection title="Endpoints">
                             {endpoints.length === 0 && (

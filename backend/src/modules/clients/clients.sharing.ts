@@ -10,7 +10,7 @@ import { checkProjectAccess, getOrgRole } from "../../lib/access";
 import { listSharedSiblingMatters } from "../../lib/clientSharing";
 import { attachActiveVersionPaths } from "../../lib/documentVersions";
 import { can } from "../../lib/permissions";
-import { teamOrgIdOf } from "../../lib/personalOrgs";
+import { driveOwnerFor } from "./clients.integrations";
 import type { Db } from "../../lib/supabase";
 import {
   failure,
@@ -19,7 +19,6 @@ import {
   type ServiceResult,
 } from "../../lib/serviceResult";
 import { isUuid } from "../../lib/uuid";
-import type { ConnectorOwner } from "../../lib/connectorOwner";
 import { GoogleDriveUserError } from "../../lib/integrations/googleDriveHttp";
 import {
   WORK_IN_PROGRESS_FOLDER,
@@ -155,15 +154,14 @@ export async function getClientFiles(
 // Drive folders
 // ---------------------------------------------------------------------------
 
-async function ownerFor(db: Db, userId: string, orgId: string | null): Promise<ConnectorOwner> {
-  return { userId, orgId: await teamOrgIdOf(db, orgId) };
-}
+const ownerFor = driveOwnerFor;
 
 type ClientDriveRow = {
   id: string;
   user_id: string | null;
   org_id: string | null;
   name: string;
+  client_number: string | null;
   drive_folder_id: string | null;
   drive_folder_name: string | null;
 };
@@ -178,7 +176,7 @@ async function loadOpenClient(
   if (!isUuid(clientId)) return failure("not_found", "Client not found");
   const { data, error } = await db
     .from("clients")
-    .select("id, user_id, org_id, name, drive_folder_id, drive_folder_name")
+    .select("id, user_id, org_id, name, client_number, drive_folder_id, drive_folder_name")
     .eq("id", clientId)
     .maybeSingle();
   if (error) return internalFailure(error);
@@ -273,7 +271,9 @@ export async function createMatterDriveFolder(
     let clientFolderId = client.data.drive_folder_id;
     if (!clientFolderId) {
       const created = await createDriveFolder(owner, db, {
-        name: client.data.name,
+        name: client.data.client_number
+          ? `${client.data.client_number} ${client.data.name}`
+          : client.data.name,
         parentId: "root",
       });
       clientFolderId = created.id;

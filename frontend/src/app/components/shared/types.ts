@@ -933,6 +933,8 @@ export interface Client {
   user_id: string | null;
   org_id: string | null;
   name: string;
+  client_number: string | null;
+  hubflo_url?: string | null;
   kind: ClientKind;
   status: ClientStatus;
   email: string | null;
@@ -949,6 +951,7 @@ export interface Client {
 
 export interface ClientContact {
   id: string;
+  hubflo_url?: string | null;
   client_id: string;
   name: string;
   role: string | null;
@@ -959,6 +962,7 @@ export interface ClientContact {
 
 export interface ClientMatter {
   id: string;
+  hubflo_url?: string | null;
   name: string;
   cm_number: string | null;
   practice: string | null;
@@ -979,6 +983,14 @@ export interface MatterDashboard {
     access_role: string;
   };
   client: (Client & { contacts: ClientContact[] }) | null;
+}
+
+export interface IntegrationSettings {
+  hubflo_client_url: string | null;
+  hubflo_matter_url: string | null;
+  hubflo_contact_url: string | null;
+  drive_shared: boolean;
+  drive_shared_by_me: boolean;
 }
 
 export interface SharedMatterFiles {

@@ -19,6 +19,7 @@ import {
 import { isUuid } from "../../lib/uuid";
 import { PERSONAL_WORKSPACE, type WorkspaceFilter } from "../../lib/workspace";
 
+import { hubfloLinks, type HubfloLinks } from "./clients.integrations";
 import {
   CLIENT_COLUMNS,
   CLIENT_KINDS,
@@ -180,22 +181,33 @@ async function loadMatters(
   clientId: string,
   userId: string,
   userEmail: string | null | undefined,
+  links: HubfloLinks,
 ): Promise<ServiceResult<ClientMatter[]>> {
   const { data, error } = await db
     .from("projects")
-    .select("id, name, cm_number, practice, share_with_client, updated_at")
+    .select("id, name, cm_number, practice, share_with_client, updated_at, external_source, external_id")
     .eq("client_id", clientId)
     .is("archived_at", null)
     .order("updated_at", { ascending: false })
     .limit(MAX_MATTERS);
   if (error) return internalFailure(error);
-  const rows = (data ?? []) as ClientMatter[];
+  const rows = (data ?? []) as (ClientMatter & {
+    external_source?: string | null;
+    external_id?: string | null;
+  })[];
   const visible = await Promise.all(
     rows.map(async (row) =>
       (await checkProjectAccess(row.id, userId, userEmail, db)).ok ? row : null,
     ),
   );
-  return ok(visible.filter((r): r is ClientMatter => r !== null));
+  return ok(
+    visible
+      .filter((r): r is NonNullable<typeof r> => r !== null)
+      .map(({ external_source, external_id, ...matter }) => ({
+        ...matter,
+        hubflo_url: links.link("matter", external_source, external_id),
+      })),
+  );
 }
 
 export async function getClient(
@@ -203,19 +215,33 @@ export async function getClient(
   args: { userId: string; userEmail?: string | null; clientId: string },
 ): Promise<ServiceResult<ClientDetail & { can_delete: boolean }>> {
   return withClientAccess(db, args.clientId, args.userId, async ({ client, canDelete }) => {
-    const [contacts, matters] = await Promise.all([
+    const links = await hubfloLinks(db, client.org_id);
+    const [contacts, matters, ext] = await Promise.all([
       db
         .from("client_contacts")
-        .select(CONTACT_COLUMNS)
+        .select(`${CONTACT_COLUMNS}, external_id`)
         .eq("client_id", client.id)
         .order("created_at", { ascending: true }),
-      loadMatters(db, client.id, args.userId, args.userEmail),
+      loadMatters(db, client.id, args.userId, args.userEmail, links),
+      db
+        .from("clients")
+        .select("external_source, external_id")
+        .eq("id", client.id)
+        .maybeSingle(),
     ]);
     if (contacts.error) return internalFailure(contacts.error);
     if (!matters.ok) return matters;
+    const source = (ext.data as { external_source: string | null } | null)?.external_source;
+    const extId = (ext.data as { external_id: string | null } | null)?.external_id;
     return ok({
       ...client,
-      contacts: (contacts.data ?? []) as ClientContactRow[],
+      hubflo_url: links.link("client", source, extId),
+      contacts: ((contacts.data ?? []) as (ClientContactRow & { external_id?: string | null })[]).map(
+        ({ external_id, ...contact }) => ({
+          ...contact,
+          hubflo_url: links.link("contact", source, external_id),
+        }),
+      ),
       matters: matters.data,
       can_delete: canDelete,
     });
@@ -376,7 +402,7 @@ export type MatterDashboard = {
     org_id: string | null;
     access_role: string;
   };
-  client: (ClientRow & { contacts: ClientContactRow[] }) | null;
+  client: (ClientRow & { hubflo_url?: string | null; contacts: ClientContactRow[] }) | null;
 };
 
 // The data behind a matter's dashboard page. The matter is read with its own
@@ -392,13 +418,23 @@ export async function getMatterDashboard(
 
   const { data, error } = await db
     .from("projects")
-    .select("id, name, cm_number, practice, share_with_client, updated_at, client_id, org_id")
+    .select(
+      "id, name, cm_number, practice, share_with_client, updated_at, client_id, org_id, external_source, external_id",
+    )
     .eq("id", args.projectId)
     .maybeSingle();
   if (error) return internalFailure(error);
   if (!data) return failure("not_found", "Matter not found");
+  const { external_source, external_id, ...row } = data as ClientMatter & {
+    client_id: string | null;
+    org_id: string | null;
+    external_source: string | null;
+    external_id: string | null;
+  };
+  const links = await hubfloLinks(db, row.org_id);
   const project = {
-    ...(data as ClientMatter & { client_id: string | null; org_id: string | null }),
+    ...row,
+    hubflo_url: links.link("matter", external_source, external_id),
     access_role: access.projectRole,
   };
 
@@ -407,15 +443,30 @@ export async function getMatterDashboard(
     const clientAccess = await loadClientAccess(db, project.client_id, args.userId);
     if (!("notFound" in clientAccess)) {
       if (!clientAccess.ok) return clientAccess;
-      const contacts = await db
-        .from("client_contacts")
-        .select(CONTACT_COLUMNS)
-        .eq("client_id", project.client_id)
-        .order("created_at", { ascending: true });
+      const [contacts, ext] = await Promise.all([
+        db
+          .from("client_contacts")
+          .select(`${CONTACT_COLUMNS}, external_id`)
+          .eq("client_id", project.client_id)
+          .order("created_at", { ascending: true }),
+        db
+          .from("clients")
+          .select("external_source, external_id")
+          .eq("id", project.client_id)
+          .maybeSingle(),
+      ]);
       if (contacts.error) return internalFailure(contacts.error);
+      const source = (ext.data as { external_source: string | null } | null)?.external_source;
+      const extId = (ext.data as { external_id: string | null } | null)?.external_id;
       client = {
         ...clientAccess.data.client,
-        contacts: (contacts.data ?? []) as ClientContactRow[],
+        hubflo_url: links.link("client", source, extId),
+        contacts: ((contacts.data ?? []) as (ClientContactRow & { external_id?: string | null })[]).map(
+          ({ external_id: contactExt, ...contact }) => ({
+            ...contact,
+            hubflo_url: links.link("contact", source, contactExt),
+          }),
+        ),
       };
     }
   }
@@ -429,6 +480,12 @@ export {
   type MatterWorkspace,
   type WorkspaceFile,
 } from "./clients.drive";
+
+export {
+  getIntegrationSettings,
+  updateIntegrationSettings,
+  type IntegrationSettings,
+} from "./clients.integrations";
 
 export {
   createMatterDriveFolder,
