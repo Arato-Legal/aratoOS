@@ -13,6 +13,10 @@ import {
 import {
   addContact,
   browseDriveFolders,
+  getLibraryDriveSettings,
+  listLibraryDriveFolder,
+  parseLibraryDriveKind,
+  setLibraryDriveFolder,
   createClient,
   createMatterDriveFolder,
   getClientFiles,
@@ -95,6 +99,65 @@ clientsRouter.get(
       parentId: req.query.parent,
     });
     if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/library-drive",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const db = createServerSupabase();
+    const { userId } = caller(res);
+    const workspace = await resolveWorkspaceFilter(db, userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const result = await getLibraryDriveSettings(db, { userId, workspace: workspace.workspace });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.put(
+  "/library-drive/:kind",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const kind = parseLibraryDriveKind(req.params.kind);
+    if (!kind) return void res.status(404).json({ detail: "Not found" });
+    const db = createServerSupabase();
+    const { userId } = caller(res);
+    const workspace = await resolveWorkspaceFilter(db, userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const folderId = req.body?.folder_id ?? null;
+    const result = await setLibraryDriveFolder(db, {
+      userId,
+      workspace: workspace.workspace,
+      kind,
+      folderId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/library-drive/:kind/files",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const kind = parseLibraryDriveKind(req.params.kind);
+    if (!kind) return void res.status(404).json({ detail: "Not found" });
+    const db = createServerSupabase();
+    const { userId } = caller(res);
+    const workspace = await resolveWorkspaceFilter(db, userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const result = await listLibraryDriveFolder(db, {
+      userId,
+      workspace: workspace.workspace,
+      kind,
+      folderId: req.query.folder,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.setHeader("Cache-Control", "no-store");
     res.json(result.data);
   }),
 );

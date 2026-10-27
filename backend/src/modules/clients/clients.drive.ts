@@ -60,7 +60,7 @@ export function fileKind(item: Pick<DriveBrowseItem, "mimeType" | "isFolder" | "
   return "other";
 }
 
-function toWorkspaceFile(item: DriveBrowseItem): WorkspaceFile {
+export function toWorkspaceFile(item: DriveBrowseItem): WorkspaceFile {
   return {
     id: item.id,
     name: item.name,
@@ -72,7 +72,7 @@ function toWorkspaceFile(item: DriveBrowseItem): WorkspaceFile {
 
 // Drive errors the user can act on. Anything else is unexpected and rethrown
 // so it reaches the router's opaque 500 and the log.
-function asDriveError(error: unknown): DriveError | null {
+export function asDriveError(error: unknown): DriveError | null {
   if (!(error instanceof GoogleDriveUserError)) return null;
   return {
     code: error.code ?? "google_drive_error",

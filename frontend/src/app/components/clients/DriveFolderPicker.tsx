@@ -12,13 +12,14 @@ interface Props {
     workspace?: string;
     onClose: () => void;
     onPick: (folder: { id: string; name: string }) => void;
+    title?: string;
 }
 
 type Crumb = { id: string; name: string };
 const ROOT: Crumb = { id: "root", name: "My Drive" };
 
 /** Browse Google Drive folders and pick the matter's folder. */
-export function DriveFolderPicker({ open, workspace, onClose, onPick }: Props) {
+export function DriveFolderPicker({ open, workspace, onClose, onPick, title }: Props) {
     const [trail, setTrail] = useState<Crumb[]>([ROOT]);
     const [items, setItems] = useState<WorkspaceFile[]>([]);
     const [driveError, setDriveError] = useState<MatterWorkspace["drive_error"]>(null);
@@ -57,7 +58,7 @@ export function DriveFolderPicker({ open, workspace, onClose, onPick }: Props) {
             open={open}
             onClose={close}
             size="md"
-            breadcrumbs={["Choose the matter folder"]}
+            breadcrumbs={[title ?? "Choose the matter folder"]}
             primaryAction={{
                 label: current.id === "root" ? "Choose a folder" : `Use “${current.name}”`,
                 disabled: current.id === "root",

@@ -81,7 +81,24 @@ export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
  * access, which is what lets Mike browse a folder it did not create (a
  * matter's "Work in progress" folder). The default stays per-file.
  */
-export function googleDriveRequestedScope(): string {
+export type GoogleDriveAccessMode = "file" | "full" | "readonly";
+
+export function parseGoogleDriveAccessMode(
+    value: unknown,
+): GoogleDriveAccessMode | null {
+    return value === "file" || value === "full" || value === "readonly"
+        ? value
+        : null;
+}
+
+/**
+ * `mode` is the access the user picked for this one connection; without it
+ * the server-wide default applies.
+ */
+export function googleDriveRequestedScope(mode?: GoogleDriveAccessMode): string {
+    if (mode === "full") return GOOGLE_DRIVE_FULL_SCOPE;
+    if (mode === "readonly") return GOOGLE_DRIVE_READONLY_SCOPE;
+    if (mode === "file") return GOOGLE_DRIVE_SCOPE;
     return process.env.GOOGLE_DRIVE_SCOPE_MODE?.trim().toLowerCase() === "full"
         ? GOOGLE_DRIVE_FULL_SCOPE
         : GOOGLE_DRIVE_SCOPE;
@@ -211,6 +228,7 @@ export async function startGoogleDriveOAuth(
     owner: ConnectorOwner,
     redirectUri: string,
     db: Db = createServerSupabase(),
+    accessMode?: GoogleDriveAccessMode,
 ): Promise<{ authorizationUrl: string }> {
     assertGoogleDriveAvailable();
     const env = googleDriveOAuthEnv();
@@ -256,7 +274,7 @@ export async function startGoogleDriveOAuth(
     // OpenID/email only identifies the chosen account for the Manage dialog.
     url.searchParams.set(
         "scope",
-        `openid email ${googleDriveRequestedScope()}`,
+        `openid email ${googleDriveRequestedScope(accessMode)}`,
     );
     url.searchParams.set("state", stateToken);
     url.searchParams.set("code_challenge", codeChallenge);
@@ -1500,6 +1518,38 @@ export async function getDriveFolder(
     if (!response.ok) throw googleDriveHttpError(response.status);
     const item = toBrowseItem((await response.json()) as DriveFile);
     return item?.isFolder ? item : null;
+}
+
+/**
+ * Whether `folderId` is `rootId` or sits somewhere below it. Walks up the
+ * first parent at each level, so a Library tab can only open folders under
+ * the one an admin chose, even through a shared connection.
+ */
+export async function driveFolderIsWithin(
+    owner: ConnectorOwner,
+    db: Db,
+    folderId: string,
+    rootId: string,
+): Promise<boolean> {
+    if (!isDriveId(folderId) || !isDriveId(rootId)) return false;
+    if (folderId === rootId) return true;
+    const token = await browseToken(owner, db);
+    let current = folderId;
+    for (let depth = 0; depth < 12; depth++) {
+        const response = await driveFetch(
+            token,
+            `/files/${encodeURIComponent(current)}`,
+            { fields: "parents", supportsAllDrives: "true" },
+        );
+        if (response.status === 404 || response.status === 403) return false;
+        if (!response.ok) throw googleDriveHttpError(response.status);
+        const body = (await response.json()) as { parents?: string[] };
+        const parents = body.parents ?? [];
+        if (parents.includes(rootId)) return true;
+        if (parents.length === 0) return false;
+        current = parents[0];
+    }
+    return false;
 }
 
 /** The matter folder's "Work in progress" subfolder, matched without case. */

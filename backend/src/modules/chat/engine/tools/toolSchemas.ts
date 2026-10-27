@@ -106,6 +106,35 @@ export const TABULAR_TOOLS = [
   },
 ];
 
+// Pulls Google Drive files (Word or Google Docs) into a matter as Mike
+// documents, so tabular review, compare and workflows can run on them.
+export const DRIVE_IMPORT_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "import_drive_files",
+      description:
+        "Import Google Drive files (Word files and Google Docs) into the matter as Mike documents. Find the files first with google_drive_search or google_drive_list_recent and pass their file_ids. Returns a doc id for each imported file that can be passed straight to create_tabular_review or read like any other document. Files already imported into the matter are reused, not duplicated.",
+      parameters: {
+        type: "object",
+        properties: {
+          file_ids: {
+            type: "array",
+            items: { type: "string" },
+            description: "Drive file ids to import (at most 20).",
+          },
+          matter_name: {
+            type: "string",
+            description:
+              "In a client session only: the matter to import into. Ignored inside a matter.",
+          },
+        },
+        required: ["file_ids"],
+      },
+    },
+  },
+];
+
 // A tabular review asks the same questions of a set of documents. Created in a
 // matter (the current one, or one of the client's in a client session) and
 // started by the user from the review itself.

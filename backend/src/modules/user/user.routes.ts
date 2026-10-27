@@ -17,6 +17,7 @@ import {
     getGoogleDriveStatus,
     setGoogleDriveToolEnabled,
     startGoogleDriveOAuth,
+    parseGoogleDriveAccessMode,
     updateGoogleDriveSettings,
 } from "../../lib/integrations/googleDrive";
 import { GoogleDriveUserError } from "../../lib/integrations/googleDriveHttp";
@@ -843,6 +844,7 @@ userRouter.post(
                 owner,
                 redirectUri,
                 createServerSupabase(),
+                parseGoogleDriveAccessMode(req.body?.access) ?? undefined,
             );
             res.json(result);
         } catch (err) {

@@ -528,3 +528,10 @@ export {
   type SyncOutcome,
   type SyncScope,
 } from "./clients.sync";
+
+export {
+  getLibraryDriveSettings,
+  listLibraryDriveFolder,
+  parseLibraryDriveKind,
+  setLibraryDriveFolder,
+} from "./clients.libraryDrive";

@@ -22,7 +22,9 @@ replace plain-text/Google Doc contents, move and copy files, and trash or restor
 Each Mike user connects their own Google account in Settings → Connectors → Discover, separately for each workspace: a connection made with an organization selected is used only in that organization's chats (see [Connectors](connectors.md#workspace-availability)). Google Drive works like every other connector there: **Add** opens Google OAuth directly (showing **Adding...**, then **Cancel** while Google's window is open), the Discover card then shows **Added**, and the connector appears under **Installed** with an on/off switch. Its Manage dialog switches individual tools on or off, offers a **Read-only** override that disables every write tool while preserving individual choices, configures whether writes need approval, and deletes the connection. If the server has no Google OAuth app configured, **Add** shows the same **Could not add connector** warning as Slack, with setup steps and a guide link.
 The integration does not require a Google MCP server or a service account.
 
-Mike asks Google only for the `drive.file` scope, so it reaches two kinds of
+Each connection chooses its own access when it is added: **Chosen files only** (`drive.file`, the default), **Whole Drive**, or **Whole Drive, read-only**. `GOOGLE_DRIVE_SCOPE_MODE` only sets the default when no choice is made.
+
+With the default, Mike asks Google only for the `drive.file` scope, so it reaches two kinds of
 files: files Mike created, and files the user explicitly added. To add files,
 open the Google Drive connector's **Manage** dialog and choose **Add files from
 Google Drive**. Google's own file chooser (the Google Picker) opens over the

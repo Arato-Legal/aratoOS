@@ -15,6 +15,7 @@ import {
   setGoogleDriveToolEnabled,
   setGoogleWorkspaceToolEnabled,
   startGoogleDriveOAuth,
+  type GoogleDriveAccessMode,
   startGoogleWorkspaceOAuth,
   updateGoogleDriveSettings,
   updateGoogleWorkspaceSettings,
@@ -63,7 +64,8 @@ function connectorApi(
   if (provider === "google-drive")
     return {
       status: () => getGoogleDriveStatus(workspace),
-      start: () => startGoogleDriveOAuth(workspace),
+      start: (access?: GoogleDriveAccessMode) =>
+        startGoogleDriveOAuth(workspace, access),
       cancel: (state: string) => cancelGoogleDriveOAuth(state, workspace),
       disconnect: () => disconnectGoogleDrive(workspace),
       updateSettings: (settings: GoogleConnectorSettings) =>
@@ -73,7 +75,8 @@ function connectorApi(
     };
   return {
     status: () => getGoogleWorkspaceStatus(provider, workspace),
-    start: () => startGoogleWorkspaceOAuth(provider, workspace),
+    start: (_access?: GoogleDriveAccessMode) =>
+      startGoogleWorkspaceOAuth(provider, workspace),
     cancel: (state: string) =>
       cancelGoogleWorkspaceOAuth(provider, state, workspace),
     disconnect: () => disconnectGoogleWorkspace(provider, workspace),
@@ -142,7 +145,7 @@ export function useGoogleConnector(
    * Opens Google's consent window and waits for the backend to record a new
    * grant.
    */
-  const connect = async () => {
+  const connect = async (access?: GoogleDriveAccessMode) => {
     const controller = new AbortController();
     abortRef.current?.abort();
     abortRef.current = controller;
@@ -159,7 +162,7 @@ export function useGoogleConnector(
         throw new GoogleConnectorFlowError(
           "Allow popups for Mike, then try adding the connector again.",
         );
-      const { authorizationUrl } = await api.start();
+      const { authorizationUrl } = await api.start(access);
       pending = new URL(authorizationUrl).searchParams.get("state");
       if (controller.signal.aborted)
         throw new GoogleAuthorizationCancelledError();

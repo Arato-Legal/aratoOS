@@ -5,6 +5,7 @@ import { canUseWorkflowInWorkspace } from "../../../../lib/workflowWorkspace";
 import { safeError } from "../../../../lib/safeError";
 import { listReadableClientMatters } from "../../../../lib/clientSharing";
 import { getTabularReviewCreator } from "./tabularCreate";
+import { openDriveFileForEditing } from "../../../clients/clients.service";
 import {
   listPlaybooks,
   PlaybookRequestError,
@@ -1054,6 +1055,101 @@ export async function runToolCalls(
         } finally {
           release();
         }
+      }
+    } else if (tc.function.name === "import_drive_files") {
+      const respond = (body: Record<string, unknown>) =>
+        toolResults.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: JSON.stringify(body),
+        });
+      try {
+        const fileIds = Array.isArray(args.file_ids)
+          ? args.file_ids.map(String).slice(0, 20)
+          : [];
+        let targetProjectId: string | null = projectId ?? null;
+        let importMatterError: string | null = null;
+        if (!targetProjectId && options.clientId) {
+          const matters = await listReadableClientMatters(
+            db,
+            options.clientId,
+            userId,
+            options.userEmail,
+          );
+          const wanted = String(args.matter_name ?? "").trim().toLowerCase();
+          const match = matters.find((m) => m.name.trim().toLowerCase() === wanted);
+          if (match) targetProjectId = match.id;
+          else
+            importMatterError = `Name the matter to import into with matter_name. Available: ${
+              matters.map((m) => m.name).join("; ") || "none"
+            }.`;
+        }
+        if (importMatterError) respond({ error: importMatterError });
+        else if (!targetProjectId)
+          respond({ error: "Drive files are imported into a matter. Start the session in a matter, or in a client with matters." });
+        else if (fileIds.length === 0)
+          respond({ error: "Pass at least one Drive file_id." });
+        else {
+          const imported: {
+            doc_id?: string;
+            filename?: string;
+            file_id: string;
+            error?: string;
+          }[] = [];
+          for (const fileId of fileIds) {
+            const opened = await openDriveFileForEditing(db, {
+              userId,
+              userEmail: options.userEmail ?? null,
+              projectId: targetProjectId,
+              fileId,
+            });
+            if (!opened.ok) {
+              imported.push({
+                file_id: fileId,
+                error: "message" in opened ? String(opened.message) : "Could not import this file.",
+              });
+              continue;
+            }
+            const version = await loadActiveVersion(opened.data.document_id, db);
+            if (!version || !docIndex) {
+              imported.push({ file_id: fileId, error: "The imported document could not be opened." });
+              continue;
+            }
+            const existing = Object.entries(docIndex).find(
+              ([, entry]) => entry.document_id === opened.data.document_id,
+            );
+            let label = existing?.[0];
+            if (!label) {
+              let i = 0;
+              while (`doc-${i}` in docIndex) i++;
+              label = `doc-${i}`;
+              docIndex[label] = {
+                document_id: opened.data.document_id,
+                filename: version.filename ?? "document.docx",
+                version_id: version.id,
+                version_number: version.version_number ?? null,
+              };
+              docStore.set(label, {
+                storage_path: version.storage_path,
+                file_type: "docx",
+                filename: version.filename ?? "document.docx",
+              });
+            }
+            imported.push({
+              file_id: fileId,
+              doc_id: label,
+              filename: docIndex[label].filename,
+            });
+          }
+          respond({
+            imported,
+            next_required_action:
+              "Use the doc_id values with create_tabular_review or read them. Tell the user about any file that failed, with its reason.",
+          });
+        }
+      } catch (error) {
+        console.error("[run_tools] import_drive_files failed", safeError(error));
+        respond({ error: "The Drive files could not be imported. Try again." });
       }
     } else if (tc.function.name === "create_tabular_review") {
       const fail = (error: string) =>

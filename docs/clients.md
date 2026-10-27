@@ -90,6 +90,38 @@ opening the same Drive file again reuses the document.
 | `POST /clients/documents/:documentId/drive/save` | Write back (`overwrite` to force) |
 | `POST /clients/documents/:documentId/drive/pull` | Update from Drive as a new version |
 
+## Library Drive tabs
+
+The Library has two more tabs beside Documents and Templates: **Drive matters**
+(the Drive folder that holds the firm's matter folders) and **Drive precedents**
+(precedents and research). Each browses a Drive folder live, with Open in Drive
+links and no copy of the files in Mike.
+
+- A team workspace's folders are chosen by a workspace admin; a personal
+  workspace's by its owner. Everyone else sees them read-only.
+- Files are read through the Drive connection the caller uses in that workspace
+  (the shared connection when an admin made one). A folder id outside the chosen
+  root is refused: the server walks the folder's parents up to the root.
+- Browsing needs a connection that can see folders Mike did not create (Whole
+  Drive access when you add the connector).
+- Apply `backend/migrations/20261027_01_workspace_drive_folders.sql`.
+
+| Route | Purpose |
+| --- | --- |
+| `GET /clients/library-drive?workspace=` | The chosen folders and whether the caller may change them |
+| `PUT /clients/library-drive/:kind?workspace=` | Choose or clear (`folder_id`) `matters` or `precedents` |
+| `GET /clients/library-drive/:kind/files?folder=&workspace=` | List a folder at or below the root |
+
+## Importing Drive files into a matter from chat
+
+`import_drive_files` (offered with `create_tabular_review`) imports Word files
+and Google Docs found with `google_drive_search` into the matter as documents,
+reusing a file already imported. It returns doc ids for `create_tabular_review`
+and reading in the same turn. Describing documents in natural language works
+by search: the assistant finds the files, imports them, then builds the review.
+Searching existing folders needs Whole Drive access; with per-file access only
+files Mike created or the user added are found.
+
 ## Hubflo sync (inbound webhook)
 
 Matter data is pushed from Hubflo rather than typed into Mike. An organization

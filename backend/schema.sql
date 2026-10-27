@@ -1177,6 +1177,29 @@ create table if not exists public.org_integration_settings (
 alter table public.org_integration_settings enable row level security;
 revoke all on public.org_integration_settings from anon, authenticated;
 
+create table if not exists public.workspace_drive_folders (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references public.organizations(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  kind text not null,
+  drive_folder_id text not null,
+  drive_folder_name text not null,
+  updated_at timestamptz not null default now(),
+  constraint workspace_drive_folders_kind_check check (kind in ('matters', 'precedents')),
+  constraint workspace_drive_folders_owner_check check ((org_id is null) <> (user_id is null)),
+  constraint workspace_drive_folders_folder_check check (
+    drive_folder_id ~ '^[A-Za-z0-9_-]{1,200}$' and char_length(drive_folder_name) <= 500
+  )
+);
+
+create unique index if not exists workspace_drive_folders_org_kind_idx
+  on public.workspace_drive_folders (org_id, kind) where org_id is not null;
+create unique index if not exists workspace_drive_folders_user_kind_idx
+  on public.workspace_drive_folders (user_id, kind) where user_id is not null;
+
+alter table public.workspace_drive_folders enable row level security;
+revoke all on public.workspace_drive_folders from anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- project_access_grants — direct, role-aware sharing
 -- ---------------------------------------------------------------------------
@@ -11525,5 +11548,6 @@ insert into public.schema_migrations (filename) values
   ('20261026_06_hubflo_links_org_drive.sql'),
   ('20261026_07_client_chats.sql'),
   ('20261026_08_client_memory.sql'),
-  ('20261026_09_client_memory_matter_notes.sql')
+  ('20261026_09_client_memory_matter_notes.sql'),
+  ('20261027_01_workspace_drive_folders.sql')
 on conflict (filename) do nothing;
