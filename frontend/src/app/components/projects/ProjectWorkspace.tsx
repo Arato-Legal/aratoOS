@@ -753,6 +753,7 @@ export function ProjectSectionToolbar({
                 backAction
                     ? []
                     : [
+                          { id: "overview", label: "Overview" },
                           { id: "documents", label: "Documents" },
                           { id: "assistant", label: "Chats" },
                           { id: "reviews", label: "Tabular Reviews" },
@@ -762,7 +763,9 @@ export function ProjectSectionToolbar({
             active={activeSection}
             onChange={(next) => {
                 const href =
-                    next === "assistant"
+                    next === "overview"
+                        ? `/matters/${projectId}`
+                        : next === "assistant"
                         ? `/matters/${projectId}/assistant`
                         : next === "reviews"
                           ? `/matters/${projectId}/tabular-reviews`
