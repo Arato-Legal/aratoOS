@@ -256,7 +256,7 @@ test("file upload type validation — .txt file is rejected", async ({ page }) =
             ),
             "test.txt",
         );
-        const legacyResponse = await fetch(`/api/matters/${id}/documents/documents`, {
+        const legacyResponse = await fetch(`/api/projects/${id}/documents`, {
             method: "POST",
             credentials: "include",
             body,

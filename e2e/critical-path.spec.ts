@@ -26,7 +26,7 @@ test("matter document: read uploaded PDF and reload the saved answer", async ({ 
     test.skip(!hasLlmKey, LLM_SKIP_REASON);
     test.setTimeout(120_000);
     await createProject(page, `E2E document ${Date.now()}`, PDF_FIXTURE);
-    await page.goto(`${page.url().split("?")[0]}/assistant`);
+    await page.goto(`${page.url().split("?")[0].replace(/\/documents$/, "")}/assistant`);
     await page.getByRole("button", { name: "Create", exact: true }).click();
     // Opening the composer must not persist an empty chat; first send creates it.
     // This dynamic composer route is compiled on first use in the development
