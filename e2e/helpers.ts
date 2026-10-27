@@ -77,7 +77,7 @@ export async function createProject(
     }
 
     await page.goto("/matters");
-    await expect(page).toHaveURL(/\/projects/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/(?:projects|matters)/, { timeout: 10_000 });
 
     /* The Plus icon button in the header has aria-label="New project" */
     const createBtn = page.getByRole("button", { name: "New matter" });
@@ -122,5 +122,5 @@ export async function createProject(
        "Creating…" while in flight. */
     const navTimeout = filePath ? 30_000 : 15_000;
     await page.getByRole("button", { name: "Create matter" }).click();
-    await page.waitForURL(/\/projects\/.+/, { timeout: navTimeout });
+    await page.waitForURL(/\/(?:projects|matters)\/.+/, { timeout: navTimeout });
 }

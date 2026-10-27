@@ -156,19 +156,19 @@ try {
   //    documents step).
   await page.goto(`${SERVER_URL}/projects`);
   const createBtn = page.getByRole("button", {
-    name: "New project",
+    name: "New matter",
     exact: true,
   });
   await createBtn.waitFor({ timeout: 15_000 });
   await createBtn.click();
-  await page.getByPlaceholder("Add project name").fill(PROJECT_NAME);
+  await page.getByPlaceholder("Matter name").fill(PROJECT_NAME);
   await page.getByRole("button", { name: "Next", exact: true }).click();
   // Step 2 of the wizard is "Add Documents" — create without any, scoped to
   // the wizard overlay so the toolbar's own "Create" (behind the backdrop)
   // can't be matched.
   const wizard = page.locator("div.fixed.inset-0").last();
   await wizard
-    .getByRole("button", { name: "Create project", exact: true })
+    .getByRole("button", { name: "Create matter", exact: true })
     .click({ timeout: 15_000 });
   await page
     .getByText(PROJECT_NAME, { exact: false })
