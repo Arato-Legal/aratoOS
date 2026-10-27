@@ -54,7 +54,7 @@ function subagentStatus(event: DelegationEvent): { text: string; failed: boolean
         case "needs_input":
             return line(
                 resumed,
-                event.approval_ids?.length ? "Waiting for your approval" : "Asked Mike a question",
+                event.approval_ids?.length ? "Waiting for your approval" : "Asked Arato a question",
                 steps,
             );
         case "failed":
@@ -229,7 +229,7 @@ function SubagentDetails({
             )}
             {hasQuestion && (
                 <EventBlock dotColor="gray">
-                    <EventLabel>Asked Mike</EventLabel>
+                    <EventLabel>Asked Arato</EventLabel>
                     <p className="mt-0.5 whitespace-pre-wrap text-gray-800 [overflow-wrap:anywhere]">
                         {event.question}
                     </p>

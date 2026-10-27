@@ -43,7 +43,7 @@ import {
 } from "@/app/lib/permissions";
 import { userFacingApiError } from "@/app/lib/userFacingError";
 import { GlassCardUI } from "@/shared/ui/GlassCardUI";
-import { MikeIcon } from "@/shared/ui/MikeIconUI";
+import { AratoEmblem } from "@/shared/ui/AratoEmblemUI";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { OrganizationLogoModal } from "./OrganizationLogoModal";
 import { useOrganizationSettings } from "./OrganizationSettingsShell";
@@ -311,7 +311,7 @@ export function OrganizationGeneralSettings() {
                   ) : logo === undefined ? (
                     <span className="h-8 w-8 animate-pulse rounded bg-gray-200" />
                   ) : (
-                    <MikeIcon size={20} />
+                    <AratoEmblem size={20} />
                   )}
                 </span>
                 <div className="min-w-0 space-y-1">

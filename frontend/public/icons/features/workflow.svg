@@ -1,33 +1,33 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="nPurple" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#C4B5FD" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#8B5CF6" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#6D28D9" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#D1E6CC" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#97C68C" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#67AC55" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="nBlue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#93C5FD" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#3B82F6" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#1D4ED8" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#BDDBB5" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#84BB76" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#62A451" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="nYellow" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FDE68A" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#F59E0B" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#B45309" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#E4D5A3" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#C6A53A" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#927A2B" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="nRed" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FCA5A5" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#EF4444" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#B91C1C" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#EADEB7" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#D1B762" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#A58A30" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
       <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.15"/>
-      <stop offset="1" stop-color="#1F2937" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#273125" stop-opacity="0.45"/>
     </linearGradient>
     <linearGradient id="pipe" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#D1D5DB" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#9CA3AF" stop-opacity="0.9"/>
+      <stop offset="0" stop-color="#DAD8D2" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#AEAA9D" stop-opacity="0.9"/>
     </linearGradient>
     <radialGradient id="sheen">
       <stop offset="0" stop-color="#FFFFFF"/>
