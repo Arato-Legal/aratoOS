@@ -12,6 +12,8 @@ import {
   deleteClient,
   deleteClientContact,
   getClient,
+  getIntegrationSettings,
+  updateIntegrationSettings,
   getDriveSyncStatus,
   getMatterWorkspace,
   getMatterDashboard,
@@ -242,6 +244,19 @@ describe("Clients API requests", () => {
       call: () => getClientFiles("p1"),
       url: "/api/clients/matters/p1/client-files",
       method: "GET",
+    },
+    {
+      name: "get integration settings",
+      call: () => getIntegrationSettings("org/a"),
+      url: "/api/clients/integrations?workspace=org%2Fa",
+      method: "GET",
+    },
+    {
+      name: "update integration settings",
+      call: () => updateIntegrationSettings("org/a", { drive_shared: true }),
+      url: "/api/clients/integrations?workspace=org%2Fa",
+      method: "PUT",
+      body: { drive_shared: true },
     },
   ])("$name", async ({ call, url, method, body }) => {
     await call();
