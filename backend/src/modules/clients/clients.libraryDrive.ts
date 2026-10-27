@@ -5,7 +5,8 @@
 // connection when an admin made one), and only folders at or below the chosen
 // root can be opened, so a crafted folder id reaches nothing else.
 
-import { getOrgRole, isOrgAdmin } from "../../lib/access";
+import { checkProjectAccess, getOrgRole, isOrgAdmin } from "../../lib/access";
+import { checkClientAccess } from "../../lib/clientSharing";
 import { teamOrgIdOf } from "../../lib/personalOrgs";
 import type { Db } from "../../lib/supabase";
 import {
@@ -20,6 +21,7 @@ import {
   getDriveFolder,
   isDriveId,
   listDriveFolderChildren,
+  searchDriveFiles,
 } from "../../lib/integrations/googleDrive";
 import { driveOwnerFor } from "./clients.integrations";
 import {
@@ -195,5 +197,105 @@ export async function listLibraryDriveFolder(
     const driveError = asDriveError(error);
     if (!driveError) throw error;
     return ok({ ...empty, drive_error: driveError });
+  }
+}
+
+export type DriveFileHit = {
+  file_id: string;
+  name: string;
+  kind: "google_doc" | "word";
+  modified: string | null;
+  link: string | null;
+};
+
+export type DriveFileSearchScope = "matter" | "precedents" | "drive";
+
+/**
+ * Find importable Drive files (Word, Google Docs) by description for the
+ * assistant, in the matter's (or client's) folder, the workspace precedents
+ * folder, or all of Drive. Folder scopes only ever search below a folder the
+ * caller can already open, through the caller's workspace connection.
+ */
+export async function findDriveFilesForAssistant(
+  db: Db,
+  args: {
+    userId: string;
+    userEmail?: string | null;
+    workspace: WorkspaceFilter;
+    projectId?: string | null;
+    clientId?: string | null;
+    scope: DriveFileSearchScope;
+    query: string;
+    limit?: number;
+  },
+): Promise<ServiceResult<{ searched: string; files: DriveFileHit[]; drive_error: DriveError | null }>> {
+  const scope = await resolveScope(db, args.userId, args.workspace);
+  if (!scope.ok) return scope;
+
+  let rootFolderId: string | undefined;
+  let searched = "all of Google Drive";
+  let orgId = scope.data.orgId;
+  if (args.scope === "precedents") {
+    const folder = await loadFolder(db, scope.data, "precedents");
+    if (!folder)
+      return failure("validation", "No precedents folder is set for this workspace.", "no_precedents_folder");
+    rootFolderId = folder.id;
+    searched = `the precedents folder "${folder.name}"`;
+  } else if (args.scope === "matter") {
+    let folderId: string | null = null;
+    let name = "";
+    if (args.projectId) {
+      const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
+      if (!access.ok) return failure("not_found", "Matter not found");
+      const { data } = await db
+        .from("projects")
+        .select("org_id, drive_folder_id, drive_folder_name")
+        .eq("id", args.projectId)
+        .maybeSingle();
+      const row = data as { org_id: string | null; drive_folder_id: string | null; drive_folder_name: string | null } | null;
+      folderId = row?.drive_folder_id ?? null;
+      name = row?.drive_folder_name ?? "matter folder";
+      orgId = row?.org_id ?? orgId;
+    } else if (args.clientId) {
+      const access = await checkClientAccess(db, args.clientId, args.userId);
+      if (!access.ok) return failure("not_found", "Client not found");
+      const { data } = await db
+        .from("clients")
+        .select("org_id, drive_folder_id, drive_folder_name")
+        .eq("id", args.clientId)
+        .maybeSingle();
+      const row = data as { org_id: string | null; drive_folder_id: string | null; drive_folder_name: string | null } | null;
+      folderId = row?.drive_folder_id ?? null;
+      name = row?.drive_folder_name ?? "client folder";
+      orgId = row?.org_id ?? orgId;
+    }
+    if (!folderId)
+      return failure("validation", "This matter or client has no Drive folder linked.", "no_drive_folder");
+    rootFolderId = folderId;
+    searched = `the Drive folder "${name}"`;
+  }
+
+  const owner = await driveOwnerFor(db, args.userId, orgId);
+  try {
+    const hits = await searchDriveFiles(owner, db, {
+      query: args.query,
+      rootFolderId,
+      limit: args.limit,
+    });
+    return ok({
+      searched,
+      files: hits.map((h) => ({
+        file_id: h.id,
+        name: h.name,
+        kind: h.mimeType === "application/vnd.google-apps.document" ? "google_doc" : "word",
+        modified: h.modifiedTime,
+        link: h.webViewLink,
+      })),
+      drive_error: null,
+    });
+  } catch (error) {
+    const driveError = asDriveError(error);
+    if (!driveError) throw error;
+    return ok({ searched, files: [], drive_error: driveError });
   }
 }

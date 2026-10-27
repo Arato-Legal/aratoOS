@@ -1812,3 +1812,124 @@ export async function uploadDocxToDriveFile(
         file: { ...current, modifiedTime: saved.modifiedTime ?? current.modifiedTime },
     };
 }
+
+// ---------------------------------------------------------------------------
+// Finding files by description (assistant)
+// ---------------------------------------------------------------------------
+// The assistant describes a file in words; this turns the words into a Drive
+// search over Word files and Google Docs (the formats that can be imported),
+// optionally limited to one folder and everything below it. Drive's query
+// language cannot say "anywhere under this folder", so the folder tree is
+// listed first, within fixed bounds, and the files are searched by parent.
+
+const SEARCH_MAX_FOLDERS = 80;
+const SEARCH_MAX_DEPTH = 5;
+const SEARCH_PARENTS_PER_QUERY = 15;
+const SEARCH_MAX_TERMS = 6;
+
+export type DriveSearchHit = DriveBrowseItem & { matchedName: number };
+
+export function driveSearchTerms(query: string): string[] {
+    const seen = new Set<string>();
+    for (const word of query.toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
+        if (word.length >= 2) seen.add(word);
+        if (seen.size >= SEARCH_MAX_TERMS) break;
+    }
+    return [...seen];
+}
+
+async function collectFolderTree(
+    owner: ConnectorOwner,
+    db: Db,
+    rootId: string,
+): Promise<string[]> {
+    const ids = [rootId];
+    let frontier = [rootId];
+    for (let depth = 0; depth < SEARCH_MAX_DEPTH && frontier.length; depth++) {
+        const next: string[] = [];
+        for (const parentId of frontier) {
+            if (ids.length >= SEARCH_MAX_FOLDERS) return ids;
+            const children = await listDriveFolderChildren(owner, db, {
+                parentId,
+                foldersOnly: true,
+            });
+            for (const child of children) {
+                if (ids.length >= SEARCH_MAX_FOLDERS) break;
+                ids.push(child.id);
+                next.push(child.id);
+            }
+        }
+        frontier = next;
+    }
+    return ids;
+}
+
+/**
+ * Word files and Google Docs matching `query` (by name or content), best name
+ * matches first. With `rootFolderId`, only files at or below that folder.
+ */
+export async function searchDriveFiles(
+    owner: ConnectorOwner,
+    db: Db,
+    args: { query: string; rootFolderId?: string; limit?: number },
+): Promise<DriveSearchHit[]> {
+    const terms = driveSearchTerms(args.query);
+    if (terms.length === 0)
+        throw new GoogleDriveUserError("Describe the file to look for.");
+    if (args.rootFolderId !== undefined && !isDriveId(args.rootFolderId))
+        throw new GoogleDriveUserError("That Google Drive folder is not valid.");
+    const limit = Math.min(Math.max(Math.floor(args.limit ?? 10), 1), 25);
+    const token = await browseToken(owner, db);
+
+    const match = terms
+        .map((t) => `name contains '${escapeQuery(t)}' or fullText contains '${escapeQuery(t)}'`)
+        .join(" or ");
+    const types =
+        `(mimeType = '${GOOGLE_DOC_MIME}' or mimeType = '${DOCX_MIME}')`;
+    const base = `trashed = false and ${types} and (${match})`;
+
+    const scopes: (string | null)[] = [];
+    if (args.rootFolderId) {
+        const folders = await collectFolderTree(owner, db, args.rootFolderId);
+        for (let i = 0; i < folders.length; i += SEARCH_PARENTS_PER_QUERY) {
+            scopes.push(
+                folders
+                    .slice(i, i + SEARCH_PARENTS_PER_QUERY)
+                    .map((id) => `'${escapeQuery(id)}' in parents`)
+                    .join(" or "),
+            );
+        }
+    } else {
+        scopes.push(null);
+    }
+
+    const found = new Map<string, DriveSearchHit>();
+    for (const scope of scopes) {
+        const response = await driveFetch(token, "/files", {
+            q: scope ? `${base} and (${scope})` : base,
+            orderBy: "modifiedTime desc",
+            pageSize: String(Math.min(limit * 2, 50)),
+            fields: `files(${BROWSE_FIELDS})`,
+            includeItemsFromAllDrives: "true",
+            supportsAllDrives: "true",
+        });
+        if (!response.ok) throw googleDriveHttpError(response.status);
+        const body = (await response.json()) as { files?: DriveFile[] };
+        for (const file of body.files ?? []) {
+            const item = toBrowseItem(file);
+            if (!item || found.has(item.id)) continue;
+            const lower = item.name.toLowerCase();
+            found.set(item.id, {
+                ...item,
+                matchedName: terms.filter((t) => lower.includes(t)).length,
+            });
+        }
+    }
+    return [...found.values()]
+        .sort(
+            (a, b) =>
+                b.matchedName - a.matchedName ||
+                (b.modifiedTime ?? "").localeCompare(a.modifiedTime ?? ""),
+        )
+        .slice(0, limit);
+}

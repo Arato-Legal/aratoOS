@@ -5,7 +5,7 @@ import { canUseWorkflowInWorkspace } from "../../../../lib/workflowWorkspace";
 import { safeError } from "../../../../lib/safeError";
 import { listReadableClientMatters } from "../../../../lib/clientSharing";
 import { getTabularReviewCreator } from "./tabularCreate";
-import { openDriveFileForEditing } from "../../../clients/clients.service";
+import { findDriveFilesForAssistant, openDriveFileForEditing } from "../../../clients/clients.service";
 import {
   listPlaybooks,
   PlaybookRequestError,
@@ -1055,6 +1055,42 @@ export async function runToolCalls(
         } finally {
           release();
         }
+      }
+    } else if (tc.function.name === "find_drive_files") {
+      const respond = (body: Record<string, unknown>) =>
+        toolResults.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: JSON.stringify(body),
+        });
+      try {
+        const scope = ["matter", "precedents", "drive"].includes(String(args.scope))
+          ? (String(args.scope) as "matter" | "precedents" | "drive")
+          : "drive";
+        const found = await findDriveFilesForAssistant(db, {
+          userId,
+          userEmail: options.userEmail ?? null,
+          workspace: options.orgId ?? "personal",
+          projectId: projectId ?? null,
+          clientId: projectId ? null : (options.clientId ?? null),
+          scope,
+          query: String(args.query ?? ""),
+          limit: typeof args.limit === "number" ? args.limit : undefined,
+        });
+        if (!found.ok) respond({ error: "detail" in found ? found.detail : "The search failed." });
+        else if (found.data.drive_error) respond({ error: found.data.drive_error.message });
+        else
+          respond({
+            searched: found.data.searched,
+            files: found.data.files,
+            next_required_action:
+              found.data.files.length === 0
+                ? "Nothing matched. Try different words or another scope, or tell the user nothing was found."
+                : "If one file clearly matches, import it with import_drive_files. If several could match, list them and ask the user which.",
+          });
+      } catch (error) {
+        console.error("[run_tools] find_drive_files failed", safeError(error));
+        respond({ error: "Google Drive could not be searched. Try again." });
       }
     } else if (tc.function.name === "import_drive_files") {
       const respond = (body: Record<string, unknown>) =>

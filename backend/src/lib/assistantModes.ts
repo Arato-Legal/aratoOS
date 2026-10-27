@@ -27,7 +27,7 @@ const DIRECTIVES: Record<Exclude<AssistantMode, "chat">, string> = {
   playbook:
     "SESSION MODE: PLAYBOOK. The user wants a playbook run. Call list_playbooks first, pick the playbook that best fits (ask with ask_inputs if several fit or if no document is chosen), and run it with run_playbook on the relevant document.",
   tabular:
-    "SESSION MODE: TABULAR REVIEW. The user wants a tabular review: the same questions asked across a set of documents. Agree the documents and columns with the user (ask_inputs if unclear). If they describe documents in Google Drive, find them with google_drive_search and bring them in with import_drive_files first. Then call create_tabular_review and give them the link it returns.",
+    "SESSION MODE: TABULAR REVIEW. The user wants a tabular review: the same questions asked across a set of documents. Agree the documents and columns with the user (ask_inputs if unclear). If they describe documents in Google Drive, find them with find_drive_files and bring them in with import_drive_files first. Then call create_tabular_review and give them the link it returns.",
   library:
     "SESSION MODE: LIBRARY SEARCH. The user wants to find material in the library. Search with find_documents (scope library, then templates) before answering, try alternative wording, and answer from what you found, citing the documents.",
 };

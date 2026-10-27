@@ -530,6 +530,7 @@ export {
 } from "./clients.sync";
 
 export {
+  findDriveFilesForAssistant,
   getLibraryDriveSettings,
   listLibraryDriveFolder,
   parseLibraryDriveKind,

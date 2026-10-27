@@ -115,11 +115,16 @@ links and no copy of the files in Mike.
 ## Importing Drive files into a matter from chat
 
 `import_drive_files` (offered with `create_tabular_review`) imports Word files
-and Google Docs found with `google_drive_search` into the matter as documents,
+and Google Docs found with `find_drive_files` into the matter as documents,
 reusing a file already imported. It returns doc ids for `create_tabular_review`
 and reading in the same turn. Describing documents in natural language works
 by search: the assistant finds the files, imports them, then builds the review.
-Searching existing folders needs Whole Drive access; with per-file access only
+`find_drive_files` takes a description and a scope: `matter` (the matter's
+Drive folder and its subfolders; the client's folder in a client session),
+`precedents` (the workspace precedents folder) or `drive` (all of Drive). It
+searches names and content of Word files and Google Docs, ranks name matches
+first, and returns file ids for `import_drive_files`. Folder scopes list the
+folder tree first (at most 80 folders, 5 levels deep). Searching existing folders needs Whole Drive access; with per-file access only
 files Mike created or the user added are found.
 
 ## Hubflo sync (inbound webhook)
