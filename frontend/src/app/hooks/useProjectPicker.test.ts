@@ -58,7 +58,7 @@ describe("useProjectPicker", () => {
             await result.current.openPicker();
         });
         expect(result.current.error).toBe(
-            "Projects could not be loaded. Please try again.",
+            "Matters could not be loaded. Please try again.",
         );
         expect(result.current.open).toBe(false);
         expect(result.current.projects).toBeNull();

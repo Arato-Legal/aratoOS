@@ -17,7 +17,7 @@ in the workspace switcher. Each set is private to the user: an organization's
 owners and other members cannot see or use it.
 
 A conversation uses only the connections of the workspace it is in. Assistant
-chats, project chats and tabular chats in an organization use the user's
+chats, matter chats and tabular chats in an organization use the user's
 connections for that organization, and pending connector write approvals
 resume against them. Personal chats and the Personal-only Word add-in use the
 Personal set. A tool from another workspace's connector is never offered, and
@@ -173,7 +173,7 @@ turned off, deleted, or replaced in the meantime. Changing the server URL,
 credentials, or authorized account invalidates a pending approval. Routine
 OAuth token refresh does not.
 
-Approvals are available in the Mike assistant and project chats. The Word
+Approvals are available in the Mike assistant and matter chats. The Word
 add-in and tabular review cannot show them, so a write that needs approval is
 refused there with an explanation.
 

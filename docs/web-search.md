@@ -1,6 +1,6 @@
 # Web search
 
-The assistant can search the web and read web pages in chats and project
+The assistant can search the web and read web pages in chats and matter
 chats. It is off for each user until they turn it on under
 **Settings > Features > Web Search**. Tabular review and the Word add-in do not
 search the web.

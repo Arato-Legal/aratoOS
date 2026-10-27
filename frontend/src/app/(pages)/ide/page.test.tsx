@@ -47,7 +47,7 @@ vi.mock("@/app/components/modals/ProjectPickerModal", () => ({
         };
     }) =>
         open ? (
-            <div role="dialog" aria-label="Open project">
+            <div role="dialog" aria-label="Open matter">
                 {projects.map((project) => (
                     <button
                         key={project.id}
@@ -82,7 +82,7 @@ vi.mock("@/app/components/projects/NewProjectModal", () => ({
                 type="button"
                 onClick={() => onCreated({ id: "project-new" })}
             >
-                Complete project creation
+                Complete matter creation
             </button>
         ) : null,
 }));
@@ -105,7 +105,7 @@ describe("IDE page", () => {
         ]);
     });
 
-    it("opens a selected project's chats", async () => {
+    it("opens a selected matter's chats", async () => {
         const user = userEvent.setup();
         render(<IdePage />);
 
@@ -118,16 +118,16 @@ describe("IDE page", () => {
             .closest('[data-slot="empty-state"]');
         expect(placeholder).toHaveClass("items-start", "text-left");
         expect(placeholder?.parentElement).toHaveClass("liquid-glass-flat");
-        expect(screen.getByRole("button", { name: "Open project" })).toHaveClass(
+        expect(screen.getByRole("button", { name: "Open matter" })).toHaveClass(
             "h-7",
         );
-        expect(screen.getByRole("button", { name: "New project" })).toHaveClass(
+        expect(screen.getByRole("button", { name: "New matter" })).toHaveClass(
             "h-7",
         );
-        await user.click(screen.getByRole("button", { name: "Open project" }));
+        await user.click(screen.getByRole("button", { name: "Open matter" }));
         await user.click(await screen.findByRole("button", { name: "Matter Alpha" }));
         const open = within(
-            screen.getByRole("dialog", { name: "Open project" }),
+            screen.getByRole("dialog", { name: "Open matter" }),
         ).getByRole("button", { name: "Open" });
         expect(open).toHaveAttribute("data-variant", "blue");
         await user.click(open);
@@ -135,22 +135,22 @@ describe("IDE page", () => {
         expect(listProjects).toHaveBeenCalledOnce();
         expect(listProjects).toHaveBeenCalledWith({ participatingOnly: true, workspace: "personal" });
         expect(state.push).toHaveBeenCalledWith(
-            "/projects/project-1/assistant/chat",
+            "/matters/project-1/assistant/chat",
         );
     });
 
-    it("opens the new project's chats after creation", async () => {
+    it("opens the new matter's chats after creation", async () => {
         const user = userEvent.setup();
         render(<IdePage />);
 
-        await user.click(screen.getByRole("button", { name: "New project" }));
+        await user.click(screen.getByRole("button", { name: "New matter" }));
         await user.click(
-            screen.getByRole("button", { name: "Complete project creation" }),
+            screen.getByRole("button", { name: "Complete matter creation" }),
         );
 
         await waitFor(() =>
             expect(state.push).toHaveBeenCalledWith(
-                "/projects/project-new/assistant/chat",
+                "/matters/project-new/assistant/chat",
             ),
         );
     });

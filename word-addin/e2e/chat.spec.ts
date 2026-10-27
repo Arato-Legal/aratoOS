@@ -143,7 +143,7 @@ test("uses a floating icon header with no logo, tabs, or visible sign-out button
   await expect(quickActionsItem).not.toHaveAttribute("data-selected");
   await expect(quickActionsItem).not.toHaveAttribute("data-highlighted", "");
   await expect(quickActionsItem).toBeVisible();
-  await expect(page.getByRole("menuitem", { name: "Projects" })).toHaveCount(0);
+  await expect(page.getByRole("menuitem", { name: "Matters" })).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: "Open menu" })).toBeVisible();
   await expect(page.getByTestId("floating-header")).toHaveCSS(
@@ -1313,7 +1313,7 @@ test("attaches a library template from the Templates tab", async ({
   ]);
 });
 
-test("expands a project and attaches one of its documents", async ({
+test("expands a matter and attaches one of its documents", async ({
   addin,
   page,
 }) => {
@@ -1343,13 +1343,13 @@ test("expands a project and attaches one of its documents", async ({
     folders: [],
     documentsHasMore: false,
   });
-  await addin.mockChatStream(["Project document received."]);
+  await addin.mockChatStream(["Matter document received."]);
   await addin.gotoTaskpane();
 
   await page.getByRole("button", { name: "Add documents" }).click();
   await page.getByRole("menuitem", { name: "Web files" }).click();
   const modal = page.getByRole("dialog", { name: "Add Documents" });
-  await modal.getByRole("button", { name: "Projects" }).click();
+  await modal.getByRole("button", { name: "Matters" }).click();
   await modal.getByRole("button", { name: /Matter Atlas/ }).click();
   const projectDocument = modal.getByRole("button", {
     name: /Disclosure letter\.pdf/,

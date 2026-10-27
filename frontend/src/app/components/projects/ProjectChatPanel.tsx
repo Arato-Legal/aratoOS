@@ -471,7 +471,7 @@ export function ProjectChatPanel({
                 // A chat that cannot be shown gives way: the side chat to a
                 // new one in place, the primary to the project's chat list.
                 if (isSideChat) openChat("");
-                else router.replace(`/projects/${projectId}/assistant`);
+                else router.replace(`/matters/${projectId}/assistant`);
             })
             .finally(() => {
                 if (!cancelled) setChatLoaded(true);
@@ -598,7 +598,7 @@ export function ProjectChatPanel({
                         : current,
                 );
             } else {
-                router.push(`/projects/${projectId}/assistant`);
+                router.push(`/matters/${projectId}/assistant`);
             }
         } catch (error) {
             // Without this the refusal was an unhandled rejection and the

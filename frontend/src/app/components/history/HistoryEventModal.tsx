@@ -363,7 +363,7 @@ export function HistoryEventModal({
                       "Event code": event.action,
                       "Recorded title": event.title,
                       "Organization ID": event.org_id,
-                      "Project ID": event.project_id,
+                      "Matter ID": event.project_id,
                       "Document ID": event.document_id,
                       "Chat ID": event.chat_id,
                       "Review ID": event.review_id,

@@ -58,7 +58,7 @@ for (const scope of ["assistant", "project", "tabular"] as const) {
                             Array.from({ length: 30 }, (_, j) => `Earlier clause ${i}/${j}. **Review** these synthetic terms.\n\n`).join("") }] },
                     ]).flat();
                     if (path === "/api/projects/stress-project") return json({
-                        id: "stress-project", name: "Streaming project", documents: [], folders: [],
+                        id: "stress-project", name: "Streaming matter", documents: [], folders: [],
                         is_owner: true, access_role: "owner", user_id: "streaming-user",
                     });
                     if (path === "/api/projects/stress-project/chats") return json([chat]);
@@ -110,7 +110,7 @@ for (const scope of ["assistant", "project", "tabular"] as const) {
             }, { streamKind, scope });
 
             await page.goto(scope === "project"
-                ? "/projects/stress-project/assistant/chat/streaming-regression"
+                ? "/matters/stress-project/assistant/chat/streaming-regression"
                 : scope === "tabular"
                     ? "/tabular-reviews/stress-review?chat=streaming-regression"
                     : "/assistant/chat/streaming-regression");

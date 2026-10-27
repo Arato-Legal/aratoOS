@@ -136,8 +136,8 @@ has in an older form.
 
 `20260904_02_migrate_legacy_sharing.sql` converts the old roleless
 `shared_with` arrays into real access grants. One shape has nowhere to go: a
-tabular review that lives INSIDE a project now inherits access from that
-project, so a share on the review alone cannot be reproduced without handing
+tabular review that lives INSIDE a matter now inherits access from that
+matter, so a share on the review alone cannot be reproduced without handing
 the recipient the whole matter. That migration dropped
 `tabular_reviews.shared_with` without recording those recipients.
 
@@ -151,7 +151,7 @@ old `shared_with` values into a scratch column named `shared_with` on
 `tabular_reviews`, re-run `20260917_01` (it is safe to re-run), then drop the
 scratch column. Fresh installs create the table empty and nothing writes it
 at runtime. The table carries no foreign keys, so the record survives the
-review or project being deleted. It is `service_role`-only; read it with the
+review or matter being deleted. It is `service_role`-only; read it with the
 service key:
 
 ```sql
@@ -161,7 +161,7 @@ order by l.archived_at desc;
 ```
 
 Each row is a person who could see that review before the upgrade and cannot
-now. For each one, decide deliberately: grant them access to the project (or
+now. For each one, decide deliberately: grant them access to the matter (or
 add them to the organization) if they should still have it, and otherwise do
 nothing. The table is a record, not a queue — nothing reads it, and rows may
 be deleted once every recipient has been dealt with.
@@ -361,7 +361,7 @@ mirrored into `user_profiles`.
 ## Email from Mike itself
 
 Beyond authentication, Mike sends a few messages of its own: an invitation to
-an organization, a notification (a task assigned, a project shared, a version
+an organization, a notification (a task assigned, a matter shared, a version
 sent for review or approved), the daily digest of notifications for people who
 chose one, and reminders of tasks due within two days or overdue. They go out
 over SMTP when the backend has both `SMTP_URL` (`smtp://user:pass@host:587`
@@ -518,7 +518,7 @@ Before inviting users, verify the metadata contains the public ACS URL, try
 both an assigned and an unassigned IdP user, confirm return to onboarding or
 the app, and confirm logout and an unapproved domain behave as expected. SAML
 identities can be separate accounts from existing email/Google identities; do
-not assume matching emails link accounts or transfer project access.
+not assume matching emails link accounts or transfer matter access.
 
 Cloudflare Access or IAP in front of Mike is complementary perimeter access
 control. It does not establish Mike's Supabase session and is not a substitute

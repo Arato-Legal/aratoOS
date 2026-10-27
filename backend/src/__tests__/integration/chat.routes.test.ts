@@ -1837,7 +1837,7 @@ describe("POST /chat — streaming endpoint", () => {
       "ask_inputs_response.responses must be a non-empty array",
     ],
   ])(
-        "shares strict request validation with project chat",
+        "shares strict request validation with matter chat",
         async (body, detail) => {
             const res = await request(app)
                 .post("/chat")
@@ -2404,7 +2404,7 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
         );
     });
 
-    it("treats a chat in an organization's project as a shared audience", async () => {
+    it("treats a chat in an organization's matter as a shared audience", async () => {
         await seedResolvableModel();
         const db = makeRbacDb("member", "u1");
         mockedCreate.mockImplementation(() => db as never);
@@ -2441,7 +2441,7 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
 
     // A Viewer can open the project, so answering "Project not found" told
     // them their matter had vanished. The refusal has to say it is one.
-    it("403s a project Viewer creating a chat in that project", async () => {
+    it("403s a matter Viewer creating a chat in that matter", async () => {
         mockedCreate.mockImplementation(
             () =>
                 makeRbacDb(null, "colleague-1", {
@@ -2458,11 +2458,11 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
 
         expect(res.status).toBe(403);
         expect(res.body.detail).toBe(
-            "You do not have permission to write in this project.",
+            "You do not have permission to write in this matter.",
         );
     });
 
-    it("keeps 404 when the project is invisible to the caller", async () => {
+    it("keeps 404 when the matter is invisible to the caller", async () => {
         mockedCreate.mockImplementation(
             () =>
                 makeRbacDb(null, "colleague-1", {
@@ -2478,10 +2478,10 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
             .send({ project_id: "proj-1" });
 
         expect(res.status).toBe(404);
-        expect(res.body.detail).toBe("Project not found");
+        expect(res.body.detail).toBe("Matter not found");
     });
 
-    it("does not elevate a project chat's creator above project access", async () => {
+    it("does not elevate a matter chat's creator above matter access", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb(null, "u1") as never);
 
         const res = await request(app)
@@ -2505,7 +2505,7 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
         expect(runLLMStream).toHaveBeenCalledTimes(1);
     });
 
-    it("still lets a project viewer GET the chat (reads stay project.view)", async () => {
+    it("still lets a matter viewer GET the chat (reads stay project.view)", async () => {
         mockedCreate.mockImplementation(
             () =>
                 makeRbacDb(null, "colleague-1", {
@@ -2532,7 +2532,7 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
         (runLLMStream.mock.calls[0]?.[0] as { allowDocumentMutation: boolean })
             .allowDocumentMutation;
 
-    it("rejects a project Viewer despite an incompatible child chat grant", async () => {
+    it("rejects a matter Viewer despite an incompatible child chat grant", async () => {
         mockedCreate.mockImplementation(
             () =>
                 makeRbacDb(null, "colleague-1", {
@@ -2552,7 +2552,7 @@ describe("chat writes are gated on content.edit (org RBAC)", () => {
         expect(runLLMStream).not.toHaveBeenCalled();
     });
 
-    it("offers them to a project member, unchanged", async () => {
+    it("offers them to a matter member, unchanged", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb("member") as never);
 
         const res = await request(app)
@@ -2599,7 +2599,7 @@ describe("chat grants, deletion and roster", () => {
         expect(chatWrites("update")).toEqual([]);
     });
 
-    it("refuses a project editor rename even when they created the chat", async () => {
+    it("refuses a matter editor rename even when they created the chat", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb("member", "u1") as never);
         const res = await request(app).patch("/chat/chat-1").set("Authorization", "Bearer test").send({ title: "Changed" });
         expect(res.status).toBe(403);
@@ -2639,7 +2639,7 @@ describe("chat grants, deletion and roster", () => {
         expect(detail.body.chat.can_leave).toBe(true);
     });
 
-    it("refuses leaving a project chat without removing membership or grants", async () => {
+    it("refuses leaving a matter chat without removing membership or grants", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb("member") as never);
         const res = await request(app).post("/chat/chat-1/leave").set("Authorization", "Bearer test");
         expect(res.status).toBe(409);
@@ -2663,7 +2663,7 @@ describe("chat grants, deletion and roster", () => {
         expect(rbacWrites).toEqual([]);
     });
 
-    it("lets a project owner rename a colleague's chat", async () => {
+    it("lets a matter owner rename a colleague's chat", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb("owner") as never);
 
         const res = await request(app)
@@ -2704,7 +2704,7 @@ describe("chat grants, deletion and roster", () => {
     expect(JSON.stringify(res.body)).not.toContain("connection terminated");
     });
 
-    it("403s a project viewer renaming a colleague's chat", async () => {
+    it("403s a matter viewer renaming a colleague's chat", async () => {
         mockedCreate.mockImplementation(
             () =>
                 makeRbacDb(null, "colleague-1", {
@@ -3097,7 +3097,7 @@ describe("chat grants, deletion and roster", () => {
         ]);
     });
 
-    it("lets an editor delete their own project chat", async () => {
+    it("lets an editor delete their own matter chat", async () => {
         mockedCreate.mockImplementation(() => makeRbacDb("member", "u1") as never);
         const res = await request(app).delete("/chat/chat-1").set("Authorization", "Bearer test");
         expect(res.status).toBe(204);
@@ -3119,7 +3119,7 @@ describe("chat grants, deletion and roster", () => {
         expect(chatWrites("delete")).toEqual([]);
     });
 
-    it("lets an organization owner delete a colleague's chat in the org's project", async () => {
+    it("lets an organization owner delete a colleague's chat in the org's matter", async () => {
         // The other side of that rung: an organization owner is Owner of
         // every project in it, and someone who could delete the whole
         // project outright is not meaningfully restrained from deleting one
@@ -3150,7 +3150,7 @@ describe("chat grants, deletion and roster", () => {
         expect(chatWrites("delete")).toEqual([]);
     });
 
-    it("404s a member reaching for a chat in a private project they were not given", async () => {
+    it("404s a member reaching for a chat in a private matter they were not given", async () => {
         // Private by default: the chat inherits the project's verdict, and
         // membership of the organization is no longer one.
         for (const role of ["admin", "member"] as const) {

@@ -19,7 +19,7 @@ are reported as unverifiable rather than falsely verified.
 Soft-deleted versions remain in the manifest with their `deleted_at` value. A
 trail that omitted them would provide a weaker attestation. This also means the
 filename and timestamps of a deleted version remain visible to anyone who can
-access the project export.
+access the matter export.
 
 ## Manifest digest
 

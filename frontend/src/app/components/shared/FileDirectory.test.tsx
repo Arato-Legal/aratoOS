@@ -88,7 +88,7 @@ describe("FileDirectory", () => {
         loadMoreLibraryDocumentsMock.mockClear();
     });
 
-    it("renders supplied project folders and reveals their documents", () => {
+    it("renders supplied matter folders and reveals their documents", () => {
         const folder = {
             id: "folder-1",
             name: "Closing documents",
@@ -185,7 +185,7 @@ describe("FileDirectory", () => {
         );
     });
 
-    it("renders project selection outside the project row button", () => {
+    it("renders matter selection outside the matter row button", () => {
         render(
             <FileDirectory
                 selectedDocuments={[]}
@@ -207,7 +207,7 @@ describe("FileDirectory", () => {
         expect(expandButton).not.toContainElement(checkbox);
     });
 
-    it("renders folders inside projects on the Projects tab", () => {
+    it("renders folders inside matters on the Matters tab", () => {
         render(
             <FileDirectory
                 selectedDocuments={[]}
@@ -241,7 +241,7 @@ describe("FileDirectory", () => {
             screen.getByRole("button", { name: "Documents" }),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("button", { name: "Projects" }),
+            screen.getByRole("button", { name: "Matters" }),
         ).toBeInTheDocument();
         expect(
             screen.queryByRole("button", { name: "Templates" }),

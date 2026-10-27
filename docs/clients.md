@@ -147,6 +147,46 @@ request, body up to 512 kB.
 | `POST /crm-sync/endpoints/:id/rotate-secret` | Replace the secret |
 | `GET /crm-sync/endpoints/:id/events` | Recent activity |
 
+## Sharing across a client's matters
+
+Each matter has a **Share with client's other matters** switch
+(`projects.share_with_client`, on by default, including for existing matters).
+When it is on, the client's other matters can read this matter's documents,
+chats, tasks and tabular reviews, read-only:
+
+- A matter's page lists them under **Client files**, labelled by source matter.
+- Mike's chat in a sibling matter can use the shared documents, labelled
+  "Shared from matter: ...".
+- Reading goes through a matter the reader can already open. Sharing never
+  grants access to the shared matter's own page, never crosses workspaces, and
+  never lets a sibling write. Only a matter owner can change the switch, and
+  switching it off takes effect at once (nothing is copied).
+
+## Drive folders
+
+A client can link a Google Drive folder (client page, **Drive folder**). A
+matter's **Create Drive folder** button makes a matter subfolder inside it,
+with a "Work in progress" folder in that, using the caller's own Google
+connection, and links it. If the client has no folder yet, one is created in the
+caller's My Drive first. It needs whole-Drive write access (see above) and is
+refused when the matter already has a folder. Existing deployments must apply
+`backend/migrations/20261026_05_client_matter_sharing.sql`.
+
+| Route | Purpose |
+| --- | --- |
+| `PUT /clients/matters/:projectId/sharing` | Turn sharing on or off (`share_with_client`) |
+| `GET /clients/matters/:projectId/client-files` | What sibling matters share with this one |
+| `POST /clients/matters/:projectId/drive-folder/create` | Create and link the matter's Drive folder |
+| `PUT /clients/:clientId/drive-folder` | Link or unlink the client's Drive folder (`folder_id`) |
+
+## URLs
+
+Matter pages are served at `/matters/:id` (dashboard), `/matters/:id/documents`,
+`/assistant`, `/tabular-reviews`, `/tasks` and `/folders`. The page files stay
+under `app/(pages)/projects/` so upstream merges stay clean; `next.config.ts`
+rewrites `/matters/*` to them and redirects the old `/projects/*` URLs.
+The backend API paths are still `/projects/...`.
+
 ## Planned
 
 Mike for Mac reading the synced Drive folder, manual links per matter, AI

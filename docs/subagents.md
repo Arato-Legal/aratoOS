@@ -1,6 +1,6 @@
 # Subagents
 
-In chats and project chats, the assistant can hand a self-contained task to a
+In chats and matter chats, the assistant can hand a self-contained task to a
 subagent: reviewing a long document, researching case law or the web, or
 making a set of edits. Several subagents can work at once, up to 8 per answer,
 continuations included. Each one returns a brief, and the assistant writes the
@@ -17,13 +17,13 @@ A subagent works with the user's access and nothing more. It has the same
 tools as the answer that started it: the chat's documents, CourtListener and
 the web when they are on, workflows and playbooks, document generation and
 editing, and the user's connectors (MCP servers, Google Drive and Workspace).
-Where the answer may not write documents, for example a project viewer's
+Where the answer may not write documents, for example a matter viewer's
 chat, neither may its subagents. It cannot ask the user questions or start
 subagents of its own; those two tools are refused if it asks for them anyway.
 
 The assistant can limit a subagent to some of the chat's documents. A scoped
 subagent's document list shows only those, its document tools refuse any
-other, and searches across a project, library or templates are refused; it
+other, and searches across a matter, library or templates are refused; it
 can still search inside its own documents and create new ones, which it can
 then use. A continued subagent keeps the documents it started with.
 

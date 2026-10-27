@@ -176,12 +176,12 @@ describe("HistoryEventModal", () => {
     );
     expect(getDocument).not.toHaveBeenCalled();
     const openDocument = screen.getByRole("button", { name: "Open document" });
-    const openProject = screen.getByRole("link", { name: "Open project" });
+    const openProject = screen.getByRole("link", { name: "Open matter" });
     expect(openDocument.closest("footer")).not.toBeNull();
     expect(openProject.closest("footer")).not.toBeNull();
     expect(openDocument).toHaveClass("rounded-full");
     expect(openProject).toHaveClass("rounded-full");
-    expect(openProject).toHaveAttribute("href", "/projects/project-id");
+    expect(openProject).toHaveAttribute("href", "/matters/project-id/documents");
     await user.click(openDocument);
     expect(await screen.findByTestId("document-preview")).toHaveAttribute(
       "data-editable",
@@ -322,7 +322,7 @@ describe("private content from audit events", () => {
   });
 
   it.each([
-    ["project", "Open project", "/projects/private-id"],
+    ["project", "Open matter", "/matters/private-id/documents"],
     ["chat", "Open chat", "/assistant/chat/private-id"],
     ["tabular_review", "Open review", "/tabular-reviews/private-id"],
     ["workflow", "Open workflow", "/workflows/assistant/private-id"],
@@ -401,7 +401,7 @@ describe("private content from audit events", () => {
         }}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "Open project" }));
+    await user.click(screen.getByRole("button", { name: "Open matter" }));
     unmount();
     grant();
     await Promise.resolve();

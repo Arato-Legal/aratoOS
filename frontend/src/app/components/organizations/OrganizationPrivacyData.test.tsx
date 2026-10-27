@@ -96,7 +96,7 @@ describe("who may use it", () => {
     for (const label of [
       "Delete all chats",
       "Delete all tabular reviews",
-      "Delete all projects",
+      "Delete all matters",
       "Delete all playbooks",
       "Delete all memory",
     ]) {
@@ -115,7 +115,7 @@ describe("who may use it", () => {
         screen.getByText("Only this organization's owners can manage its data."),
       ).toBeInTheDocument();
       expect(
-        screen.queryByRole("button", { name: "Delete all projects" }),
+        screen.queryByRole("button", { name: "Delete all matters" }),
       ).not.toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Back to General" }));
@@ -139,7 +139,7 @@ describe("who may use it", () => {
     mocks.org = null;
     render(<OrganizationPrivacyData />);
     expect(
-      screen.getByRole("button", { name: "Delete all projects" }),
+      screen.getByRole("button", { name: "Delete all matters" }),
     ).toBeDisabled();
   });
 });
@@ -148,7 +148,7 @@ describe("deleting organization data", () => {
   it.each([
     ["Delete all chats", "chats"],
     ["Delete all tabular reviews", "tabular-reviews"],
-    ["Delete all projects", "projects"],
+    ["Delete all matters", "projects"],
     ["Delete all playbooks", "playbooks"],
     ["Delete all memory", "memories"],
   ])("%s deletes that kind once confirmed", async (label, kind) => {
@@ -176,7 +176,7 @@ describe("deleting organization data", () => {
     const user = userEvent.setup();
     render(<OrganizationPrivacyData />);
 
-    await user.click(screen.getByRole("button", { name: "Delete all projects" }));
+    await user.click(screen.getByRole("button", { name: "Delete all matters" }));
 
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveTextContent("for every member");
@@ -200,7 +200,7 @@ describe("deleting organization data", () => {
     mocks.needsMfaVerification.mockResolvedValueOnce(true);
     render(<OrganizationPrivacyData />);
 
-    await confirmDelete(user, "Delete all projects");
+    await confirmDelete(user, "Delete all matters");
     expect(mocks.deleteOrgData).not.toHaveBeenCalled();
 
     await user.click(await screen.findByRole("button", { name: "Verify MFA" }));

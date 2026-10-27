@@ -204,7 +204,7 @@ describe("access helpers", () => {
         ],
     });
 
-    it("makes the project's creator an owner", async () => {
+    it("makes the matter's creator an owner", async () => {
         const access = await checkProjectAccess(
             "own-project",
             "owner",
@@ -242,7 +242,7 @@ describe("access helpers", () => {
         expect(access.ok).toBe(true);
     });
 
-    it("denies a project the caller has no route into", async () => {
+    it("denies a matter the caller has no route into", async () => {
         await expect(
             checkProjectAccess(
                 "private-project",
@@ -306,7 +306,7 @@ describe("access helpers", () => {
             });
     });
 
-    it("allows document creators and readers of the containing project", async () => {
+    it("allows document creators and readers of the containing matter", async () => {
         await expect(
             ensureDocAccess(
                 { user_id: "owner", project_id: null },
@@ -360,7 +360,7 @@ describe("access helpers", () => {
         ).resolves.toMatchObject({ ok: true, projectRole: "editor" });
     });
 
-    it("allows direct review sharing without project access", async () => {
+    it("allows direct review sharing without matter access", async () => {
         await expect(
             ensureReviewAccess(
                 {
@@ -397,7 +397,7 @@ describe("access helpers", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("lists projects reached by creation and by grant", async () => {
+    it("lists matters reached by creation and by grant", async () => {
         await expect(
             listAccessibleProjectIds("owner", "owner@example.com", db),
         ).resolves.toEqual(["own-project"]);
@@ -790,7 +790,7 @@ describe("org role inheritance", () => {
         documents: [],
     });
 
-    it("gives an organization owner nothing on a member's private project", async () => {
+    it("gives an organization owner nothing on a member's private matter", async () => {
         // The founder is still in the organization, so the project has its
         // Owner. Owning the organization is not a key to it.
         await expect(
@@ -798,7 +798,7 @@ describe("org role inheritance", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("gives an organization owner Owner on a public project", async () => {
+    it("gives an organization owner Owner on a public matter", async () => {
         await expect(
             checkProjectAccess("org-public", "boss", "nobody@firm.example", db),
         ).resolves.toMatchObject({
@@ -809,7 +809,7 @@ describe("org role inheritance", () => {
         });
     });
 
-    describe("a private project whose creator has left the organization", () => {
+    describe("a private matter whose creator has left the organization", () => {
         const orphaned = (extra: Record<string, Row[]> = {}) =>
             makeDb({
                 projects: [
@@ -873,7 +873,7 @@ describe("org role inheritance", () => {
         });
     });
 
-    it("gives an organization owner the role a private project was shared with them at", async () => {
+    it("gives an organization owner the role a private matter was shared with them at", async () => {
         const shared = makeDb({
             projects: [
                 {
@@ -902,7 +902,7 @@ describe("org role inheritance", () => {
     });
 
     it.each(["partner", "staffer"])(
-        "gives %s, who is in the organization, nothing on a private project",
+        "gives %s, who is in the organization, nothing on a private matter",
         async (userId) => {
             // Membership is no longer access. An admin runs the organization;
             // that does not make every matter in it theirs to read.
@@ -920,7 +920,7 @@ describe("org role inheritance", () => {
     it.each([
         ["partner", "admin"],
         ["staffer", "member"],
-    ])("gives %s Editor on a public project", async (userId, orgRole) => {
+    ])("gives %s Editor on a public matter", async (userId, orgRole) => {
         await expect(
             checkProjectAccess("org-public", userId, "nobody@firm.example", db),
         ).resolves.toMatchObject({
@@ -1042,7 +1042,7 @@ describe("org role inheritance", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("ignores direct email grants for organization projects", async () => {
+    it("ignores direct email grants for organization matters", async () => {
         // An organization's project is shared through its member overrides.
         // A leftover email grant neither demotes, admits nor promotes.
         //
@@ -1106,7 +1106,7 @@ describe("org role inheritance", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("keeps personal projects out of every org's reach", async () => {
+    it("keeps personal matters out of every org's reach", async () => {
         await expect(
             checkProjectAccess(
                 "personal-project",
@@ -1117,7 +1117,7 @@ describe("org role inheritance", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("inherits only the project verdict when a document belongs to a project", async () => {
+    it("inherits only the matter verdict when a document belongs to a matter", async () => {
         const crossDb = makeDb({
             projects: [
                 {
@@ -1143,7 +1143,7 @@ describe("org role inheritance", () => {
         ).resolves.toMatchObject({ projectRole: "editor", orgRole: "member" });
     });
 
-    it("inherits the project Owner role for a review", async () => {
+    it("inherits the matter Owner role for a review", async () => {
         await expect(
             ensureReviewAccess(
                 {
@@ -1158,7 +1158,7 @@ describe("org role inheritance", () => {
         ).resolves.toMatchObject({ projectRole: "owner" });
     });
 
-    it("keeps an organization owner out of a review in a member's private project", async () => {
+    it("keeps an organization owner out of a review in a member's private matter", async () => {
         await expect(
             ensureReviewAccess(
                 {
@@ -1186,7 +1186,7 @@ describe("content org resolution", () => {
         ],
     });
 
-    it("inherits the project's organization for content inside it", async () => {
+    it("inherits the matter's organization for content inside it", async () => {
         await expect(
             resolveContentOrgId(db, { projectId: "org-project" }),
         ).resolves.toEqual({ ok: true, orgId: "org-1" });
@@ -1511,7 +1511,7 @@ describe("ensureChatAccess", () => {
         });
     });
 
-    it("inherits the project verdict for a chat inside a project", async () => {
+    it("inherits the matter verdict for a chat inside a matter", async () => {
         // frank's chat lives in alice's project: everyone with standing on
         // proj-a gets that same standing on the chat, and none of them
         // becomes its creator.
@@ -1563,7 +1563,7 @@ describe("ensureChatAccess", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("ignores a child chat grant and enforces project access", async () => {
+    it("ignores a child chat grant and enforces matter access", async () => {
         await expect(
             ensureChatAccess(
                 {
@@ -1579,7 +1579,7 @@ describe("ensureChatAccess", () => {
         ).resolves.toEqual({ ok: false });
     });
 
-    it("inherits the project Owner role and ignores a child chat grant", async () => {
+    it("inherits the matter Owner role and ignores a child chat grant", async () => {
         await expect(
             ensureChatAccess(
                 {
@@ -1713,7 +1713,7 @@ describe("listAccessibleProjectIds", () => {
             visibility: "organization",
         }));
 
-    it("pages through an org with more projects than one read returns", async () => {
+    it("pages through an org with more matters than one read returns", async () => {
         // 1500 matters, a 1000-row page. The unpaged read came back with the
         // first 1000 and no error, so the remaining 500 simply were not there
         // — and nothing in the response said so.
@@ -1741,7 +1741,7 @@ describe("listAccessibleProjectIds", () => {
         ]);
     });
 
-    it("reads the overrides once for the whole org, not once per project", async () => {
+    it("reads the overrides once for the whole org, not once per matter", async () => {
         const { db, queries } = makeRecordingDb({
             org_members: [{ org_id: "org-1", user_id: "u1", role: "member" }],
             projects: orgProjects(40),
@@ -1765,7 +1765,7 @@ describe("listAccessibleProjectIds", () => {
         expect(overrideReads[0].filters).toEqual(["in:org_id", "eq:user_id"]);
     });
 
-    it("hides a denied org project from a member and an admin, but not from its creator or an owner", async () => {
+    it("hides a denied org matter from a member and an admin, but not from its creator or an owner", async () => {
         // The two exemptions checkProjectAccess applies, re-derived inline:
         // the creator and an organization owner keep Owner and cannot be
         // denied. Get this wrong in the batched shape and a partner loses
@@ -1856,7 +1856,7 @@ describe("listAccessibleProjectIds", () => {
     });
 });
 
-describe("listAccessibleProjectIds and private organization projects", () => {
+describe("listAccessibleProjectIds and private organization matters", () => {
     // One organization, four projects by the same author:
     //   private    nobody else has been given it
     //   granted    private, shared with `member` as a viewer
@@ -1924,7 +1924,7 @@ describe("listAccessibleProjectIds and private organization projects", () => {
         expect(await idsFor("principal")).toEqual(["public", "walled"]);
     });
 
-    it("hands the owner the author's private projects once the author has left", async () => {
+    it("hands the owner the author's private matters once the author has left", async () => {
         const afterDeparture = {
             ...tables,
             org_members: tables.org_members.filter(
@@ -1990,7 +1990,7 @@ describe("listAccessibleProjectIds fails closed", () => {
         ],
     });
 
-    it("hides the walled project when the override table answers", async () => {
+    it("hides the walled matter when the override table answers", async () => {
         const ids = await listAccessibleProjectIds(
             "u1",
             "u1@example.com",
@@ -1999,7 +1999,7 @@ describe("listAccessibleProjectIds fails closed", () => {
         expect(ids).toEqual(["open"]);
     });
 
-    it("throws instead of listing the walled project when the override read fails", async () => {
+    it("throws instead of listing the walled matter when the override read fails", async () => {
         const db = makeDb(base(), {
             selectErrors: { project_org_access_overrides: "statement timeout" },
         });
@@ -2008,7 +2008,7 @@ describe("listAccessibleProjectIds fails closed", () => {
         ).rejects.toThrow(/access override read failed: statement timeout/);
     });
 
-    it("throws instead of truncating when a project page read fails", async () => {
+    it("throws instead of truncating when a matter page read fails", async () => {
         const db = makeDb(base(), {
             selectErrors: { projects: "connection reset" },
         });
@@ -2101,7 +2101,7 @@ describe("explicit private organization access", () => {
         opened = false;
         for (const check of checks) expect(await check()).toMatchObject({ ok: false });
     });
-    it("includes an explicitly opened project in the accessible-ID list", async () => {
+    it("includes an explicitly opened matter in the accessible-ID list", async () => {
         const db = makeDb({
             organizations: [{ id: "org", kind: "team" }],
             org_members: [{ org_id: "org", user_id: "admin", role: "admin" }, { org_id: "org", user_id: "member", role: "member" }],

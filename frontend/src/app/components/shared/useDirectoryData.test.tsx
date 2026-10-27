@@ -54,7 +54,7 @@ describe("useDirectoryData", () => {
         listProjectSummaries.mockResolvedValue([]);
     });
 
-    it("lists the projects of the workspace the picker was opened in", async () => {
+    it("lists the matters of the workspace the picker was opened in", async () => {
         // A chat or review takes documents from its own workspace only, so
         // the Projects tab offers that workspace's projects and no others.
         renderHook(() => useDirectoryData(true, "projects"), {
@@ -67,7 +67,7 @@ describe("useDirectoryData", () => {
         );
     });
 
-    it("lists personal projects for a personal item", async () => {
+    it("lists personal matters for a personal item", async () => {
         renderHook(() => useDirectoryData(true, "projects"), {
             wrapper: inWorkspace(null),
         });
@@ -78,7 +78,7 @@ describe("useDirectoryData", () => {
         );
     });
 
-    it("asks for the next page of projects in the same workspace", async () => {
+    it("asks for the next page of matters in the same workspace", async () => {
         listProjectSummaries.mockResolvedValue(manyProjects);
         const { result } = renderHook(
             () => useDirectoryData(true, "projects"),
@@ -182,7 +182,7 @@ describe("useDirectoryData failures", () => {
         );
     });
 
-    it("tells the user when the next page of projects fails", async () => {
+    it("tells the user when the next page of matters fails", async () => {
         listProjectSummaries.mockResolvedValueOnce(manyProjects);
 
         const { result } = renderDirectory("projects");
@@ -194,7 +194,7 @@ describe("useDirectoryData failures", () => {
         });
 
         expect(screen.getByRole("alert")).toHaveTextContent(
-            "Couldn't load more projects",
+            "Couldn't load more matters",
         );
     });
 });

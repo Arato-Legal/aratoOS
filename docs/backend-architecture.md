@@ -274,14 +274,14 @@ following rules have a single implementation:
 
 | Operation | Owner | Caller responsibilities |
 |---|---|---|
-| Rename a project's or library's active document version | `modules/documents/documents.rename.ts`, exported as `renameDocument` | Supply the actor and explicit project/library scope; adapt the result to the existing endpoint shape. The operation checks project permissions and scopes both document queries. |
-| Delete collection documents and durably clean all version artifacts | `modules/documents/documents.cleanup.ts`, exported as `deleteCollectionDocuments` | Project callers authorize `docs.organize` and select document IDs inside that project first. Library callers supply the authenticated user's ID and collection; the operation filters eligible IDs. Deletion repeats the scope predicates; database triggers capture source, PDF, and extracted-text keys in the same transaction. |
+| Rename a matter's or library's active document version | `modules/documents/documents.rename.ts`, exported as `renameDocument` | Supply the actor and explicit project/library scope; adapt the result to the existing endpoint shape. The operation checks matter permissions and scopes both document queries. |
+| Delete collection documents and durably clean all version artifacts | `modules/documents/documents.cleanup.ts`, exported as `deleteCollectionDocuments` | Matter callers authorize `docs.organize` and select document IDs inside that matter first. Library callers supply the authenticated user's ID and collection; the operation filters eligible IDs. Deletion repeats the scope predicates; database triggers capture source, PDF, and extracted-text keys in the same transaction. |
 | Resolve a chat turn's model and reasoning level | `modules/user/user.chatSelection.ts`, exported as `resolveUserChatSelection` | Authorize the chat first; retain each surface's persistence, error mapping, and stream lifetime. Selection itself does not mutate chats or saved preferences. |
 | Validate folder paths and moves; collect a deletion subtree | `lib/folderTree.ts` | Supply a scoped folder list/loader and retain the endpoint's validation order and error messages. |
 | Resolve an assignable organization member | `lib/orgAccessOverrides.ts`, `findAssignableOrgMember` | Authorize the actor's access-management permission and validate the requested role before resolving the target. Preserve creator ownership and the item's visibility-specific organization-owner rules; organization admins receive no implicit Owner role. |
 
 Shared code must preserve meaningful differences. Library renames still expose
-`folder_id` and project renames still conceal denied project access as 404.
+`folder_id` and matter renames still conceal denied matter access as 404.
 Word's local chat mode remains free of chat persistence. Copy callers explicitly
 choose their transport and whether a missing rendition is optional or fatal.
 
@@ -306,7 +306,7 @@ choose their transport and whether a missing rendition is optional or fatal.
 
 The lifecycle primitives are trusted persistence operations, not permission
 checks. Callers must authorize the destination and separately authorize a copy
-source. Project, library, workflow, and upload-session policies remain explicit.
+source. Matter, library, workflow, and upload-session policies remain explicit.
 
 For changes to these rules, add a test of the shared operation and verify the
 caller-specific permissions and response contracts. The rename route and

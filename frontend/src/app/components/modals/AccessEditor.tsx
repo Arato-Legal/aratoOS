@@ -465,7 +465,7 @@ export function OrganizationAccessEditor({
     members,
     assignments,
     organizationName,
-    ownerLabel = "Project owners",
+    ownerLabel = "Matter owners",
     resourceNoun: resourceNounProp,
     loading = false,
     disabled = false,
@@ -592,7 +592,7 @@ export function OrganizationAccessEditor({
         resourceNounProp ??
         (ownerLabel.toLowerCase().startsWith("workflow")
             ? "workflow"
-            : "project");
+            : "matter");
     const organizationLabel = organizationName || "the organisation";
     const peopleDescription = isPublic
         ? `Everyone in ${organizationLabel} can already open and run this ${resourceNoun}. Add members who should edit or own it; they are added as Editors, and you can change a person's role in the list below.`
@@ -862,8 +862,8 @@ export function AccessEditor({
             <section className="flex min-h-0 flex-1 flex-col">
                 {scope === "project" ? (
                     <p className="mb-3 text-xs text-gray-500">
-                        Access is inherited from the project and must be changed
-                        from the project&apos;s Access panel.
+                        Access is inherited from the matter and must be changed
+                        from the matter&apos;s Access panel.
                     </p>
                 ) : null}
 

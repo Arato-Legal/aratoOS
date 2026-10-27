@@ -27,7 +27,7 @@ async function gotoProjectRow(
     projectName: string,
 ) {
     const row = page.locator("main div.group").filter({ hasText: projectName });
-    await page.goto("/projects");
+    await page.goto("/matters");
     await expect(row.first()).toBeVisible({ timeout: 12_000 });
     return row;
 }
@@ -46,7 +46,7 @@ async function waitForProjectLoaded(
 
 // ─── Test 1: Rename a project inline ─────────────────────────────────────────
 
-test("rename a project via Edit details", async ({ page }) => {
+test("rename a matter via Edit details", async ({ page }) => {
     const projectName = `E2E Proj ${Date.now()}`;
     await createProject(page, projectName);
 
@@ -91,7 +91,7 @@ test("rename a project via Edit details", async ({ page }) => {
 
 // ─── Test 2: Delete a project ─────────────────────────────────────────────────
 
-test("delete a project", async ({ page }) => {
+test("delete a matter", async ({ page }) => {
     const projectName = `E2E Proj ${Date.now()}`;
     await createProject(page, projectName);
 
@@ -138,7 +138,7 @@ test("delete a project", async ({ page }) => {
 
 // ─── Test 3: Create a folder inside a project ────────────────────────────────
 
-test("create a folder inside a project", async ({ page }) => {
+test("create a folder inside a matter", async ({ page }) => {
     const projectName = `E2E Proj ${Date.now()}`;
     /* Folder creation must work before the project has any documents. */
     await createProject(page, projectName);
@@ -223,7 +223,7 @@ test("file upload type validation — .txt file is rejected", async ({ page }) =
 
     /* (b) Server-side rejection on the active protocol — REGRESSION: fails if
        type validation is removed from upload-session manifest parsing. */
-    const projectId = page.url().match(/\/projects\/([0-9a-f-]{36})/)?.[1];
+    const projectId = page.url().match(/\/(?:projects|matters)\/([0-9a-f-]{36})/)?.[1];
     expect(projectId, "expected to be on a /projects/<id> page").toBeTruthy();
     const uploadResponses = await page.evaluate(async (id) => {
         const sessionResponse = await fetch("/api/upload-sessions", {

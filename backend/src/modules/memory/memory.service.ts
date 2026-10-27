@@ -80,7 +80,7 @@ export async function resolveProjectMemoryContext(
         args.userEmail,
         db,
     );
-    if (!access.ok) return { ok: false, status: 404, detail: "Project not found" };
+    if (!access.ok) return { ok: false, status: 404, detail: "Matter not found" };
     if (!can(access.projectRole, args.required)) {
         return {
             ok: false,

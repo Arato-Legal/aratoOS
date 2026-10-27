@@ -255,7 +255,7 @@ export function ProjectWorkspaceProvider({
     );
 
     const openProjectRoot = useCallback(() => {
-        router.push(`/projects/${projectId}`);
+        router.push(`/matters/${projectId}/documents`);
     }, [projectId, router]);
 
     useEffect(() => {
@@ -278,7 +278,7 @@ export function ProjectWorkspaceProvider({
                 setProject(null);
                 setFolders([]);
                 notifyError(error, {
-                    action: "load this project",
+                    action: "load this matter",
                     dedupeKey: `project-load:${projectId}`,
                     onRetry: () =>
                         setProjectReloadToken((token) => token + 1),
@@ -415,7 +415,7 @@ export function ProjectWorkspaceProvider({
             denyUnlessLoading({ action: "create a chat", requiredRole: "editor" });
             return;
         }
-        router.push(`/projects/${projectId}/assistant/chat`);
+        router.push(`/matters/${projectId}/assistant/chat`);
     }, [projectId, router, canDo, denyUnlessLoading]);
 
     const openNewReview = useCallback(() => {
@@ -459,7 +459,7 @@ export function ProjectWorkspaceProvider({
                 model,
                 project_id: projectId,
             });
-            router.push(`/projects/${projectId}/tabular-reviews/${review.id}`);
+            router.push(`/matters/${projectId}/tabular-reviews/${review.id}`);
         } finally {
             setCreatingReview(false);
         }
@@ -473,7 +473,7 @@ export function ProjectWorkspaceProvider({
     }) {
         if (!canDo("access.manage")) {
             denyUnlessLoading({
-                action: "edit project details",
+                action: "edit matter details",
                 requiredRole: "owner",
             });
             return;
@@ -503,7 +503,7 @@ export function ProjectWorkspaceProvider({
 
     function requestProjectDelete() {
         if (!canDo("container.delete")) {
-            denyUnlessLoading("delete this project");
+            denyUnlessLoading("delete this matter");
             return;
         }
         setDeleteProjectStatus("idle");
@@ -516,13 +516,13 @@ export function ProjectWorkspaceProvider({
         try {
             await deleteProject(projectId);
             setDeleteProjectStatus("deleted");
-            window.setTimeout(() => router.push("/projects"), 500);
+            window.setTimeout(() => router.push("/matters"), 500);
         } catch (error) {
             // The dialog otherwise drops back to its resting state with the
             // project still listed, which reads as "nothing happened".
             setDeleteProjectStatus("idle");
             notifyError(error, {
-                action: "delete this project",
+                action: "delete this matter",
                 dedupeKey: `project-delete:${projectId}`,
                 // Retry re-opens the confirmation rather than deleting from
                 // the notice: a destructive action is always confirmed.
@@ -604,7 +604,7 @@ export function ProjectWorkspaceProvider({
                         creatingReview={creatingReview}
                         canManageProject={canDo("access.manage")}
                         roleKnown={roleKnown}
-                        onBackToProjects={() => router.push("/projects")}
+                        onBackToProjects={() => router.push("/matters")}
                         onProjectRoot={openProjectRoot}
                         onOpenDetails={() => setProjectDetailsOpen(true)}
                         onOpenMemory={() => setProjectMemoryOpen(true)}
@@ -670,8 +670,8 @@ export function ProjectWorkspaceProvider({
 
                     <ConfirmPopup
                         open={deleteProjectConfirmOpen}
-                        title="Delete project?"
-                        message="This will permanently delete the project and its related documents, chats, and tabular reviews."
+                        title="Delete matter?"
+                        message="This will permanently delete the matter and its related documents, chats, and tabular reviews."
                         confirmLabel="Delete"
                         confirmVariant="danger"
                         confirmStatus={
@@ -702,7 +702,7 @@ export function ProjectWorkspaceProvider({
                             // them out of their own project.
                             currentUserId={user?.id ?? null}
                             breadcrumb={[
-                                "Projects",
+                                "Matters",
                                 project.name +
                                     (project.cm_number
                                         ? ` (${project.cm_number})`
@@ -713,7 +713,7 @@ export function ProjectWorkspaceProvider({
                                 grants: grants ?? [],
                                 grantsUnavailable,
                                 orgId: project.org_id ?? null,
-                                ownerLabel: "Project owners",
+                                ownerLabel: "Matter owners",
                                 canManage: canDo("access.manage"),
                                 visibility: project.visibility ?? "private",
                                 onGrant: async (email, role) => {
@@ -753,6 +753,7 @@ export function ProjectSectionToolbar({
                 backAction
                     ? []
                     : [
+                          { id: "overview", label: "Overview" },
                           { id: "documents", label: "Documents" },
                           { id: "assistant", label: "Chats" },
                           { id: "reviews", label: "Tabular Reviews" },
@@ -762,13 +763,15 @@ export function ProjectSectionToolbar({
             active={activeSection}
             onChange={(next) => {
                 const href =
-                    next === "assistant"
-                        ? `/projects/${projectId}/assistant`
+                    next === "overview"
+                        ? `/matters/${projectId}`
+                        : next === "assistant"
+                        ? `/matters/${projectId}/assistant`
                         : next === "reviews"
-                          ? `/projects/${projectId}/tabular-reviews`
+                          ? `/matters/${projectId}/tabular-reviews`
                           : next === "tasks"
-                            ? `/projects/${projectId}/tasks`
-                            : `/projects/${projectId}`;
+                            ? `/matters/${projectId}/tasks`
+                            : `/matters/${projectId}/documents`;
                 router.push(href);
             }}
             leading={

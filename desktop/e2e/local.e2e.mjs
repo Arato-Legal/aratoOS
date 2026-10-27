@@ -177,15 +177,15 @@ try {
 
   // 3. Create a project through the real wizard.
   await page.goto(`${FRONTEND_URL}/projects`);
-  const createBtn = page.getByRole("button", { name: "New project", exact: true });
+  const createBtn = page.getByRole("button", { name: "New matter", exact: true });
   await createBtn.waitFor({ timeout: 15_000 });
   await createBtn.click();
-  await page.getByPlaceholder("Add project name").fill(PROJECT_NAME);
+  await page.getByPlaceholder("Matter name").fill(PROJECT_NAME);
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("dialog", { name: "Access", exact: true }).waitFor();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("dialog", { name: "Add Documents", exact: true })
-    .getByRole("button", { name: "Create project", exact: true })
+    .getByRole("button", { name: "Create matter", exact: true })
     .click({ timeout: 15_000 });
   await page.getByText(PROJECT_NAME, { exact: false }).first().waitFor({ timeout: 20_000 });
   console.log(`✓ project "${PROJECT_NAME}" created (data in local postgres)`);
@@ -322,13 +322,13 @@ try {
   //    behind first, and the signup account's upload is checked on disk.
   const GUEST_PROJECT = `${PROJECT_NAME} (guest)`;
   await page.goto(`${FRONTEND_URL}/projects`);
-  await page.getByRole("button", { name: "New project", exact: true }).click({ timeout: 15_000 });
-  await page.getByPlaceholder("Add project name").fill(GUEST_PROJECT);
+  await page.getByRole("button", { name: "New matter", exact: true }).click({ timeout: 15_000 });
+  await page.getByPlaceholder("Matter name").fill(GUEST_PROJECT);
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("dialog", { name: "Access", exact: true }).waitFor();
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("dialog", { name: "Add Documents", exact: true })
-    .getByRole("button", { name: "Create project", exact: true })
+    .getByRole("button", { name: "Create matter", exact: true })
     .click({ timeout: 15_000 });
   await page.getByText(GUEST_PROJECT, { exact: false }).first().waitFor({ timeout: 20_000 });
   await browser.close();

@@ -149,7 +149,7 @@ export function ProjectDetailsModal({
             // An intentional 4xx (a name conflict, a refusal) says something
             // the generic line cannot; anything else still falls back to it.
             setError(
-                userFacingApiError(err, "Could not update project details."),
+                userFacingApiError(err, "Could not update matter details."),
             );
         } finally {
             setSaving(false);
@@ -160,7 +160,7 @@ export function ProjectDetailsModal({
         <Modal
             open={open}
             onClose={onClose}
-            breadcrumbs={["Projects", project.name, "Details"]}
+            breadcrumbs={["Matters", project.name, "Details"]}
             secondaryAction={
                 onShareProject
                     ? {
@@ -191,7 +191,7 @@ export function ProjectDetailsModal({
             <div className="flex min-h-0 flex-1 flex-col gap-6 py-1">
                 <div>
                     <FieldLabel htmlFor="project-details-name">
-                        Project name
+                        Matter name
                     </FieldLabel>
                     <FormTextInput
                         id="project-details-name"
@@ -202,7 +202,7 @@ export function ProjectDetailsModal({
                             setError(null);
                         }}
                         disabled={!canEdit || saving}
-                        placeholder="Add project name"
+                        placeholder="Add matter name"
                         variant="minimal"
                     />
                 </div>
@@ -264,7 +264,7 @@ export function ProjectDetailsModal({
                             setError(null);
                         }}
                         organizationName={project.organization_name}
-                        resourceNoun="project"
+                        resourceNoun="matter"
                         disabled={!canEdit || saving}
                     />
                 ) : null}

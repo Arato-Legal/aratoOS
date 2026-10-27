@@ -260,7 +260,7 @@ describe("upload session destination access", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.detail).toBe(
-      "You do not have permission to edit content in this project.",
+      "You do not have permission to edit content in this matter.",
     );
     // No session was reserved and no upload URL was minted.
     expect(mocks.rpc).not.toHaveBeenCalled();

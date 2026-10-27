@@ -32,7 +32,7 @@ export function HistorySubjectIcon({ event, avatarSize }: { event: AuditEvent; a
   if (type === "Review" || type === "Tabular Review")
     return <TabularReviewSkeuoIcon className={className} />;
   if (type === "Workflow") return <WorkflowSkeuoIcon className={className} />;
-  if (type === "Project") return <ClosedProjectSvgIcon className={className} />;
+  if (type === "Matter") return <ClosedProjectSvgIcon className={className} />;
   // Recipients without an authorized roster photo use the same monogram as
   // new share recipients. Never look up photos by an arbitrary event email.
   if (type === "Member" || type === "Recipient")

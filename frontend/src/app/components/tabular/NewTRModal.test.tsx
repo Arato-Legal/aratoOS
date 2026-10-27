@@ -329,7 +329,7 @@ describe("NewTRModal", () => {
         expect(screen.getByRole("button", { name: "Back" })).toBeDisabled();
     });
 
-    it("stores uploads from a project review in that project", async () => {
+    it("stores uploads from a matter review in that matter", async () => {
         const uploadedDocument = {
             id: "uploaded-document",
             project_id: "project-1",
@@ -359,7 +359,7 @@ describe("NewTRModal", () => {
         );
 
         fireEvent.change(screen.getByLabelText("Review name"), {
-            target: { value: "Project review" },
+            target: { value: "Matter review" },
         });
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -379,7 +379,7 @@ describe("NewTRModal", () => {
         expect(uploadStandaloneDocuments).not.toHaveBeenCalled();
     });
 
-    it("lists the project's people read-only below the inherited access note", async () => {
+    it("lists the matter's people read-only below the inherited access note", async () => {
         vi.mocked(getProjectPeople).mockResolvedValue({
             owner: {
                 user_id: "owner-1",
@@ -414,7 +414,7 @@ describe("NewTRModal", () => {
         );
 
         fireEvent.change(screen.getByLabelText("Review name"), {
-            target: { value: "Project review" },
+            target: { value: "Matter review" },
         });
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
@@ -424,7 +424,7 @@ describe("NewTRModal", () => {
             expect.stringContaining("owner@firm.test"),
             expect.stringContaining("editor@firm.test"),
         ]);
-        const note = screen.getByText(/Access is inherited from the project/);
+        const note = screen.getByText(/Access is inherited from the matter/);
         expect(
             note.compareDocumentPosition(screen.getByText("Name")) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
@@ -448,7 +448,7 @@ describe("NewTRModal", () => {
             />,
         );
         fireEvent.change(screen.getByLabelText("Review name"), {
-            target: { value: "Project review" },
+            target: { value: "Matter review" },
         });
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -496,7 +496,7 @@ describe("NewTRModal", () => {
             />,
         );
         fireEvent.change(screen.getByLabelText("Review name"), {
-            target: { value: "Project review" },
+            target: { value: "Matter review" },
         });
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
         fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -616,7 +616,7 @@ describe("NewTRModal load failures", () => {
         await waitFor(() => expect(listWorkflows).toHaveBeenCalledTimes(2));
     });
 
-    it("says when the chosen project's files could not be loaded", async () => {
+    it("says when the chosen matter's files could not be loaded", async () => {
         const user = userEvent.setup();
         vi.mocked(listWorkflows).mockResolvedValue([]);
         vi.mocked(getProject).mockRejectedValue(
@@ -636,17 +636,17 @@ describe("NewTRModal load failures", () => {
         );
 
         await user.click(
-            screen.getByRole("switch", { name: "Create under a project" }),
+            screen.getByRole("switch", { name: "Create under a matter" }),
         );
-        await user.click(screen.getByText("Select project..."));
+        await user.click(screen.getByText("Select matter..."));
         await user.click(await screen.findByText("Acquisition"));
 
         const alert = await screen.findByRole("alert");
-        expect(alert).toHaveTextContent("Couldn't load this project's files");
+        expect(alert).toHaveTextContent("Couldn't load this matter's files");
         expect(alert).not.toHaveTextContent("API error: 500");
     });
 
-    it("ignores a project's file load that fails after another project was chosen", async () => {
+    it("ignores a matter's file load that fails after another matter was chosen", async () => {
         const user = userEvent.setup();
         vi.mocked(listWorkflows).mockResolvedValue([]);
         let failFirst!: (error: unknown) => void;
@@ -681,9 +681,9 @@ describe("NewTRModal load failures", () => {
         );
 
         await user.click(
-            screen.getByRole("switch", { name: "Create under a project" }),
+            screen.getByRole("switch", { name: "Create under a matter" }),
         );
-        await user.click(screen.getByText("Select project..."));
+        await user.click(screen.getByText("Select matter..."));
         await user.click(await screen.findByText("Acquisition"));
         await user.click(screen.getByText("Acquisition"));
         await user.click(await screen.findByText("Merger"));

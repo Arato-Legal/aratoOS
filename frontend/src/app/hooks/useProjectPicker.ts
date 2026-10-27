@@ -44,7 +44,7 @@ export function useProjectPicker() {
                     open: false,
                     error: userFacingApiError(
                         error,
-                        "Projects could not be loaded. Please try again.",
+                        "Matters could not be loaded. Please try again.",
                     ),
                 }));
             },

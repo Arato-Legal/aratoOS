@@ -70,7 +70,7 @@ type Kind = OrgDepartureItem["kind"];
 /** The types of work, in the order a departure lists them. */
 const KIND_GROUPS: { kind: Kind; label: string; one: string; many: string }[] =
   [
-    { kind: "project", label: "Projects", one: "project", many: "projects" },
+    { kind: "project", label: "Matters", one: "matter", many: "matters" },
     {
       kind: "workflow",
       label: "Workflows",
@@ -804,7 +804,7 @@ export function OrganizationDepartedMembers({
       >
         <div className="space-y-4 pb-4">
           <p className="text-sm text-gray-700 [overflow-wrap:anywhere]">
-            Choose who takes over {reassigning?.label}. Projects and workflows
+            Choose who takes over {reassigning?.label}. Matters and workflows
             keep their contents, and the work stays private to its new owner.
           </p>
           <ModalSelect

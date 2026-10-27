@@ -118,17 +118,17 @@ test("assistant page has no critical accessibility violations", async ({
 
 /* ─── Test 3: projects list ──────────────────────────────────────────────── */
 
-test("projects page has no critical accessibility violations", async ({
+test("matters page has no critical accessibility violations", async ({
     page,
 }) => {
-    await page.goto("/projects");
-    await expect(page).toHaveURL(/\/projects/);
+    await page.goto("/matters");
+    await expect(page).toHaveURL(/\/(?:projects|matters)/);
     /* The Plus icon button (aria-label="New project") renders with the list. */
     await expect(
-        page.getByRole("button", { name: "New project" }),
+        page.getByRole("button", { name: "New matter" }),
     ).toBeVisible({ timeout: 10_000 });
 
-    await expectNoBlockingViolations(page, "/projects");
+    await expectNoBlockingViolations(page, "/matters");
 });
 
 /* ─── Test 4: tabular reviews list ───────────────────────────────────────── */

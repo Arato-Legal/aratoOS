@@ -152,7 +152,7 @@ export async function leaveChat(
     const access = await getAccessibleChat(db, args);
     if (!access.ok) return failure("not_found", "Chat not found");
     if (access.chat.project_id)
-        return failure("conflict", "Leave the project to leave this chat.", "access_inherited");
+        return failure("conflict", "Leave the matter to leave this chat.", "access_inherited");
     if (access.projectRole === "owner")
         return failure("forbidden", "Owners cannot leave their chat.");
     const email = normalizeEmail(args.userEmail);

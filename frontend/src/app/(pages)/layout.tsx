@@ -32,7 +32,7 @@ export default function MikeLayout({
     const pathname = usePathname();
     const isChatPage =
         /^\/assistant\/chat\/[^/]+\/?$/.test(pathname) ||
-        /^\/projects\/[^/]+\/assistant\/chat\/[^/]+\/?$/.test(pathname);
+        /^\/matters\/[^/]+\/assistant\/chat\/[^/]+\/?$/.test(pathname);
     const [mobileActionsContainer, setMobileActionsContainer] =
         useState<HTMLDivElement | null>(null);
 

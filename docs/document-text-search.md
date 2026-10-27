@@ -22,7 +22,7 @@ their own text. Soft-deleting a version removes its text; hard deletion cascades
 ## Agent tools
 
 `find_documents` searches the current conversation workspace, with scopes
-`project` (the conversation's project), `library` (the caller's Library Files),
+`project` (the conversation's matter), `library` (the caller's Library Files),
 `templates` (the caller's Library Templates), and `document` (a handle or UUID).
 Current versions are searched by default. An explicit `version_id` with document
 scope searches history. Existing sharing, organization, and archive rules apply

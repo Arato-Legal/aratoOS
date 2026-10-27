@@ -188,7 +188,7 @@ describe("useAssistantChat SSE parsing", () => {
             "chat_id",
         );
         expect(routerReplaceMock).toHaveBeenCalledWith(
-            "/projects/project-1/assistant/chat/project-chat-1",
+            "/matters/project-1/assistant/chat/project-chat-1",
         );
     });
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+    createMatterDriveFolder,
     getMatterWorkspace,
     openDriveFileForEditing,
     setMatterDriveFolder,
@@ -25,10 +26,12 @@ export function MatterWorkspaceSection({
     projectId,
     orgId,
     canEdit,
+    hasClient = false,
 }: {
     projectId: string;
     orgId: string | null;
     canEdit: boolean;
+    hasClient?: boolean;
 }) {
     const router = useRouter();
     const [data, setData] = useState<MatterWorkspace | null>(null);
@@ -64,6 +67,18 @@ export function MatterWorkspaceSection({
         }
     };
 
+    const [creating, setCreating] = useState(false);
+    const create = async () => {
+        setCreating(true);
+        try {
+            setData(await createMatterDriveFolder(projectId));
+        } catch (error) {
+            notifyError(error, { action: "create the Drive folder" });
+        } finally {
+            setCreating(false);
+        }
+    };
+
     const edit = async (fileId: string) => {
         setOpening(fileId);
         try {
@@ -77,6 +92,16 @@ export function MatterWorkspaceSection({
 
     const action = canEdit && data && (
         <div className="flex gap-2">
+            {!data.linked && hasClient && (
+                <PillButtonUI
+                    tone="white"
+                    size="sm"
+                    loading={creating}
+                    onClick={() => void create()}
+                >
+                    Create Drive folder
+                </PillButtonUI>
+            )}
             <PillButtonUI tone="white" size="sm" onClick={() => setPicking(true)}>
                 {data.linked ? "Change folder" : "Link Drive folder"}
             </PillButtonUI>

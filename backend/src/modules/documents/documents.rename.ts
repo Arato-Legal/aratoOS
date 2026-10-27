@@ -59,7 +59,7 @@ export async function renameDocument(
     );
     // 404 only when the caller cannot see the project at all; a Viewer who
     // can open it is told why instead of being told it vanished.
-    if (!access.ok) return failure("not_found", "Project not found");
+    if (!access.ok) return failure("not_found", "Matter not found");
     if (!can(access.projectRole, "docs.organize"))
       return failure("forbidden", DOCS_ORGANIZE_FORBIDDEN);
   }

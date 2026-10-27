@@ -49,7 +49,7 @@ export type ProjectTask = {
 const TASK_COLUMNS =
   "id, project_id, document_id, title, description, status, assignee_user_id, assignee_email, due_on, created_by, completed_at, created_at, updated_at";
 
-const TASK_EDIT_FORBIDDEN = "Only project editors and owners can change tasks.";
+const TASK_EDIT_FORBIDDEN = "Only matter editors and owners can change tasks.";
 
 type TaskRow = Omit<ProjectTask, "assignee_display_name">;
 
@@ -185,7 +185,7 @@ async function validateTaskInput(
         .eq("project_id", project.id)
         .maybeSingle();
       if (error) throw error;
-      if (!data) return { ok: false, detail: "document_id must name a document in this project" };
+      if (!data) return { ok: false, detail: "document_id must name a document in this matter" };
       values.document_id = body.document_id;
     }
   }
@@ -201,7 +201,7 @@ async function validateTaskInput(
       if (!person)
         return {
           ok: false,
-          detail: "Only people with access to this project can be assigned a task.",
+          detail: "Only people with access to this matter can be assigned a task.",
         };
       values.assignee = { user_id: person.user_id, email };
     }
@@ -216,7 +216,7 @@ export async function listProjectTasks(
   const filter = parseTaskStatusFilter(args.status);
   if (!filter) return failure("validation", "status must be open, done or all");
   const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   try {
     let query = db
       .from("project_tasks")
@@ -244,7 +244,7 @@ export async function createProjectTask(
 ): Promise<ServiceResult<{ task: ProjectTask }>> {
   const { projectId, userId, userEmail } = args;
   const access = await checkProjectAccess(projectId, userId, userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "content.edit")) return failure("forbidden", TASK_EDIT_FORBIDDEN);
   try {
     const validated = await validateTaskInput(db, args.body ?? {}, access.project, "create");
@@ -312,7 +312,7 @@ async function notifyAssignee(
     kind: "task.assigned",
     title: `Task assigned to you: ${task.title}`,
     body: task.due_on ? `Due ${task.due_on}.` : null,
-    href: `/projects/${task.project_id}/tasks`,
+    href: `/matters/${task.project_id}/tasks`,
     projectId: task.project_id,
     documentId: task.document_id,
     subjectType: "task",
@@ -352,7 +352,7 @@ export async function runTaskReminderSweep(
       kind: overdue ? "task.overdue" : "task.due",
       title: overdue ? `Overdue: ${row.title}` : `Due soon: ${row.title}`,
       body: `Due ${row.due_on}.`,
-      href: `/projects/${row.project_id}/tasks`,
+      href: `/matters/${row.project_id}/tasks`,
       projectId: row.project_id,
       documentId: row.document_id,
       subjectType: "task",
@@ -382,7 +382,7 @@ export async function updateProjectTask(
 ): Promise<ServiceResult<{ task: ProjectTask }>> {
   const { projectId, taskId, userId, userEmail } = args;
   const access = await checkProjectAccess(projectId, userId, userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "content.edit")) return failure("forbidden", TASK_EDIT_FORBIDDEN);
   try {
     const { data: existing, error: readError } = await db
@@ -484,7 +484,7 @@ export async function deleteProjectTask(
 ): Promise<ServiceResult<{ deleted_task_id: string }>> {
   const { projectId, taskId, userId, userEmail } = args;
   const access = await checkProjectAccess(projectId, userId, userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "content.edit")) return failure("forbidden", TASK_EDIT_FORBIDDEN);
   try {
     const { data, error } = await db

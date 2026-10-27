@@ -8,7 +8,7 @@ import { ProjectsOverview } from "./ProjectsOverview";
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
     useSearchParams: () => new URLSearchParams(),
-    usePathname: () => "/projects",
+    usePathname: () => "/matters",
 }));
 vi.mock("@/app/lib/mikeApi", () => ({
     deleteProject: vi.fn(async () => {}),
@@ -142,7 +142,7 @@ describe("ProjectsOverview bulk delete", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByText(/only a project owner can delete a project/),
+                screen.getByText(/only a matter owner can delete a matter/),
             ).toBeInTheDocument(),
         );
         expect(

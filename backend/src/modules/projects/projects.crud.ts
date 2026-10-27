@@ -878,7 +878,7 @@ export async function updateProject(
     return {
       ok: false,
       kind: "forbidden",
-      detail: "Only a project owner can change project settings.",
+      detail: "Only a matter owner can change matter settings.",
     };
   // Opening a project to the whole organization, or closing it again, is an
   // access decision like any other: the same Owner gate, checked above.
@@ -989,7 +989,7 @@ export async function deleteProject(
     return {
       ok: false,
       kind: "forbidden",
-      detail: "Only a project owner can delete this project.",
+      detail: "Only a matter owner can delete this matter.",
     };
   // The name is read before the cascade removes it; the event itself is
   // written after, so a refused or failed delete leaves no "deleted" entry.

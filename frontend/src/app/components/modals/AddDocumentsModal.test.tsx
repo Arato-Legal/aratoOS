@@ -244,7 +244,7 @@ describe("AddDocumentsModal upload progress", () => {
                 onClose={vi.fn()}
                 onSelect={vi.fn()}
                 projectId={projectId}
-                breadcrumb={["Projects", "Original name", "Add Documents"]}
+                breadcrumb={["Matters", "Original name", "Add Documents"]}
             />,
         );
         fireEvent.change(
@@ -272,7 +272,7 @@ describe("AddDocumentsModal upload progress", () => {
                 onClose={vi.fn()}
                 onSelect={vi.fn()}
                 projectId={projectId}
-                breadcrumb={["Projects", "Renamed project", "Add Documents"]}
+                breadcrumb={["Matters", "Renamed matter", "Add Documents"]}
             />,
         );
 
@@ -310,7 +310,7 @@ describe("upload workspace identity", () => {
     });
 });
 
-describe("AddDocumentsModal project assignment", () => {
+describe("AddDocumentsModal matter assignment", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         clearToasts();
@@ -344,7 +344,7 @@ describe("AddDocumentsModal project assignment", () => {
 
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent(
-            "Couldn't add Brief.docx to this project",
+            "Couldn't add Brief.docx to this matter",
         );
         expect(alert).not.toHaveTextContent("API error: 500");
         expect(onSelect).not.toHaveBeenCalled();
@@ -418,7 +418,7 @@ describe("AddDocumentsModal project assignment", () => {
         fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
         const alert = await screen.findByRole("alert");
         expect(alert).toHaveTextContent(
-            "Couldn't add Broken.pdf to this project",
+            "Couldn't add Broken.pdf to this matter",
         );
 
         vi.mocked(addDocumentToProject).mockResolvedValue(
@@ -444,7 +444,7 @@ describe("AddDocumentsModal directory loading", () => {
     });
     afterEach(() => clearToasts());
 
-    it("says the project's files could not be loaded instead of showing an empty picker", async () => {
+    it("says the matter's files could not be loaded instead of showing an empty picker", async () => {
         vi.mocked(getProject).mockRejectedValue(
             new TypeError("Failed to fetch"),
         );
@@ -464,7 +464,7 @@ describe("AddDocumentsModal directory loading", () => {
         );
 
         const alert = await screen.findByRole("alert");
-        expect(alert).toHaveTextContent("Couldn't load this project's files");
+        expect(alert).toHaveTextContent("Couldn't load this matter's files");
 
         vi.mocked(getProject).mockResolvedValue({
             documents: [],

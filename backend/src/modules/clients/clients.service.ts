@@ -183,7 +183,7 @@ async function loadMatters(
 ): Promise<ServiceResult<ClientMatter[]>> {
   const { data, error } = await db
     .from("projects")
-    .select("id, name, cm_number, practice, updated_at")
+    .select("id, name, cm_number, practice, share_with_client, updated_at")
     .eq("client_id", clientId)
     .is("archived_at", null)
     .order("updated_at", { ascending: false })
@@ -335,16 +335,16 @@ export async function setProjectClient(
     clientId: string | null;
   },
 ): Promise<ServiceResult<{ project_id: string; client_id: string | null }>> {
-  if (!isUuid(args.projectId)) return failure("not_found", "Project not found");
+  if (!isUuid(args.projectId)) return failure("not_found", "Matter not found");
   const access = await checkProjectAccess(
     args.projectId,
     args.userId,
     args.userEmail,
     db,
   );
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
   if (!can(access.projectRole, "access.manage"))
-    return failure("forbidden", "Only a project owner can change its client.");
+    return failure("forbidden", "Only a matter owner can change its client.");
 
   const apply = async (): Promise<ServiceResult<{ project_id: string; client_id: string | null }>> => {
     const { error } = await db
@@ -386,17 +386,17 @@ export async function getMatterDashboard(
   db: Db,
   args: { userId: string; userEmail?: string | null; projectId: string },
 ): Promise<ServiceResult<MatterDashboard>> {
-  if (!isUuid(args.projectId)) return failure("not_found", "Project not found");
+  if (!isUuid(args.projectId)) return failure("not_found", "Matter not found");
   const access = await checkProjectAccess(args.projectId, args.userId, args.userEmail, db);
-  if (!access.ok) return failure("not_found", "Project not found");
+  if (!access.ok) return failure("not_found", "Matter not found");
 
   const { data, error } = await db
     .from("projects")
-    .select("id, name, cm_number, practice, updated_at, client_id, org_id")
+    .select("id, name, cm_number, practice, share_with_client, updated_at, client_id, org_id")
     .eq("id", args.projectId)
     .maybeSingle();
   if (error) return internalFailure(error);
-  if (!data) return failure("not_found", "Project not found");
+  if (!data) return failure("not_found", "Matter not found");
   const project = {
     ...(data as ClientMatter & { client_id: string | null; org_id: string | null }),
     access_role: access.projectRole,
@@ -429,6 +429,14 @@ export {
   type MatterWorkspace,
   type WorkspaceFile,
 } from "./clients.drive";
+
+export {
+  createMatterDriveFolder,
+  getClientFiles,
+  setClientDriveFolder,
+  setMatterSharing,
+  type ClientFiles,
+} from "./clients.sharing";
 
 export {
   getDriveSyncStatus,

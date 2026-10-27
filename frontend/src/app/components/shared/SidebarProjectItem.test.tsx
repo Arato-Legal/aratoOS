@@ -85,9 +85,9 @@ describe("mergeProjectRecentItems", () => {
     );
 
     expect(items.map((item) => [item.kind, item.title, item.href])).toEqual([
-      ["chat", "Untitled chat", "/projects/p1/assistant/chat/c2"],
-      ["review", "Lease review", "/projects/p1/tabular-reviews/r1"],
-      ["chat", "Old chat", "/projects/p1/assistant/chat/c1"],
+      ["chat", "Untitled chat", "/matters/p1/assistant/chat/c2"],
+      ["review", "Lease review", "/matters/p1/tabular-reviews/r1"],
+      ["chat", "Old chat", "/matters/p1/assistant/chat/c1"],
     ]);
   });
 });
@@ -128,7 +128,7 @@ describe("SidebarProjectItem", () => {
     ]);
     expect(links[0]).toHaveAttribute(
       "href",
-      `/projects/${current.id}/tabular-reviews/r1`,
+      `/matters/${current.id}/tabular-reviews/r1`,
     );
     expect(listTabularReviews).toHaveBeenCalledWith(
       current.id,
@@ -144,7 +144,7 @@ describe("SidebarProjectItem", () => {
   it("marks the open chat as the current page", async () => {
     const current = project();
     renderItem(current, {
-      pathname: `/projects/${current.id}/assistant/chat/c1`,
+      pathname: `/matters/${current.id}/assistant/chat/c1`,
     });
 
     expect(
@@ -223,7 +223,7 @@ describe("SidebarProjectItem", () => {
           : Promise.resolve(firstPage),
     );
     const { rerender } = renderItem(current, {
-      pathname: `/projects/${current.id}`,
+      pathname: `/matters/${current.id}/documents`,
     });
     await screen.findByRole("link", { name: "Tabular review: Review 9" });
 
@@ -241,7 +241,7 @@ describe("SidebarProjectItem", () => {
     rerender(
       <SidebarProjectItem
         project={current}
-        pathname={`/projects/${current.id}/assistant/chat/c-new`}
+        pathname={`/matters/${current.id}/assistant/chat/c-new`}
         expanded
         onExpandedChange={vi.fn()}
         onOpenProject={vi.fn()}
@@ -288,7 +288,7 @@ describe("SidebarProjectItem", () => {
         : Promise.resolve(older.slice(9));
     });
     const { rerender } = renderItem(current, {
-      pathname: `/projects/${current.id}`,
+      pathname: `/matters/${current.id}/documents`,
     });
     await screen.findByRole("link", { name: "Tabular review: Review 9" });
 
@@ -298,7 +298,7 @@ describe("SidebarProjectItem", () => {
     rerender(
       <SidebarProjectItem
         project={current}
-        pathname={`/projects/${current.id}/tabular-reviews/r-new`}
+        pathname={`/matters/${current.id}/tabular-reviews/r-new`}
         expanded
         onExpandedChange={vi.fn()}
         onOpenProject={vi.fn()}
@@ -371,7 +371,7 @@ describe("SidebarProjectItem", () => {
   it("keeps the loaded items and offers a retry when a refresh fails", async () => {
     const current = project();
     const { rerender } = renderItem(current, {
-      pathname: `/projects/${current.id}`,
+      pathname: `/matters/${current.id}/documents`,
     });
     await screen.findByRole("link", { name: "Chat: Due diligence" });
 
@@ -380,7 +380,7 @@ describe("SidebarProjectItem", () => {
     rerender(
       <SidebarProjectItem
         project={current}
-        pathname={`/projects/${current.id}/assistant`}
+        pathname={`/matters/${current.id}/assistant`}
         expanded
         onExpandedChange={vi.fn()}
         onOpenProject={vi.fn()}

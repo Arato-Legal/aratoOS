@@ -43,7 +43,7 @@ const NOTHING = { sharedChats: 0, sharedReviews: 0, sharedDocuments: 0, projects
 const SAMS_WORK = {
   ...NOTHING,
   projects: [
-    { id: "p1", title: "Project Atlas" },
+    { id: "p1", title: "Matter Atlas" },
     { id: "p2", title: "" },
   ],
   workflows: [{ id: "w1", title: "Disclosure checklist" }],
@@ -113,7 +113,7 @@ describe("a member with nothing of their own", () => {
   });
 });
 
-describe("a member who alone owns projects and workflows", () => {
+describe("a member who alone owns matters and workflows", () => {
   beforeEach(() => {
     mocks.getOrgMemberHandover.mockResolvedValue(SAMS_WORK);
   });
@@ -122,7 +122,7 @@ describe("a member who alone owns projects and workflows", () => {
     renderDialog();
 
     expect(
-      await screen.findByText("2 projects and 1 workflow need a new owner. Shared and public work will transfer together."),
+      await screen.findByText("2 matters and 1 workflow need a new owner. Shared and public work will transfer together."),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "Transfer ownership" }),
@@ -134,7 +134,7 @@ describe("a member who alone owns projects and workflows", () => {
     expect(dialog.querySelector("header")).toHaveTextContent(
       "Organization›Members›Remove",
     );
-    expect(screen.getByText("Project Atlas")).not.toBeVisible();
+    expect(screen.getByText("Matter Atlas")).not.toBeVisible();
     expect(screen.getByText("Disclosure checklist")).toBeInTheDocument();
     // Private shared titles are withheld; counts still include those items.
     expect(screen.queryByText("Untitled")).not.toBeInTheDocument();
@@ -233,7 +233,7 @@ describe("a member who alone owns projects and workflows", () => {
     renderDialog();
 
     expect(
-      await screen.findByText("9 projects need a new owner. Shared and public work will transfer together."),
+      await screen.findByText("9 matters need a new owner. Shared and public work will transfer together."),
     ).toBeVisible();
     expect(screen.getByText("Matter 1")).not.toBeVisible();
     expect(screen.getByText("Matter 9")).not.toBeVisible();
@@ -292,7 +292,7 @@ describe("removing several members together", () => {
     const user = userEvent.setup();
     mocks.getOrgMemberHandover.mockResolvedValue({
       ...NOTHING,
-      projects: [{ id: "p1", title: "Project Atlas" }],
+      projects: [{ id: "p1", title: "Matter Atlas" }],
       workflows: [{ id: "w1", title: "Checklist" }],
     });
     renderDialog({ departing: [ROSTER[1], ROSTER[2]] });
@@ -303,7 +303,7 @@ describe("removing several members together", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      await screen.findByText("1 project and 1 workflow need a new owner. Shared and public work will transfer together."),
+      await screen.findByText("1 matter and 1 workflow need a new owner. Shared and public work will transfer together."),
     ).toBeInTheDocument();
     expect(mocks.getOrgMemberHandover).toHaveBeenCalledWith("org-1", "sam", ["sam", "robin"]);
     await user.click(screen.getByLabelText("Hand over to"));
@@ -371,7 +371,7 @@ describe("private work without another owner", () => {
     });
     renderDialog();
     expect(await screen.findByText(
-      "2 private projects, 1 private workflow and 3 documents will be archived for 30 days.",
+      "2 private matters, 1 private workflow and 3 documents will be archived for 30 days.",
     )).toBeVisible();
     expect(screen.getByText(/Only organization owners can recover, reassign or delete this work/)).toBeVisible();
     expect(screen.queryByLabelText("Hand over to")).not.toBeInTheDocument();

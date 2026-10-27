@@ -165,7 +165,7 @@ export function usePaginatedProjects(options: {
                 )
                     return;
                 console.error("[projects] failed to load", error);
-        setError(paginationError(error, "Unable to load projects"));
+        setError(paginationError(error, "Unable to load matters"));
                 setHasMore(false);
             })
             .finally(() => {
@@ -226,7 +226,7 @@ export function usePaginatedProjects(options: {
                 requestVersion === requestVersionRef.current
             ) {
                 console.error("[projects] failed to load more", error);
-        setLoadMoreError(paginationError(error, "Unable to load projects"));
+        setLoadMoreError(paginationError(error, "Unable to load matters"));
             }
         } finally {
             if (
@@ -292,7 +292,7 @@ export function usePaginatedProjects(options: {
             if (requestVersion === requestVersionRef.current) {
                 console.error("[projects] failed to select all matching", error);
                 setLoadMoreError(
-                    paginationError(error, "Unable to select all projects"),
+                    paginationError(error, "Unable to select all matters"),
                 );
             }
         } finally {

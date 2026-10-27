@@ -115,7 +115,7 @@ export async function updateProjectFolder(
 }
 
 export const FOLDER_DELETE_FOREIGN_DOCUMENTS_FORBIDDEN =
-  "This folder contains documents added by other people. Only the project owner can delete it.";
+  "This folder contains documents added by other people. Only the matter owner can delete it.";
 
 export type DeleteFolderResult =
   | { ok: true }

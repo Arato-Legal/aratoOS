@@ -15,6 +15,7 @@ import { notifyError } from "@/app/lib/userFacingError";
 import { PERSONAL_WORKSPACE } from "@/app/contexts/WorkspaceContext";
 import { PageHeader } from "@/app/components/shared/PageHeader";
 import { ConfirmPopup } from "@/app/components/popups/ConfirmPopup";
+import { ClientDriveFolder } from "./ClientDriveFolder";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { FORM_CONTROL_GLASS_CLASS } from "@/app/components/ui/form-field";
 import { cn } from "@/app/lib/utils";
@@ -175,6 +176,13 @@ export function ClientDashboard({ clientId }: { clientId: string }) {
                 />
 
                 <MattersSection client={client} onChanged={reload} />
+
+                <ClientDriveFolder
+                    clientId={client.id}
+                    orgId={client.org_id}
+                    folderName={client.drive_folder_name}
+                    onChange={reload}
+                />
 
                 <DashboardSection title="Notes">
                     <EditableField

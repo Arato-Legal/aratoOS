@@ -93,7 +93,7 @@ test.describe("unauthenticated", () => {
            layout, or if any of these routes is moved outside the (pages) group
            without adding its own auth guard. */
         const protectedRoutes = [
-            "/projects",
+            "/matters",
             "/tabular-reviews",
             "/workflows",
             "/settings",

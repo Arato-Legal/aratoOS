@@ -107,7 +107,7 @@ describe("ProjectMemoryModal", () => {
       />,
     );
 
-    await screen.findByRole("textbox", { name: "Project memory" });
+    await screen.findByRole("textbox", { name: "Matter memory" });
     expect(getProjectMemory).toHaveBeenCalledWith(
       "project-1",
       expect.anything(),
@@ -118,7 +118,7 @@ describe("ProjectMemoryModal", () => {
     renderModal();
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     // A quiet, up-to-date file reports nothing: no timestamp, no source.
     expect(screen.queryByText(/Last updated/)).toBeNull();
@@ -129,26 +129,26 @@ describe("ProjectMemoryModal", () => {
     expect(editor).toHaveAttribute("readonly");
     expect(
       screen.getByText(
-        "Consists of shared project context curated from chats in this project.",
+        "Consists of shared matter context curated from chats in this matter.",
       ),
     ).toBeVisible();
     expect(screen.queryByRole("button", { name: /Save/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Delete/ })).toBeNull();
     expect(
       screen.queryByRole("button", {
-        name: "Download project memory.md",
+        name: "Download matter memory.md",
       }),
     ).toBeNull();
-    expect(screen.getByRole("dialog", { name: "Project Memory" })).toHaveClass(
+    expect(screen.getByRole("dialog", { name: "Matter Memory" })).toHaveClass(
       "max-w-2xl",
       "h-[min(600px,calc(100vh-2rem))]",
     );
     expect(
-      screen.getByRole("dialog", { name: "Project Memory" }),
+      screen.getByRole("dialog", { name: "Matter Memory" }),
     ).not.toHaveClass("max-w-4xl");
   });
 
-  it("shows a failed update only inside project memory and remembers dismissal", async () => {
+  it("shows a failed update only inside matter memory and remembers dismissal", async () => {
     const user = userEvent.setup();
     vi.mocked(getProjectMemory).mockResolvedValue({
       ...CURRENT,
@@ -165,7 +165,7 @@ describe("ProjectMemoryModal", () => {
 
     unmount();
     renderModal();
-    await screen.findByRole("textbox", { name: "Project memory" });
+    await screen.findByRole("textbox", { name: "Matter memory" });
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
@@ -179,7 +179,7 @@ describe("ProjectMemoryModal", () => {
     renderModal({ canEdit: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     await user.clear(editor);
     await user.type(editor, "# Updated");
@@ -210,7 +210,7 @@ describe("ProjectMemoryModal", () => {
     renderModal({ canEdit: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     await screen.findByRole("button", { name: "Close" });
 
@@ -238,7 +238,7 @@ describe("ProjectMemoryModal", () => {
     const { onClose } = renderModal({ canEdit: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     fireEvent.change(editor, {
       target: { value: "# Matter facts and more" },
@@ -262,7 +262,7 @@ describe("ProjectMemoryModal", () => {
     const user = userEvent.setup();
     const { onClose } = renderModal({ canEdit: true });
 
-    await screen.findByRole("textbox", { name: "Project memory" });
+    await screen.findByRole("textbox", { name: "Matter memory" });
     await user.click(screen.getByRole("button", { name: "Done" }));
 
     expect(onClose).toHaveBeenCalled();
@@ -275,14 +275,14 @@ describe("ProjectMemoryModal", () => {
     const { onClose } = renderModal({ canEdit: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     fireEvent.change(editor, {
       target: { value: "# Matter facts unsaved" },
     });
     expect(
       await screen.findByText(
-        "Project memory could not be saved. Your draft has been kept.",
+        "Matter memory could not be saved. Your draft has been kept.",
         {},
         { timeout: 3000 },
       ),
@@ -326,14 +326,14 @@ describe("ProjectMemoryModal", () => {
     renderModal({ canEdit: true, canManage: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     await user.clear(editor);
     await user.type(editor, "# My draft");
 
     expect(
       await screen.findByText(
-        "Project memory changed while you were editing",
+        "Matter memory changed while you were editing",
         {},
         { timeout: 2000 },
       ),
@@ -353,7 +353,7 @@ describe("ProjectMemoryModal", () => {
     );
   });
 
-  it("lets a project owner enable memory from the memory modal", async () => {
+  it("lets a matter owner enable memory from the memory modal", async () => {
     const off = {
       ...CURRENT,
       enabled: false,
@@ -375,13 +375,13 @@ describe("ProjectMemoryModal", () => {
     });
 
     await user.click(
-      await screen.findByRole("switch", { name: "Enable project memory" }),
+      await screen.findByRole("switch", { name: "Enable matter memory" }),
     );
 
     await waitFor(() =>
       expect(setProjectMemoryEnabled).toHaveBeenCalledWith("project-1", true),
     );
-    expect(await screen.findByText("Project memory enabled")).toBeVisible();
+    expect(await screen.findByText("Matter memory enabled")).toBeVisible();
     expect(onMemoryEnabledChange).toHaveBeenLastCalledWith(true);
   });
 
@@ -398,13 +398,13 @@ describe("ProjectMemoryModal", () => {
 
     renderModal({ canEdit: true });
 
-    expect(await screen.findByText("Project memory is off")).toBeVisible();
+    expect(await screen.findByText("Matter memory is off")).toBeVisible();
     expect(
-      screen.getByRole("switch", { name: "Enable project memory" }),
+      screen.getByRole("switch", { name: "Enable matter memory" }),
     ).toBeDisabled();
   });
 
-  it("requires confirmation before an owner disables project memory", async () => {
+  it("requires confirmation before an owner disables matter memory", async () => {
     vi.mocked(setProjectMemoryEnabled).mockResolvedValue({
       ...CURRENT,
       enabled: false,
@@ -421,16 +421,16 @@ describe("ProjectMemoryModal", () => {
     });
 
     const memorySwitch = await screen.findByRole("switch", {
-      name: "Enable project memory",
+      name: "Enable matter memory",
     });
     expect(memorySwitch).toBeChecked();
 
     await user.click(memorySwitch);
 
     expect(setProjectMemoryEnabled).not.toHaveBeenCalled();
-    expect(screen.getByText("Turn off project memory?")).toBeVisible();
+    expect(screen.getByText("Turn off matter memory?")).toBeVisible();
     expect(
-      screen.getByText(/delete the existing project memory\.md file/),
+      screen.getByText(/delete the existing matter memory\.md file/),
     ).toBeVisible();
     expect(screen.getByText(/cancel pending memory updates/)).toBeVisible();
     expect(screen.getByText(/stop future memory updates/)).toBeVisible();
@@ -444,15 +444,15 @@ describe("ProjectMemoryModal", () => {
     expect(onMemoryEnabledChange).toHaveBeenLastCalledWith(false);
   });
 
-  it("clears project memory through the normal autosave path", async () => {
+  it("clears matter memory through the normal autosave path", async () => {
     const user = userEvent.setup();
     renderModal({ canEdit: true, canManage: true });
 
     const editor = await screen.findByRole("textbox", {
-      name: "Project memory",
+      name: "Matter memory",
     });
     expect(
-      screen.queryByRole("button", { name: "Delete project memory" }),
+      screen.queryByRole("button", { name: "Delete matter memory" }),
     ).toBeNull();
 
     await user.clear(editor);
@@ -489,7 +489,7 @@ describe("ProjectMemoryModal", () => {
       });
 
       expect(
-        screen.getByRole("textbox", { name: "Project memory" }),
+        screen.getByRole("textbox", { name: "Matter memory" }),
       ).toHaveValue("# Curated matter facts");
       expect(getProjectMemory).toHaveBeenCalledTimes(2);
     } finally {

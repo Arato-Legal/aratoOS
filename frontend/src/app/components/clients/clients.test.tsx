@@ -9,6 +9,9 @@ vi.mock("@/app/lib/mikeApi", () => ({
     openDriveFileForEditing: vi.fn(),
     setMatterDriveFolder: vi.fn(),
     browseDriveFolders: vi.fn(),
+    getClientFiles: vi.fn(() => new Promise(() => {})),
+    setMatterSharing: vi.fn(),
+    createMatterDriveFolder: vi.fn(),
 }));
 vi.mock("@/app/components/shared/PageHeader", () => ({
     PageHeader: ({ breadcrumbs }: { breadcrumbs?: { label: string }[] }) => (
@@ -24,6 +27,7 @@ const base = {
     name: "Acme financing",
     cm_number: "2026-014",
     practice: "Corporate",
+    share_with_client: true,
     updated_at: "2026-10-20T00:00:00Z",
     client_id: "c1",
     org_id: null,

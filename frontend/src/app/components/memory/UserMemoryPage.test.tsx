@@ -612,12 +612,12 @@ describe("UserMemoryPage", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
-  it("saves the account default applied to new projects", async () => {
+  it("saves the account default applied to new matters", async () => {
     const user = userEvent.setup();
     render(<UserMemoryPage />);
 
     const toggle = await screen.findByRole("switch", {
-      name: "Project memory for new projects",
+      name: "Matter memory for new matters",
     });
     expect(toggle).toHaveAttribute("aria-checked", "true");
 
@@ -633,7 +633,7 @@ describe("UserMemoryPage", () => {
     expect(setUserMemoryEnabled).not.toHaveBeenCalled();
   });
 
-  it("keeps the project default usable when the memory file cannot load", async () => {
+  it("keeps the matter default usable when the memory file cannot load", async () => {
     profileState.projectMemoryDefault = false;
     vi.mocked(getUserMemory).mockRejectedValue(new Error("unavailable"));
 
@@ -643,7 +643,7 @@ describe("UserMemoryPage", () => {
       await screen.findByText("Memory settings are unavailable"),
     ).toBeVisible();
     expect(
-      screen.getByRole("switch", { name: "Project memory for new projects" }),
+      screen.getByRole("switch", { name: "Matter memory for new matters" }),
     ).toHaveAttribute("aria-checked", "false");
   });
 

@@ -6,7 +6,7 @@ import MikeLayout from "./layout";
 
 const state = vi.hoisted(() => ({ loading: true }));
 vi.mock("next/navigation", () => ({
-    usePathname: () => "/projects",
+    usePathname: () => "/matters",
     useRouter: () => ({ push: vi.fn() }),
 }));
 vi.mock("@/app/contexts/AuthContext", () => ({

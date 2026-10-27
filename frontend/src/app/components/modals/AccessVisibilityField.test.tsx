@@ -13,7 +13,7 @@ describe("AccessVisibilityField", () => {
                 visibility="private"
                 onChange={vi.fn()}
                 organizationName="Elite Law LLP"
-                resourceNoun="project"
+                resourceNoun="matter"
             />,
         );
         expect(
@@ -31,13 +31,13 @@ describe("AccessVisibilityField", () => {
                 visibility="private"
                 onChange={vi.fn()}
                 organizationName="Elite Law LLP"
-                resourceNoun="project"
+                resourceNoun="matter"
             />,
         );
         expect(option("Private")).toHaveAttribute("aria-pressed", "true");
         expect(option("Public")).toHaveAttribute("aria-pressed", "false");
         expect(field()).toHaveAccessibleDescription(
-            "Only the people you share this project with can open it.",
+            "Only the people you share this matter with can open it.",
         );
     });
 
@@ -63,7 +63,7 @@ describe("AccessVisibilityField", () => {
                 visibility="private"
                 onChange={vi.fn()}
                 organizationName="Elite Law LLP"
-                resourceNoun="project"
+                resourceNoun="matter"
             />,
         );
         const description = container.querySelector(
@@ -86,7 +86,7 @@ describe("AccessVisibilityField", () => {
             <AccessVisibilityField
                 visibility="private"
                 onChange={onChange}
-                resourceNoun="project"
+                resourceNoun="matter"
             />,
         );
         fireEvent.click(option("Public"));
@@ -100,12 +100,12 @@ describe("AccessVisibilityField", () => {
             <AccessVisibilityField
                 visibility="organization"
                 onChange={vi.fn()}
-                resourceNoun="project"
+                resourceNoun="matter"
             />,
         );
         expect(
             screen.getByText(
-                "Everyone in the organisation can open and edit this project.",
+                "Everyone in the organisation can open and edit this matter.",
             ),
         ).toBeInTheDocument();
     });

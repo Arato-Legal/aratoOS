@@ -373,7 +373,7 @@ export function TRView({ reviewId, projectId }: Props) {
                         // contacts shown on permission refusals, so silence
                         // here reads as "this review has no project".
                         notifyError(error, {
-                            action: "load this review's project",
+                            action: "load this review's matter",
                             dedupeKey: `tr-project:${projectId}`,
                         });
                     }),
@@ -406,7 +406,7 @@ export function TRView({ reviewId, projectId }: Props) {
                 // An empty picker is indistinguishable from "you have no
                 // projects", which is the wrong thing to conclude.
                 notifyError(error, {
-                    action: "load your projects",
+                    action: "load your matters",
                     dedupeKey: "tr-project-list",
                 });
             });
@@ -1523,7 +1523,7 @@ export function TRView({ reviewId, projectId }: Props) {
             setOwnerOnlyAction({
                 title: "Review creator only",
                 message:
-                    "Only the person who created this review can move it to another project.",
+                    "Only the person who created this review can move it to another matter.",
             });
             return;
         }
@@ -1542,7 +1542,7 @@ export function TRView({ reviewId, projectId }: Props) {
         if (!projectId && updated.project_id) {
             setDetailsOpen(false);
             router.push(
-                `/projects/${updated.project_id}/tabular-reviews/${reviewId}`,
+                `/matters/${updated.project_id}/tabular-reviews/${reviewId}`,
             );
         }
     }
@@ -1565,7 +1565,7 @@ export function TRView({ reviewId, projectId }: Props) {
             setTimeout(() => {
                 router.push(
                     projectId
-                        ? `/projects/${projectId}/tabular-reviews`
+                        ? `/matters/${projectId}/tabular-reviews`
                         : "/tabular-reviews",
                 );
             }, 250);
@@ -1685,8 +1685,8 @@ export function TRView({ reviewId, projectId }: Props) {
                         ...(projectId
                             ? [
                                   {
-                                      label: "Projects",
-                                      onClick: () => router.push("/projects"),
+                                      label: "Matters",
+                                      onClick: () => router.push("/matters"),
                                   },
                                   loading
                                       ? {
@@ -1694,17 +1694,17 @@ export function TRView({ reviewId, projectId }: Props) {
                                             skeletonClassName: "w-32",
                                             onClick: () =>
                                                 router.push(
-                                                    `/projects/${projectId}`,
+                                                    `/matters/${projectId}/documents`,
                                                 ),
-                                            title: "Back to project",
+                                            title: "Back to matter",
                                         }
                                       : {
                                             label: project?.name ?? "",
                                             onClick: () =>
                                                 router.push(
-                                                    `/projects/${projectId}`,
+                                                    `/matters/${projectId}/documents`,
                                                 ),
-                                            title: "Back to project",
+                                            title: "Back to matter",
                                         },
                               ]
                             : [
@@ -1721,7 +1721,7 @@ export function TRView({ reviewId, projectId }: Props) {
                                       label: "Tabular Reviews",
                                       onClick: () =>
                                           router.push(
-                                              `/projects/${projectId}/tabular-reviews`,
+                                              `/matters/${projectId}/tabular-reviews`,
                                           ),
                                       title: "Back to Tabular Reviews",
                                   },
@@ -2160,7 +2160,7 @@ export function TRView({ reviewId, projectId }: Props) {
                         onClose={() => setAddDocsOpen(false)}
                         onSelect={(docs: Document[]) => handleAddDocuments(docs)}
                         breadcrumb={[
-                            "Projects",
+                            "Matters",
                             project.name +
                                 (project.cm_number
                                     ? ` (#${project.cm_number})`
@@ -2254,7 +2254,7 @@ export function TRView({ reviewId, projectId }: Props) {
                 breadcrumbs={[
                     ...(project
                         ? [
-                              "Projects",
+                              "Matters",
                               project.name +
                                   (project.cm_number
                                       ? ` (#${project.cm_number})`

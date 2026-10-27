@@ -269,8 +269,8 @@ export function ProjectDocumentsView({ projectId, folderId = null }: Props) {
     const handleFolderViewIdChange = useCallback(
         (nextFolderId: string | null) => {
             const nextPath = nextFolderId
-                ? `/projects/${encodeURIComponent(projectId)}/folders/${encodeURIComponent(nextFolderId)}`
-                : `/projects/${encodeURIComponent(projectId)}`;
+                ? `/matters/${encodeURIComponent(projectId)}/folders/${encodeURIComponent(nextFolderId)}`
+                : `/matters/${encodeURIComponent(projectId)}/documents`;
             router.push(nextPath, {
                 scroll: false,
             });
@@ -310,7 +310,7 @@ export function ProjectDocumentsView({ projectId, folderId = null }: Props) {
     if (!projectLoading && !project) {
         return (
             <div className="flex h-full items-center justify-center">
-                <p className="text-gray-400">Project not found</p>
+                <p className="text-gray-400">Matter not found</p>
             </div>
         );
     }
@@ -379,7 +379,7 @@ export function ProjectDocumentsView({ projectId, folderId = null }: Props) {
                             onClose={onClose}
                             onSelect={onSelect}
                             breadcrumb={[
-                                "Projects",
+                                "Matters",
                                 project.name +
                                     (project.cm_number
                                         ? ` (${project.cm_number})`

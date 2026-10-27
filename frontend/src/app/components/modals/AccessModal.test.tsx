@@ -65,7 +65,7 @@ function renderRoleAware(overrides?: {
             resource={PROJECT}
             fetchAccess={accessResponse}
             currentUserEmail="me@firm.example"
-            breadcrumb={["Projects", "Matter", "Access"]}
+            breadcrumb={["Matters", "Matter", "Access"]}
             access={{
                 grants: [
                     { email: "counsel@outside.example", role: "viewer" },
@@ -361,7 +361,7 @@ describe("AccessModal — per-recipient roles", () => {
                     new MikeApiError({
                         status: 400,
                         message:
-                            "The project creator already has owner access",
+                            "The matter creator already has owner access",
                     }),
                 ),
         });
@@ -378,7 +378,7 @@ describe("AccessModal — per-recipient roles", () => {
 
         expect(
             await screen.findByText(
-                "The project creator already has owner access",
+                "The matter creator already has owner access",
             ),
         ).toBeInTheDocument();
     });
@@ -421,7 +421,7 @@ describe("AccessModal — per-recipient roles", () => {
                     new MikeApiError({
                         status: 403,
                         message:
-                            "Only a project owner can change who has access.",
+                            "Only a matter owner can change who has access.",
                     }),
                 ),
         });
@@ -433,7 +433,7 @@ describe("AccessModal — per-recipient roles", () => {
         await user.click(screen.getByRole("menuitem", { name: "Owner" }));
         expect(
             await screen.findByText(
-                "Only a project owner can change who has access.",
+                "Only a matter owner can change who has access.",
             ),
         ).toBeInTheDocument();
     });
@@ -483,7 +483,7 @@ describe("AccessModal — per-recipient roles", () => {
         });
         expect(screen.queryByRole("switch")).not.toBeInTheDocument();
         const peopleDescription = screen.getByText(
-            "Share this project with members of Elite Law LLP. They are added as Editors; change a person's role in the list below. It cannot be shared outside the organisation.",
+            "Share this matter with members of Elite Law LLP. They are added as Editors; change a person's role in the list below. It cannot be shared outside the organisation.",
         );
         expect(
             screen.getByRole("button", { name: "About People" }),
@@ -533,7 +533,7 @@ describe("AccessModal — per-recipient roles", () => {
                 resource={PROJECT}
                 fetchAccess={accessResponse}
                 currentUserEmail="me@firm.example"
-                breadcrumb={["Projects", "Matter", "Access"]}
+                breadcrumb={["Matters", "Matter", "Access"]}
                 access={{
                     grants: [],
                     orgId: "org-1",
@@ -548,21 +548,21 @@ describe("AccessModal — per-recipient roles", () => {
         // Everybody can already open and edit it, so what is offered is
         // adding owners — not a general people picker.
         const owners = await screen.findByRole("searchbox", {
-            name: "Project owners",
+            name: "Matter owners",
         });
         expect(
             screen.queryByRole("searchbox", { name: "People" }),
         ).not.toBeInTheDocument();
         expect(
             await screen.findByText(
-                "Add Elite Law LLP members as owners with rights to manage access, settings and delete the project. Everyone in Elite Law LLP can already open and edit it.",
+                "Add Elite Law LLP members as owners with rights to manage access, settings and delete the matter. Everyone in Elite Law LLP can already open and edit it.",
             ),
         ).toBeInTheDocument();
         await user.type(owners, "jane");
         expect(
             within(
                 await screen.findByRole("listbox", {
-                    name: "Project owners matches",
+                    name: "Matter owners matches",
                 }),
             ).getByText("Jane Lee"),
         ).toBeInTheDocument();
@@ -577,7 +577,7 @@ describe("AccessModal — per-recipient roles", () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Deny Elite Law LLP members from accessing this project, although it is open to everyone else.",
+                "Deny Elite Law LLP members from accessing this matter, although it is open to everyone else.",
             ),
         ).toBeInTheDocument();
     });
@@ -623,7 +623,7 @@ describe("AccessModal — per-recipient roles", () => {
                     })
                 }
                 currentUserEmail="me@firm.example"
-                breadcrumb={["Projects", "Matter", "Access"]}
+                breadcrumb={["Matters", "Matter", "Access"]}
                 access={{
                     grants: [
                         { email: "me@firm.example", role: "owner" },
@@ -740,7 +740,7 @@ describe("AccessModal — canonical roster", () => {
                 resource={PROJECT}
                 fetchAccess={accessResponse}
                 currentUserEmail="me@firm.example"
-                breadcrumb={["Projects", "Matter", "Access"]}
+                breadcrumb={["Matters", "Matter", "Access"]}
                 access={{
                     grants: [],
                     orgId: null,

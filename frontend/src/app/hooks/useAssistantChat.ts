@@ -664,7 +664,7 @@ export function useAssistantChat({
         setCurrentChatId(finalChatId);
         if (!onChatCreated) {
           const chatBasePath = projectId
-            ? `/projects/${projectId}/assistant/chat`
+            ? `/matters/${projectId}/assistant/chat`
             : `/assistant/chat`;
           router.replace(`${chatBasePath}/${finalChatId}`);
         }

@@ -1518,6 +1518,50 @@ export async function findWorkInProgressFolder(
     );
 }
 
+/**
+ * Create a folder under `parentId` ("root" is My Drive) with the caller's own
+ * Google connection. Needs whole-Drive write access, like the rest of the
+ * matter-folder tooling.
+ */
+export async function createDriveFolder(
+    owner: ConnectorOwner,
+    db: Db,
+    args: { name: string; parentId: string },
+): Promise<DriveBrowseItem> {
+    if (!isDriveId(args.parentId))
+        throw new GoogleDriveUserError("That Google Drive folder is not valid.");
+    const name = args.name.replace(/[\\/]/g, "-").trim().slice(0, 200);
+    if (!name) throw new GoogleDriveUserError("A folder needs a name.");
+    const token = await fileToken(owner, db, "write");
+    const url = new URL(`${DRIVE_API}/files`);
+    url.searchParams.set("supportsAllDrives", "true");
+    url.searchParams.set("fields", BROWSE_FIELDS);
+    let response: Response;
+    try {
+        response = await googleDriveRequest(url, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name,
+                mimeType: DRIVE_FOLDER_MIME,
+                parents: [args.parentId],
+            }),
+        });
+    } catch {
+        // A timeout may follow a created folder; never repeat it automatically.
+        throw new GoogleDriveUserError(
+            "The outcome is uncertain. Check Google Drive before trying again.",
+        );
+    }
+    if (!response.ok) throw googleDriveHttpError(response.status);
+    const item = toBrowseItem((await response.json()) as DriveFile);
+    if (!item) throw new GoogleDriveUserError("Google Drive returned no folder.");
+    return item;
+}
+
 // ---------------------------------------------------------------------------
 // Editing Word and Google Docs files from a matter's workspace
 // ---------------------------------------------------------------------------

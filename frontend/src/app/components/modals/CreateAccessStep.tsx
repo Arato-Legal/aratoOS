@@ -46,7 +46,7 @@ export function CreateAccessStep({
     onOrgOverridesChange,
     inheritedFromProject = false,
     inheritedProjectId = null,
-    ownerLabel = "Project owners",
+    ownerLabel = "Matter owners",
     resourceNoun,
     visibility = "private",
 }: {
@@ -149,7 +149,7 @@ export function CreateAccessStep({
                     setProjectPeopleState({
                         projectId: inheritedProjectId,
                         rows: [],
-                        error: "Could not load the project's members.",
+                        error: "Could not load the matter's members.",
                     });
                 }
             });

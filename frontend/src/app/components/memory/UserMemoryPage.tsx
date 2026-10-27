@@ -354,10 +354,10 @@ function ProjectMemoryDefaultRow() {
   return (
     <SettingsRow>
       <div className="space-y-1">
-        <SettingsLabel>Project memory for new projects</SettingsLabel>
+        <SettingsLabel>Matter memory for new matters</SettingsLabel>
         <SettingsDescription>
-          Choose whether memory is enabled by default for projects you create.
-          Project owners can still change it for each project.
+          Choose whether memory is enabled by default for matters you create.
+          Matter owners can still change it for each matter.
         </SettingsDescription>
         {error ? (
           <p className="text-xs text-red-600" role="alert">
@@ -369,7 +369,7 @@ function ProjectMemoryDefaultRow() {
         checked={profile?.projectMemoryDefault !== false}
         disabled={!profile || saving}
         aria-busy={saving}
-        aria-label="Project memory for new projects"
+        aria-label="Matter memory for new matters"
         onCheckedChange={(enabled) => void handleToggle(enabled)}
       />
     </SettingsRow>

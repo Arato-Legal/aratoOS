@@ -242,7 +242,7 @@ export default function ProjectTabularReviewsPage({ params }: Props) {
                 reviews={visibleReviews}
                 selectedReviewIds={selectedReviewIds}
                 createDisabled={workspace.creatingReview || docs.length === 0}
-                emptyDescription="Extract data from project documents into tables using AI."
+                emptyDescription="Extract data from matter documents into tables using AI."
                 loading={effectiveLoading}
                 loadingMore={loadingMore}
                 hasMore={hasMore}
@@ -264,7 +264,7 @@ export default function ProjectTabularReviewsPage({ params }: Props) {
                 onCreateReview={workspace.openNewReview}
                 onOpenReview={(review) =>
                     router.push(
-                        `/projects/${projectId}/tabular-reviews/${review.id}`,
+                        `/matters/${projectId}/tabular-reviews/${review.id}`,
                     )
                 }
                 onOpenDetails={handleOpenDetails}

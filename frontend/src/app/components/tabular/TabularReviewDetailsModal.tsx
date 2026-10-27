@@ -57,7 +57,7 @@ export function TabularReviewDetailsModal({
                           project.name +
                           (project.cm_number ? ` (#${project.cm_number})` : ""),
                   }))
-                : [{ value: "", label: "No projects found" }],
+                : [{ value: "", label: "No matters found" }],
         [projects],
     );
     const hasChanges = useMemo(() => {
@@ -151,7 +151,7 @@ export function TabularReviewDetailsModal({
 
                 {!lockProject && (
                     <div className="space-y-3">
-                        <FieldLabel as="p">Project</FieldLabel>
+                        <FieldLabel as="p">Matter</FieldLabel>
                         <ToggleSwitchUI
                             checked={underProject}
                             disabled={!canEdit || saving}
@@ -162,7 +162,7 @@ export function TabularReviewDetailsModal({
                                 setError(null);
                             }}
                         >
-                            Move under a project
+                            Move under a matter
                         </ToggleSwitchUI>
 
                         {underProject && (
@@ -175,7 +175,7 @@ export function TabularReviewDetailsModal({
                                     setSaved(false);
                                     setError(null);
                                 }}
-                                placeholder="Select project..."
+                                placeholder="Select matter..."
                                 disabled={
                                     !canEdit || saving || projects.length === 0
                                 }

@@ -102,7 +102,7 @@ describe("listProjectTasks", () => {
     fake.done();
   });
 
-  it("refuses an unknown status filter and hides a project the caller cannot open", async () => {
+  it("refuses an unknown status filter and hides a matter the caller cannot open", async () => {
     mocks.checkProjectAccess.mockResolvedValue(access("viewer"));
     expect(await listProjectTasks(scriptedDb([]).db, { ...actor, status: "late" })).toMatchObject({
       ok: false,
@@ -148,7 +148,7 @@ describe("createProjectTask", () => {
         kind: "task.assigned",
         title: "Task assigned to you: File the FY2025 CIT return",
         body: "Due 2026-11-30.",
-        href: "/projects/p1/tasks",
+        href: "/matters/p1/tasks",
         subjectId: "t1",
       }),
     );
@@ -183,7 +183,7 @@ describe("createProjectTask", () => {
     ).toEqual({
       ok: false,
       kind: "validation",
-      detail: "Only people with access to this project can be assigned a task.",
+      detail: "Only people with access to this matter can be assigned a task.",
     });
     expect(
       await createProjectTask(scriptedDb([]).db, {
@@ -199,7 +199,7 @@ describe("createProjectTask", () => {
     expect(mocks.recordAudit).not.toHaveBeenCalled();
   });
 
-  it("requires a title and a document from this project", async () => {
+  it("requires a title and a document from this matter", async () => {
     mocks.checkProjectAccess.mockResolvedValue(access("editor"));
     expect(await createProjectTask(scriptedDb([]).db, { ...actor, body: { title: "  " } })).toEqual({
       ok: false,
@@ -212,7 +212,7 @@ describe("createProjectTask", () => {
     ).toEqual({
       ok: false,
       kind: "validation",
-      detail: "document_id must name a document in this project",
+      detail: "document_id must name a document in this matter",
     });
     expect(fake.calls[0].filters).toContainEqual(["eq", "project_id", "p1"]);
     fake.done();
@@ -278,7 +278,7 @@ describe("updateProjectTask", () => {
     fake.done();
   });
 
-  it("writes nothing when nothing changed, and 404s a task from another project", async () => {
+  it("writes nothing when nothing changed, and 404s a task from another matter", async () => {
     mocks.checkProjectAccess.mockResolvedValue(access("editor"));
     const unchanged = scriptedDb([{ table: "project_tasks", data: row }]);
     expect(
@@ -298,7 +298,7 @@ describe("updateProjectTask", () => {
 });
 
 describe("deleteProjectTask", () => {
-  it("deletes within the project and audits, or reports not found", async () => {
+  it("deletes within the matter and audits, or reports not found", async () => {
     mocks.checkProjectAccess.mockResolvedValue(access("editor"));
     const fake = scriptedDb([
       { table: "project_tasks", op: "delete", data: [{ id: "t1", title: row.title, status: "open", document_id: null }] },

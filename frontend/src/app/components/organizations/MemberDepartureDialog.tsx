@@ -138,14 +138,14 @@ export function MemberDepartureDialog({
       ? `${departing.length} selected members will lose access to this organization.`
       : `${who} will lose organization access.`;
   const owedSummary = joinCounts([
-    ...(projects.length ? [count(projects.length, "project")] : []),
+    ...(projects.length ? [count(projects.length, "matter")] : []),
     ...(workflows.length ? [count(workflows.length, "workflow")] : []),
     ...(sharedChats ? [count(sharedChats, "shared chat")] : []),
     ...(sharedReviews ? [count(sharedReviews, "shared tabular review")] : []),
     ...(sharedDocuments ? [count(sharedDocuments, "document")] : []),
   ]);
   const archivedSummary = joinCounts([
-    ...(privateProjects ? [count(privateProjects, "private project")] : []),
+    ...(privateProjects ? [count(privateProjects, "private matter")] : []),
     ...(privateWorkflows ? [count(privateWorkflows, "private workflow")] : []),
     ...(chats ? [count(chats, "private chat")] : []),
     ...(reviews ? [count(reviews, "tabular review")] : []),

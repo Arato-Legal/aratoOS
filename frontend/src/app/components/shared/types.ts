@@ -941,6 +941,8 @@ export interface Client {
   source: string | null;
   notes: string | null;
   custom_fields: Record<string, unknown>;
+  drive_folder_id: string | null;
+  drive_folder_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -960,6 +962,7 @@ export interface ClientMatter {
   name: string;
   cm_number: string | null;
   practice: string | null;
+  share_with_client: boolean;
   updated_at: string;
 }
 
@@ -976,6 +979,20 @@ export interface MatterDashboard {
     access_role: string;
   };
   client: (Client & { contacts: ClientContact[] }) | null;
+}
+
+export interface SharedMatterFiles {
+  id: string;
+  name: string;
+  documents: { id: string; filename: string; updated_at: string }[];
+  chats: { id: string; title: string | null; updated_at: string }[];
+  tasks: { id: string; title: string; status: string; due_on: string | null }[];
+  reviews: { id: string; title: string | null; updated_at: string }[];
+}
+
+export interface ClientFiles {
+  shared_by_this_matter: boolean;
+  matters: SharedMatterFiles[];
 }
 
 export type DriveFileKind = "docx" | "gdoc" | "folder" | "other";

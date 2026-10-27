@@ -197,20 +197,20 @@ describe("what it lists", () => {
     await screen.findByText("Jane Lee");
 
     // Closed to begin with: only the people.
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Expand Former member" }),
     ).toBeInTheDocument();
 
     // A person opens into their types of work, with how many of each.
     await openJane(user);
-    expect(within(rowOf("Projects")).getByText("(2)")).toBeInTheDocument();
+    expect(within(rowOf("Matters")).getByText("(2)")).toBeInTheDocument();
     expect(screen.getByText("Library files")).toBeInTheDocument();
     expect(screen.queryByText("Workflows")).not.toBeInTheDocument();
     expect(screen.queryByText("Harbour acquisition")).not.toBeInTheDocument();
 
     await user.click(
-      screen.getByRole("button", { name: "Expand Jane Lee's projects" }),
+      screen.getByRole("button", { name: "Expand Jane Lee's matters" }),
     );
     // A project is one line, with what it holds.
     expect(
@@ -219,7 +219,7 @@ describe("what it lists", () => {
     expect(within(rowOf("Empty matter")).getByText("Empty")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Collapse Jane Lee" }));
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
     expect(screen.queryByText("Harbour acquisition")).not.toBeInTheDocument();
   });
 
@@ -227,12 +227,12 @@ describe("what it lists", () => {
     const user = userEvent.setup();
     renderView();
     await screen.findByText("Jane Lee");
-    await openJane(user, "projects", "library files");
+    await openJane(user, "matters", "library files");
 
     // No row's cell is padded, so its checkbox sits where the others do.
     for (const name of [
       "Select everything Jane Lee left",
-      "Select Jane Lee's projects",
+      "Select Jane Lee's matters",
       "Select Harbour acquisition",
     ]) {
       const cell = screen
@@ -242,13 +242,13 @@ describe("what it lists", () => {
     }
     // The name steps in a level at a time instead.
     expect(screen.getByText("Jane Lee").parentElement).not.toHaveClass("pl-6");
-    expect(screen.getByText("Projects").parentElement).toHaveClass("pl-6");
+    expect(screen.getByText("Matters").parentElement).toHaveClass("pl-6");
     expect(
       screen.getByText("Harbour acquisition").parentElement,
     ).toHaveClass("pl-12");
 
     // A type's row, a project and a file each carry an icon before the name.
-    for (const text of ["Projects", "Library files", "Harbour acquisition"])
+    for (const text of ["Matters", "Library files", "Harbour acquisition"])
       expect(rowOf(text).querySelector("img")).not.toBeNull();
     expect(
       rowOf("Engagement letter.docx").querySelector("img, svg.lucide"),
@@ -258,7 +258,7 @@ describe("what it lists", () => {
   it("narrows to matching people or items, opening what a search found", async () => {
     const view = renderView("limitation");
     expect(await screen.findByText("Limitation periods")).toBeInTheDocument();
-    expect(screen.queryByText("Projects")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
     expect(screen.queryByText("Former member")).not.toBeInTheDocument();
 
     view.rerender(
@@ -344,12 +344,12 @@ describe("reassigning", () => {
     await openJane(user);
 
     await user.click(
-      screen.getByRole("button", { name: "Actions for Jane Lee's projects" }),
+      screen.getByRole("button", { name: "Actions for Jane Lee's matters" }),
     );
     await user.click(screen.getByRole("menuitem", { name: "Reassign…" }));
     expect(
       within(screen.getByRole("dialog")).getByText(
-        /takes over Jane Lee's 2 projects\./,
+        /takes over Jane Lee's 2 matters\./,
       ),
     ).toBeInTheDocument();
     await user.click(
@@ -374,7 +374,7 @@ describe("reassigning", () => {
       within(screen.getByTestId("toolbar")).queryByRole("button"),
     ).not.toBeInTheDocument();
 
-    await openJane(user, "projects");
+    await openJane(user, "matters");
     await user.click(
       screen.getByRole("checkbox", { name: "Select Harbour acquisition" }),
     );

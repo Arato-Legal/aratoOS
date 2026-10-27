@@ -25,7 +25,7 @@ export function MemoryConflictNotice({
       role="alert"
     >
       <p className="font-medium">
-        {project ? "Project memory" : "Memory"} changed while you were editing
+        {project ? "Matter memory" : "Memory"} changed while you were editing
       </p>
       <p className="mt-1 text-xs text-amber-800">
         Reload what is saved now, or keep your draft and let it save over the

@@ -116,20 +116,20 @@ describe("ProjectsOverview tabs", () => {
         );
     });
 
-    it.each([1, 2])("matches toolbar and right-click actions for %i selected projects", async (count) => {
+    it.each([1, 2])("matches toolbar and right-click actions for %i selected matters", async (count) => {
         const user = userEvent.setup();
         projectRows.current = [1, 2].map((index) => ({
-            id: `project-${index}`, name: `Project ${index}`, user_id: "user-1",
+            id: `project-${index}`, name: `Matter ${index}`, user_id: "user-1",
             access_role: "owner", created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
         }));
         render(<ProjectsOverview />);
-        await user.click(screen.getByRole("checkbox", { name: "Select Project 1" }));
-        if (count === 2) await user.click(screen.getByRole("checkbox", { name: "Select Project 2" }));
+        await user.click(screen.getByRole("checkbox", { name: "Select Matter 1" }));
+        if (count === 2) await user.click(screen.getByRole("checkbox", { name: "Select Matter 2" }));
         await user.click(screen.getByRole("button", { name: "Actions" }));
         const items = screen.getAllByRole("menuitem").map((item) => item.textContent);
-        expect(items).toEqual(count === 1 ? ["Open", "Edit details", "Delete"] : ["Delete 2 projects"]);
+        expect(items).toEqual(count === 1 ? ["Open", "Edit details", "Delete"] : ["Delete 2 matters"]);
         await user.keyboard("{Escape}");
-        fireEvent.contextMenu(screen.getByText("Project 1"), { clientX: 40, clientY: 40 });
+        fireEvent.contextMenu(screen.getByText("Matter 1"), { clientX: 40, clientY: 40 });
         expect(screen.getAllByRole("menuitem").map((item) => item.textContent)).toEqual(items);
     });
 
@@ -159,12 +159,12 @@ describe("ProjectsOverview tabs", () => {
         expect(setActiveTab).toHaveBeenCalledWith("all");
     });
 
-    it("shows All, My Projects, and Shared with Me in the personal workspace", async () => {
+    it("shows All, My Matters, and Shared with Me in the personal workspace", async () => {
         workspace.current = "personal";
         const user = userEvent.setup();
         render(<ProjectsOverview />);
 
-        const tabs = ["All", "My Projects", "Shared with Me"].map((label) =>
+        const tabs = ["All", "My Matters", "Shared with Me"].map((label) =>
             screen.getByRole("button", { name: label }),
         );
         expect(tabs[0].compareDocumentPosition(tabs[1])).toBe(
@@ -210,12 +210,12 @@ describe("ProjectsOverview tabs", () => {
         expect(screen.getByRole("button", { name: "All" })).toHaveAttribute("aria-pressed", "true");
     });
 
-    it("explains when no projects have been shared with the user", () => {
+    it("explains when no matters have been shared with the user", () => {
         workspace.current = "personal";
         activeTab.current = "shared";
         render(<ProjectsOverview />);
 
-        expect(screen.getByText("No projects shared with you")).toBeInTheDocument();
+        expect(screen.getByText("No matters shared with you")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "Create" })).not.toBeInTheDocument();
     });
 
@@ -247,10 +247,10 @@ describe("ProjectsOverview tabs", () => {
         expect(lastScope()).toBe("nonpublic");
     });
 
-    it("says there are no public projects, without offering to create one there", () => {
+    it("says there are no public matters, without offering to create one there", () => {
         activeTab.current = "public";
         render(<ProjectsOverview />);
-        expect(screen.getByText("No public projects")).toBeInTheDocument();
+        expect(screen.getByText("No public matters")).toBeInTheDocument();
     });
 
     it("falls back to All for a tab that no longer exists", () => {
@@ -260,7 +260,7 @@ describe("ProjectsOverview tabs", () => {
         expect(lastScope()).toBe("all");
     });
 
-    it("offers project creation when All is empty", () => {
+    it("offers matter creation when All is empty", () => {
         render(<ProjectsOverview />);
 
         expect(
@@ -321,7 +321,7 @@ describe("ProjectsOverview tabs", () => {
         ).toBeVisible();
     });
 
-    it("shows each project's creator with their avatar", () => {
+    it("shows each matter's creator with their avatar", () => {
         projectRows.current = [
             {
                 id: "colleague-project",
@@ -350,7 +350,7 @@ describe("ProjectsOverview tabs", () => {
         expect(avatar.querySelector("img")).toHaveAttribute("src", "data:image/png;base64,AAAA");
     });
 
-    it("refetches when the new-project modal closes on a project it never handed over", async () => {
+    it("refetches when the new-project modal closes on a matter it never handed over", async () => {
         // A project created behind a failed grant or upload never reaches
         // onCreated, so without this refetch the row the user just made is
         // missing from the list they land back on until a reload.

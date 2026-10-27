@@ -223,7 +223,7 @@ export async function upsertProjectGrant(
         return {
             ok: false,
             kind: "validation",
-            detail: "The project creator already has owner access",
+            detail: "The matter creator already has owner access",
         };
 
     try {

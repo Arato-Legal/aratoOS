@@ -144,7 +144,7 @@ describe.each(paths)("rename response compatibility: %s", (path) => {
 // A Viewer can OPEN the project, so 404 was a lie the UI then repeated
 // ("this matter no longer exists"). The refusal names the missing permission
 // instead; only a caller checkProjectAccess itself refuses still gets 404.
-it("refuses a viewer's project rename by name, not as a missing project", async () => {
+it("refuses a viewer's matter rename by name, not as a missing matter", async () => {
   state.access.mockResolvedValue({ ok: true, projectRole: "viewer" });
   const fake = scriptedDb([]);
   state.db = fake.db;
@@ -154,12 +154,12 @@ it("refuses a viewer's project rename by name, not as a missing project", async 
     .send({ filename: "new" });
   expect(response.status).toBe(403);
   expect(response.body).toEqual({
-    detail: "You do not have permission to organize documents in this project.",
+    detail: "You do not have permission to organize documents in this matter.",
   });
   fake.done();
 });
 
-it("keeps 404 when the caller has no project access at all", async () => {
+it("keeps 404 when the caller has no matter access at all", async () => {
   state.access.mockResolvedValue({ ok: false });
   const fake = scriptedDb([]);
   state.db = fake.db;
@@ -168,6 +168,6 @@ it("keeps 404 when the caller has no project access at all", async () => {
     .set("Authorization", "Bearer test")
     .send({ filename: "new" });
   expect(response.status).toBe(404);
-  expect(response.body).toEqual({ detail: "Project not found" });
+  expect(response.body).toEqual({ detail: "Matter not found" });
   fake.done();
 });

@@ -94,7 +94,7 @@ describe("TRView failure reporting", () => {
         ).toBeInTheDocument();
     });
 
-    it("reports a project list that could not be loaded", async () => {
+    it("reports a matter list that could not be loaded", async () => {
         vi.mocked(listProjects).mockRejectedValue(new Error("boom"));
 
         render(
@@ -105,6 +105,6 @@ describe("TRView failure reporting", () => {
         );
 
         const alert = await screen.findByRole("alert");
-        expect(alert).toHaveTextContent("Couldn't load your projects");
+        expect(alert).toHaveTextContent("Couldn't load your matters");
     });
 });

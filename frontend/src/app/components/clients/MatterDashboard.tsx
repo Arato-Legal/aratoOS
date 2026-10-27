@@ -7,6 +7,7 @@ import { notifyError } from "@/app/lib/userFacingError";
 import { PageHeader } from "@/app/components/shared/PageHeader";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { MatterWorkspaceSection } from "./MatterWorkspaceSection";
+import { ClientFilesSection, MatterSharingToggle } from "./MatterClientSharing";
 import type { MatterDashboard as MatterDashboardData } from "../shared/types";
 import {
     DashboardPage,
@@ -60,7 +61,7 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
             <div className="flex h-full min-h-0 flex-col">
                 <PageHeader
                     breadcrumbs={[
-                        { label: "Projects", onClick: () => router.push("/projects") },
+                        { label: "Matters", onClick: () => router.push("/matters") },
                         { label: "Not found" },
                     ]}
                 />
@@ -81,7 +82,7 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                                   onClick: () => router.push(`/clients/${client.id}`),
                               },
                           ]
-                        : [{ label: "Projects", onClick: () => router.push("/projects") }]),
+                        : [{ label: "Matters", onClick: () => router.push("/matters") }]),
                     { label: project.name },
                 ]}
             />
@@ -106,9 +107,27 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                     </dl>
                 </DashboardSection>
 
+                {client && (
+                    <MatterSharingToggle
+                        projectId={project.id}
+                        shared={project.share_with_client}
+                        canManage={project.access_role === "owner"}
+                        onChange={(shared) =>
+                            setData((d) =>
+                                d
+                                    ? { ...d, project: { ...d.project, share_with_client: shared } }
+                                    : d,
+                            )
+                        }
+                    />
+                )}
+
+                {client && <ClientFilesSection projectId={project.id} />}
+
                 <MatterWorkspaceSection
                     projectId={project.id}
                     orgId={project.org_id}
+                    hasClient={!!client}
                     canEdit={project.access_role !== "viewer"}
                 />
 
@@ -116,14 +135,14 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                     <div className="flex flex-wrap gap-2">
                         <PillButtonUI
                             tone="white"
-                            onClick={() => router.push(`/projects/${project.id}`)}
+                            onClick={() => router.push(`/matters/${project.id}/documents`)}
                         >
                             Documents
                         </PillButtonUI>
                         <PillButtonUI
                             tone="white"
                             onClick={() =>
-                                router.push(`/projects/${project.id}/assistant`)
+                                router.push(`/matters/${project.id}/assistant`)
                             }
                         >
                             Assistant chats
@@ -131,7 +150,7 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                         <PillButtonUI
                             tone="white"
                             onClick={() =>
-                                router.push(`/projects/${project.id}/tabular-reviews`)
+                                router.push(`/matters/${project.id}/tabular-reviews`)
                             }
                         >
                             Tabular reviews

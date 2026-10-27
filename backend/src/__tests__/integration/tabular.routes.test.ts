@@ -288,7 +288,7 @@ describe("tabular.routes", () => {
 
     // ── GET /tabular-review/creators ──────────────────────────────────────
     describe("GET /tabular-review/creators", () => {
-        it("lists each person who created a review in the project once", async () => {
+        it("lists each person who created a review in the matter once", async () => {
             supabaseState.tables.tabular_reviews = {
                 data: [{ user_id: "u2" }, { user_id: "u2" }, { user_id: "u1" }],
                 error: null,
@@ -308,7 +308,7 @@ describe("tabular.routes", () => {
             ]);
         });
 
-        it("refuses a project the caller cannot open", async () => {
+        it("refuses a matter the caller cannot open", async () => {
             checkProjectAccess.mockResolvedValue({ ok: false });
             const res = await request(app)
                 .get("/tabular-review/creators?project_id=p1")
@@ -317,7 +317,7 @@ describe("tabular.routes", () => {
             expect(supabaseState.operations).not.toContain("from:tabular_reviews");
         });
 
-        it("requires a project", async () => {
+        it("requires a matter", async () => {
             const res = await request(app).get("/tabular-review/creators").set(...AUTH);
             expect(res.status).toBe(400);
         });
@@ -352,7 +352,7 @@ describe("tabular.routes", () => {
             expect(res.body).toEqual([{ id: "r1", title: "Alpha" }]);
         });
 
-        it("labels a project's reviews with each creator's name and photo", async () => {
+        it("labels a matter's reviews with each creator's name and photo", async () => {
             supabaseState.rpc = {
                 data: [{ id: "r1", user_id: "u2" }, { id: "r2", user_id: null }],
                 error: null,
@@ -805,7 +805,7 @@ describe("tabular.routes", () => {
             ]);
         });
 
-        it("returns 404 when project access is denied", async () => {
+        it("returns 404 when matter access is denied", async () => {
             checkProjectAccess.mockResolvedValue({ ok: false });
 
             const res = await request(app)
@@ -819,7 +819,7 @@ describe("tabular.routes", () => {
                 });
 
             expect(res.status).toBe(404);
-            expect(res.body.detail).toBe("Project not found");
+            expect(res.body.detail).toBe("Matter not found");
         });
 
         it("returns 500 when the review insert errors", async () => {
@@ -1140,7 +1140,7 @@ describe("tabular.routes", () => {
             supabaseState.updates.find((u) => u.table === "tabular_reviews")
                 ?.payload as Record<string, unknown> | undefined;
 
-        it("400s moving an organization's review into a personal project", async () => {
+        it("400s moving an organization's review into a personal matter", async () => {
             // What belongs to an organization stays in it: carried into
             // somebody's personal project, the firm's review would become
             // that person's property.
@@ -1154,7 +1154,7 @@ describe("tabular.routes", () => {
 
             expect(res.status).toBe(400);
             expect(res.body.detail).toBe(
-                "This review belongs to an organization and can only be moved to a project in the same organization.",
+                "This review belongs to an organization and can only be moved to a matter in the same organization.",
             );
             expect(movePayload()).toBeUndefined();
         });
@@ -1180,7 +1180,7 @@ describe("tabular.routes", () => {
             expect(movePayload()).toBeUndefined();
         });
 
-        it("restamps org_id from the destination project", async () => {
+        it("restamps org_id from the destination matter", async () => {
             seedMove(null);
             resolveContentOrgId.mockResolvedValue({ ok: true, orgId: "org-2" });
 
@@ -1244,7 +1244,7 @@ describe("tabular.routes", () => {
             expect(res.status).toBe(204);
         });
 
-        it("returns 204 when the project owner deletes a member's review", async () => {
+        it("returns 204 when the matter owner deletes a member's review", async () => {
             // Review row belongs to someone else, but the caller owns the
             // project it lives in — ensureReviewAccess hands back "owner", so
             // container.delete passes and the delete is NOT scoped to the
@@ -2416,7 +2416,7 @@ describe("tabular.routes", () => {
             expect(res.body.code).toBe("missing_api_key");
         });
 
-        it("schedules app memory but not project memory for a direct review grant", async () => {
+        it("schedules app memory but not matter memory for a direct review grant", async () => {
             supabaseState.tables.tabular_reviews = {
                 data: {
                     id: "r1",
