@@ -8,7 +8,13 @@ vi.mock("../files", () => ({
   getMemoryCurrent: (...args: unknown[]) => getMemoryCurrent(...args),
 }));
 
+const clientMemory = vi.hoisted(() => ({
+  loadClientMemoryForPrompt: vi.fn(async () => ({ enabled: true, content: "" })),
+}));
+vi.mock("../clientMemory", () => clientMemory);
+
 const clientSharing = vi.hoisted(() => ({
+  checkClientAccess: vi.fn(async () => ({ ok: false }) as { ok: boolean; orgId?: string | null; name?: string }),
   listSharedSiblingMatters: vi.fn(async () => [] as { id: string; name: string }[]),
   listReadableClientMatters: vi.fn(async () => [] as { id: string; name: string }[]),
 }));
@@ -378,5 +384,71 @@ describe("shared matter memory (read-through)", () => {
       clientId: "c1",
     });
     expect(turn.message).toBeNull();
+  });
+});
+
+// The client's own memory applies in every one of its matters and in client
+// sessions, whatever a matter's sharing says.
+describe("client memory", () => {
+  const db = (clientId: string | null) =>
+    ({
+      from: () => ({
+        select: () => ({
+          eq: () => ({ maybeSingle: async () => ({ data: { client_id: clientId }, error: null }) }),
+        }),
+      }),
+    }) as never;
+
+  beforeEach(() => {
+    clientSharing.checkClientAccess.mockReset();
+    clientMemory.loadClientMemoryForPrompt.mockReset();
+    getMemoryCurrent.mockResolvedValue({ current: { enabled: true, content: "" } });
+  });
+
+  it("is read in a matter of that client, even when the matter does not share", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: true, orgId: "org", name: "Acme" });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: true, content: "NET 30 TERMS" });
+    const turn = await buildMemoryTurn({ db: db("c1"), systemPrompt: "BASE", userId: "u", projectId: "m1" });
+    expect(turn.message?.content).toContain("NET 30 TERMS");
+    expect(turn.message?.content).toContain('scope="client"');
+    expect(clientSharing.checkClientAccess).toHaveBeenCalledWith(expect.anything(), "c1", "u");
+  });
+
+  it("is read in a client session", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: true, orgId: null, name: "Acme" });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: true, content: "CLIENT NOTES" });
+    const turn = await buildMemoryTurn({ db: db(null), systemPrompt: "BASE", userId: "u", clientId: "c1" });
+    expect(turn.message?.content).toContain("CLIENT NOTES");
+  });
+
+  it("is withheld from someone who cannot open the client", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: false });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: true, content: "SECRET" });
+    const turn = await buildMemoryTurn({ db: db("c1"), systemPrompt: "BASE", userId: "u", projectId: "m1" });
+    expect(turn.message).toBeNull();
+  });
+
+  it("is withheld from a shared-audience conversation about a personal client", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: true, orgId: null, name: "Acme" });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: true, content: "PERSONAL" });
+    const turn = await buildMemoryTurn({
+      db: db("c1"), systemPrompt: "BASE", userId: "u", projectId: "m1", sharedAudience: true,
+    });
+    expect(turn.message).toBeNull();
+  });
+
+  it("is still shown in a shared conversation for an organization client", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: true, orgId: "org", name: "Acme" });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: true, content: "ORG CLIENT" });
+    const turn = await buildMemoryTurn({
+      db: db("c1"), systemPrompt: "BASE", userId: "u", projectId: "m1", sharedAudience: true,
+    });
+    expect(turn.message?.content).toContain("ORG CLIENT");
+  });
+
+  it("is skipped when it is switched off or empty", async () => {
+    clientSharing.checkClientAccess.mockResolvedValue({ ok: true, orgId: "org", name: "Acme" });
+    clientMemory.loadClientMemoryForPrompt.mockResolvedValue({ enabled: false, content: "OLD" });
+    expect((await buildMemoryTurn({ db: db("c1"), systemPrompt: "BASE", userId: "u", projectId: "m1" })).message).toBeNull();
   });
 });

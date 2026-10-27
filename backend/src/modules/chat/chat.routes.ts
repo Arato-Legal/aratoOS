@@ -49,6 +49,7 @@ import { can } from "../../lib/permissions";
 import { generateAssistantChatTitle, logChatTitleFailure } from "./chat.title";
 import { parseAssistantMode } from "../../lib/assistantModes";
 import { createTabularReview } from "../tabular/tabular.service";
+import { scheduleClientMemory } from "../memory/memory.service";
 import { registerTabularReviewCreator } from "./engine/tools/tabularCreate";
 import { sendInternalError } from "../../lib/httpError";
 import { sendServiceFailure } from "../../lib/serviceResult";
@@ -920,6 +921,9 @@ chatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
                         turn: memoryTurn,
                     });
                     memoryTurnScheduled = scheduled != null;
+                    // A client chat, or a matter chat whose matter shares with
+                    // its client, also teaches the client's own memory.
+                    void scheduleClientMemory(db, { chatId, actorUserId: userId });
                 }
             }
             void enqueueChatTurnAudit(

@@ -29,6 +29,7 @@ import { auditRouter } from "./modules/audit/audit.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { uploadSessionsRouter } from "./modules/uploads/uploads.routes";
 import {
+  clientMemoryRouter,
   projectMemoryRouter,
   userMemoryRouter,
 } from "./modules/memory/memory.routes";
@@ -361,6 +362,7 @@ app.use("/library", libraryRouter);
 app.use("/tabular-review", tabularRouter);
 app.use("/workflows", workflowsRouter);
 app.use("/quick-actions", quickActionsRouter);
+app.use("/clients/:clientId/memory", clientMemoryRouter);
 app.use("/clients", clientsRouter);
 app.use("/crm-sync", crmSyncRouter);
 app.use("/workflow-addons", workflowAddonsRouter);

@@ -18,7 +18,7 @@ Mostly new files, in new modules, so most upstream updates do not touch them.
 | Clients, contacts, client and matter dashboards | `backend/src/modules/clients/`, `frontend/src/app/components/clients/`, pages under `(pages)/clients` and `(pages)/matters` | [clients.md](clients.md) |
 | Matter Drive folder and Work in progress list | `clients.drive.ts`, Drive browse functions at the end of `lib/integrations/googleDrive.ts` | [clients.md](clients.md) |
 | Edit Drive Word and Google Docs in Mike | `clients.driveEdit.ts`, `modules/documents/documents.import.ts` | [clients.md](clients.md) |
-| Client-level assistant sessions, modes, shared-matter memory read-through | `lib/clientSharing.ts`, `lib/assistantModes.ts`, `lib/memory/prompt.ts`, `contextBuilders.ts`, `create_tabular_review` in `toolDispatcher.ts` | [clients.md](clients.md) |
+| Client-level assistant sessions, modes, shared-matter memory read-through | `lib/clientSharing.ts`, `lib/assistantModes.ts`, `lib/memory/prompt.ts`, `lib/memory/clientMemory.ts`, `modules/memory/memory.client*.ts`, `contextBuilders.ts`, `create_tabular_review` in `toolDispatcher.ts` | [clients.md](clients.md) |
 | Hubflo inbound sync (webhook) | `backend/src/modules/crm-sync/`, `clients.sync.ts` | [clients.md](clients.md) |
 | Canadian official sources only (web search) | `backend/src/lib/webSearch/canadaSources.ts` | [web-search.md](web-search.md) |
 | Tasks, notifications, document review state, audit entries | `modules/tasks/`, `modules/notifications/`, `documents.review.ts`, `lib/mail/` (ported from [TaxOSS-1/mike](https://github.com/TaxOSS-1/mike)) | |
@@ -28,7 +28,7 @@ Migrations the fork added, which must stay in this order after Mike's:
 `20261025_01` to `_03` (ported from TaxOSS) and `20261026_01` to `_04`
 (clients, matter Drive folder, document Drive links, CRM sync) `20261026_05`
 (client Drive folder, per-matter client sharing) `20261026_06` (client numbers,
-Hubflo links, workspace-wide Drive) and `20261026_07` (client-level chats).
+Hubflo links, workspace-wide Drive) `20261026_07` (client-level chats) and `20261026_08` (client memory).
 
 ## Mike's own files the fork changed
 

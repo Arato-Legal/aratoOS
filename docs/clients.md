@@ -219,12 +219,13 @@ available in Chat.
   its author's, like any standalone chat. It reads the documents and memory of
   the client's matters whose sharing is on **and** that the caller can open, so
   it never widens access. It cannot write into any matter.
-- **Memory is read through, not copied.** A matter session reads its own
-  memory plus the memory of sibling matters that share with the client; a
-  client session reads the memory of the readable sharing-on matters. Turning a
-  matter's sharing off removes it from both at once (the "firewall"). Memory is
-  still written only by the curator, at the level the conversation ran.
-  A separate client memory file is not built yet.
+- **Memory.** Two things are read. The **client's own memory** (below) is read in
+  every session of that client, at client level and in each of its matters,
+  whatever a matter's sharing says. Other matters' memory is **read through**:
+  a matter session reads the memory of sibling matters that share with the
+  client, and a client session reads the readable sharing-on matters'. Turning a
+  matter's sharing off removes it from both at once (the "firewall"), and stops
+  that matter's chats from teaching the client's memory.
 - **Other matters' documents are read-only** in a session: `edit_document` and
   `run_playbook` refuse them (copy one with `replicate_document` first).
 - **`create_tabular_review`** saves a review in a matter: the current one in a
@@ -237,6 +238,37 @@ available in Chat.
 | `POST /chat` with `client_id` and optional `mode` | Run a client-level turn |
 | `POST /projects/:id/chat` with optional `mode` | Run a matter turn in a mode |
 | `GET /clients/:clientId/chats` | The caller's own client-level chats |
+
+## Client memory
+
+Each client has one `memory.md` (table `client_memory_files`, migration
+`20261026_08_client_memory.sql`), shown on the client page under **Memory**.
+
+- **Read:** in every conversation of the client, at client level and in each of
+  its matters, always (the matter's sharing switch does not affect it). Ranked
+  above app memory and below the matter's own memory. A reader who cannot open
+  the client never gets it, and a shared-audience conversation about a
+  *personal* client does not either (an organization client is readable by every
+  member anyway).
+- **Learned:** by a separate curator job (`memory.client`, in
+  `memory.clientCurator.ts`) after a chat has been quiet for the usual window.
+  It learns from client-level chats and from matter chats **unless the matter's
+  sharing is off**. A per-chat cursor means each message is considered once. The
+  actor must still open the client (and, for a matter chat, write in the matter).
+  Like the other curators it is isolated, treats the transcript as untrusted, and
+  has one tool bound to the one file. It is independent of the per-conversation
+  consolidation state used for app and matter memory.
+- **Edited:** anyone who can open the client reads it; only the client's
+  creator or an organization admin edits it, turns it on or off, or wipes it
+  (turning it off deletes what was learned). Saves are compare-and-swap on
+  `revision`, so a save made while a chat was teaching it is refused and the page
+  shows what is saved now.
+
+| Route | Purpose |
+| --- | --- |
+| `GET /clients/:clientId/memory` | Read (`can_edit` says whether the caller may change it) |
+| `PUT /clients/:clientId/memory` | Replace (`content`, `expected_revision`) |
+| `PATCH /clients/:clientId/memory/settings` | Turn on or off (`enabled`) |
 
 ## URLs
 

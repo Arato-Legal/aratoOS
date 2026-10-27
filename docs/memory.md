@@ -102,6 +102,10 @@ the answer being shown to the user.
   client, and a client-level conversation sees the memory of the sharing-on
   matters its caller can open. Nothing is copied or written across matters, and
   switching a matter's sharing off removes it at once.
+- A client has its own memory file, read in every conversation of that client
+  (client level and each matter) and learned by a separate job from client chats
+  and from matter chats whose matter shares with the client. See
+  [clients.md](clients.md#client-memory).
 - A matter curator runs separately and never receives app memory. This
   prevents private app context from being copied into matter memory.
 - When facts conflict, the current conversation wins over matter memory, and

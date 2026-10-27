@@ -79,6 +79,7 @@ import type {
     ClientDetail,
     MatterDashboard,
     AssistantMode,
+    ClientMemory,
     ClientFiles,
     IntegrationSettings,
     MatterWorkspace,
@@ -4967,6 +4968,34 @@ export async function setClientDriveFolder(
     return apiRequest(
         `/clients/${clientId}/drive-folder`,
         jsonInit("PUT", { folder_id: folderId }),
+    );
+}
+
+/** The client's memory.md: read by anyone who can open the client. */
+export async function getClientMemory(clientId: string): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(`/clients/${clientId}/memory`);
+}
+
+/** Replace the client's memory (creator or organization admin). */
+export async function saveClientMemory(
+    clientId: string,
+    content: string,
+    expectedRevision: number,
+): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(
+        `/clients/${clientId}/memory`,
+        jsonInit("PUT", { content, expected_revision: expectedRevision }),
+    );
+}
+
+/** Switch client memory on or off. Off deletes what was learned. */
+export async function setClientMemoryEnabled(
+    clientId: string,
+    enabled: boolean,
+): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(
+        `/clients/${clientId}/memory/settings`,
+        jsonInit("PATCH", { enabled }),
     );
 }
 

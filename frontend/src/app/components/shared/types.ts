@@ -989,6 +989,15 @@ export interface MatterDashboard {
   client: (Client & { contacts: ClientContact[] }) | null;
 }
 
+export interface ClientMemory {
+  content: string;
+  revision: number;
+  enabled: boolean;
+  size_bytes: number;
+  updated_at: string | null;
+  can_edit: boolean;
+}
+
 export interface IntegrationSettings {
   hubflo_client_url: string | null;
   hubflo_matter_url: string | null;
