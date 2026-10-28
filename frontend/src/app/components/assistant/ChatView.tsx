@@ -1288,6 +1288,7 @@ export function AssistantChatColumn({
                                                 onSubmit={handleChat}
                                                 onCancel={cancel}
                                                 isLoading={isResponseLoading}
+                                                showModePicker
                                                 chatKey={chatId}
                                                 chatModel={chatModel}
                                                 chatReasoningLevel={chatReasoningLevel}

@@ -463,3 +463,15 @@ export function parseOptionalAskInputsResponse(
   }
   return { ok: true, value: response };
 }
+
+export function parseOptionalClientId(
+  value: unknown,
+): ValidationResult<string | null> {
+  if (value === undefined || value === null) return { ok: true, value: null };
+  const parsed = parseNonEmptyString(
+    value,
+    "client_id must be a non-empty string or null",
+  );
+  if (!parsed.ok) return parsed;
+  return { ok: true, value: parsed.value };
+}

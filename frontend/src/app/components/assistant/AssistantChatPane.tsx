@@ -12,6 +12,8 @@ import type { Chat } from "@/app/components/shared/types";
 import type { MessageExcerpt } from "@/shared/lib/messageExcerpts";
 
 interface Props {
+    /** Run the chats at a client's level (no matter). */
+    clientId?: string;
     /** The chat to show, or `""` for a new one. */
     chatId: string;
     /** Shows another chat in this pane without remounting it. */
@@ -43,6 +45,7 @@ interface Props {
 
 /** One of the assistant page's chats: its thread, loading and standing. */
 export function AssistantChatPane({
+    clientId,
     chatId: id,
     openChat,
     adoptChat,
@@ -79,6 +82,7 @@ export function AssistantChatPane({
     } = useAssistantChat({
         initialMessages,
         chatId: id || undefined,
+        clientId,
         tracksCurrentChat: !isSideChat,
         onChatCreated: (createdId) => {
             adoptChat(createdId);

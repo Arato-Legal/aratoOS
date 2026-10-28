@@ -66,6 +66,7 @@ import {
 } from "./types";
 import {
   PLAYBOOK_TOOLS,
+  TABULAR_CREATE_TOOLS,
   TOOLS,
   WORKFLOW_TOOLS,
   isDocumentMutatingTool,
@@ -264,6 +265,8 @@ export async function runLLMStream(params: {
   webSources?: WebSearchSources;
   /** Expose ask_inputs only to clients that can render and answer it. */
   includeAskInputs?: boolean;
+  /** Offer create_tabular_review (the chat surfaces that can name a matter). */
+  includeTabularCreate?: boolean;
   /**
    * The surface continues a paused turn from an ask_inputs_response, so a
    * connector write can wait there for the user's approval. Surfaces without
@@ -310,6 +313,8 @@ export async function runLLMStream(params: {
   includeMemory?: boolean;
   /** Memory scope is independent from generated-document destination. */
   memoryProjectId?: string | null;
+  /** A client-level session reads its readable matters' memory. */
+  memoryClientId?: string | null;
   /** Tell the memory policy whether other people can see the persisted turn. */
   memorySharedAudience?: boolean;
   /**
@@ -359,6 +364,7 @@ export async function runLLMStream(params: {
     webSearch = null,
     webSources = "web",
     includeAskInputs = true,
+    includeTabularCreate = false,
     connectorApprovals = false,
     allowDocumentMutation = true,
     workflowStore,
@@ -372,6 +378,7 @@ export async function runLLMStream(params: {
     projectId,
     includeMemory = false,
     memoryProjectId,
+    memoryClientId,
     memorySharedAudience = false,
     nonce,
     conversationId,
@@ -412,6 +419,7 @@ export async function runLLMStream(params: {
     ...researchTools,
     ...WORKFLOW_TOOLS,
     ...PLAYBOOK_TOOLS,
+    ...(includeTabularCreate ? TABULAR_CREATE_TOOLS : []),
     ...webTools,
     ...(subagentRuns && chatModel
       ? [delegateTool(chatModel, sameProviderModels(chatModel, apiKeys ?? {}))]
@@ -452,6 +460,8 @@ export async function runLLMStream(params: {
     systemPrompt: baseSystemPrompt,
     include: includeMemory,
     projectId: memoryProjectId,
+    clientId: memoryClientId,
+    userEmail,
     orgId,
     sharedAudience: memorySharedAudience,
   });
@@ -956,6 +966,7 @@ export async function runLLMStream(params: {
             connectorApprovals: canPauseForApproval,
             userEmail,
             orgId,
+            clientId: memoryClientId,
             model: selectedModel,
             documentLocks,
             documentsScoped: subagentRun?.documentsScoped,

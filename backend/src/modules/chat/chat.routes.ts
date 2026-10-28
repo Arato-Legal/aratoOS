@@ -37,6 +37,7 @@ import {
     parseOptionalModel,
     parseOptionalReasoning,
     parseOptionalProjectId,
+    parseOptionalClientId,
     createReservedAssistantMessageUpdater,
     createSubagentRunStore,
 
@@ -46,6 +47,9 @@ import { normalizeEmail } from "../../lib/access";
 import { teamOrgIdOf } from "../../lib/personalOrgs";
 import { can } from "../../lib/permissions";
 import { generateAssistantChatTitle, logChatTitleFailure } from "./chat.title";
+import { parseAssistantMode } from "../../lib/assistantModes";
+import { createTabularReview } from "../tabular/tabular.service";
+import { registerTabularReviewCreator } from "./engine/tools/tabularCreate";
 import { sendInternalError } from "../../lib/httpError";
 import { sendServiceFailure } from "../../lib/serviceResult";
 import { titleModelForChat } from "../../lib/modelSelection";
@@ -75,6 +79,10 @@ import {
     resolveWorkspaceFilter,
     sendWorkspaceFailure,
 } from "../../lib/workspace";
+
+// The engine's create_tabular_review tool calls the tabular module through this
+// registration (see engine/tools/tabularCreate.ts for why).
+registerTabularReviewCreator(createTabularReview);
 
 export const chatRouter = Router();
 
@@ -522,6 +530,14 @@ chatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
     if (!parsedProjectId.ok) {
         return void res.status(400).json({ detail: parsedProjectId.detail });
     }
+    const parsedClientId = parseOptionalClientId(body.client_id);
+    if (!parsedClientId.ok) {
+        return void res.status(400).json({ detail: parsedClientId.detail });
+    }
+    const parsedMode = parseAssistantMode(body.mode);
+    if (!parsedMode.ok) {
+        return void res.status(400).json({ detail: parsedMode.detail });
+    }
     const parsedModel = parseOptionalModel(body.model);
     if (!parsedModel.ok) {
         return void res.status(400).json({ detail: parsedModel.detail });
@@ -569,6 +585,8 @@ chatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
         inputMessageId,
         projectIdProvided: parsedProjectId.value.provided,
         projectId: parsedProjectId.value.projectId,
+        clientId: parsedClientId.value,
+        mode: parsedMode.value,
         askInputsResponse,
         requestedModel: model,
         requestedReasoning: parsedReasoning.value,
@@ -587,6 +605,7 @@ chatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
         chatId,
         lastUser,
         resolvedProjectId,
+        resolvedClientId,
         allowDocumentMutation,
         canReadProjectMemory,
         canCurateProjectMemory,
@@ -768,10 +787,12 @@ chatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
                 projectId: resolvedProjectId,
                 conversationId: chatId,
                 includeMemory: true,
+                includeTabularCreate: true,
                 connectorApprovals: true,
                 memoryProjectId: canReadProjectMemory
                     ? resolvedProjectId
                     : null,
+                memoryClientId: resolvedClientId,
                 memorySharedAudience,
                 nonce,
                 // This route first makes the advertised assistant ID durable.

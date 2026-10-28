@@ -15,6 +15,11 @@ export type DocStore = Map<
     /** Identifies source material that must be copied before it is edited. */
     source_kind?: "document" | "library_template" | "workflow_asset";
     /**
+     * Another matter's document, readable here because that matter shares
+     * with its client. Never edited or reviewed in place from this session.
+     */
+    read_only?: boolean;
+    /**
      * Request-scoped plain text that is already available in memory. Inline
      * documents still flow through read_document so their body only reaches
      * the model when it chooses to read them.

@@ -16,6 +16,7 @@ import {
   createClient,
   createMatterDriveFolder,
   getClientFiles,
+  listClientChats,
   getIntegrationSettings,
   updateIntegrationSettings,
   setClientDriveFolder,
@@ -249,6 +250,19 @@ clientsRouter.post(
     const result = await createMatterDriveFolder(createServerSupabase(), {
       ...caller(res),
       projectId: req.params.projectId,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.get(
+  "/:clientId/chats",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const result = await listClientChats(createServerSupabase(), {
+      userId: caller(res).userId,
+      clientId: req.params.clientId,
     });
     if (!result.ok) return void sendServiceFailure(res, result);
     res.json(result.data);

@@ -3,6 +3,8 @@ import { textCardEvent } from "./textCard";
 import { internalFailure } from "../../../../lib/serviceResult";
 import { canUseWorkflowInWorkspace } from "../../../../lib/workflowWorkspace";
 import { safeError } from "../../../../lib/safeError";
+import { listReadableClientMatters } from "../../../../lib/clientSharing";
+import { getTabularReviewCreator } from "./tabularCreate";
 import {
   listPlaybooks,
   PlaybookRequestError,
@@ -325,6 +327,8 @@ export async function runToolCalls(
     orgId?: string | null;
     /** The conversation's model, used by run_playbook for its review. */
     model?: string;
+    /** A client-level session: the client whose matters create_tabular_review may name. */
+    clientId?: string | null;
     /**
      * Shared by every runToolCalls of one answer, its subagents' included, so
      * two writes to one document never start from the same version.
@@ -939,7 +943,13 @@ export async function runToolCalls(
       // row: it is reviewed from that text, and its suggestions are made in
       // Word by the pane's edit tools rather than saved as a new version.
       const liveText = indexed ? undefined : docInfo?.inline_text;
-      if (!docInfo || (!indexed && liveText === undefined)) {
+      if (docInfo?.read_only) {
+        // A review writes tracked changes into the document, so it would write
+        // into another matter. Copy the document first, then review the copy.
+        fail(
+          "That document belongs to another matter and is read-only here. Call replicate_document, then review the copy.",
+        );
+      } else if (!docInfo || (!indexed && liveText === undefined)) {
         fail(`Document '${rawDocId}' not found in this chat's attachments.`);
       } else if (!options.model) {
         fail("No model is selected for the review.");
@@ -1044,6 +1054,93 @@ export async function runToolCalls(
         } finally {
           release();
         }
+      }
+    } else if (tc.function.name === "create_tabular_review") {
+      const fail = (error: string) =>
+        toolResults.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: JSON.stringify({ error }),
+        });
+      try {
+        const labels = Array.isArray(args.doc_ids) ? args.doc_ids.map(String) : [];
+        const documentIds = labels.flatMap((label) => {
+          const resolved = resolveDocLabel(label, docStore, docIndex) ?? label;
+          const id = docIndex?.[resolved]?.document_id;
+          return id ? [id] : [];
+        });
+        const columnsRaw = Array.isArray(args.columns) ? args.columns : [];
+        const columns = columnsRaw.flatMap((column, index) => {
+          const c = column as { name?: unknown; prompt?: unknown };
+          return typeof c?.name === "string" && c.name.trim() && typeof c?.prompt === "string" && c.prompt.trim()
+            ? [{ index, name: c.name.trim(), prompt: c.prompt.trim() }]
+            : [];
+        });
+        let targetProjectId: string | null = projectId ?? null;
+        let matterError: string | null = null;
+        if (!targetProjectId && options.clientId) {
+          const matters = await listReadableClientMatters(
+            db,
+            options.clientId,
+            userId,
+            options.userEmail,
+          );
+          const wanted = String(args.matter_name ?? "").trim().toLowerCase();
+          const match = matters.find((m) => m.name.trim().toLowerCase() === wanted);
+          if (match) targetProjectId = match.id;
+          else
+            matterError = `Name the matter to save the review in with matter_name. Available: ${
+              matters.map((m) => m.name).join("; ") || "none"
+            }.`;
+        }
+        if (matterError) {
+          fail(matterError);
+        } else if (!targetProjectId) {
+          fail("A tabular review is saved in a matter. Start the session in a matter, or in a client with matters.");
+        } else if (documentIds.length === 0) {
+          fail("None of those documents are available in this session.");
+        } else if (columns.length === 0) {
+          fail("At least one column with a name and a question is required.");
+        } else {
+          const createTabularReview = getTabularReviewCreator();
+          if (!createTabularReview) throw new Error("tabular review creator is not registered");
+          const created = await createTabularReview(db, {
+            userId,
+            userEmail: options.userEmail ?? undefined,
+            title: typeof args.title === "string" && args.title.trim() ? args.title.trim() : undefined,
+            document_ids: documentIds,
+            columns_config: columns,
+            project_id: targetProjectId,
+            model: options.model,
+          });
+          if (!created.ok) {
+            fail(
+              "kind" in created && created.kind === "status"
+                ? String(created.body.detail ?? "The review could not be created.")
+                : "message" in created
+                  ? String(created.message)
+                  : "The review could not be created.",
+            );
+          } else {
+            const review = created.data as { id: string; title?: string | null };
+            toolResults.push({
+              role: "tool",
+              tool_call_id: tc.id,
+              content: JSON.stringify({
+                review_id: review.id,
+                title: review.title ?? null,
+                documents: documentIds.length,
+                columns: columns.length,
+                link: `/matters/${targetProjectId}/tabular-reviews/${review.id}`,
+                next_required_action:
+                  "Tell the user the review is set up and give them the link; they start the extraction with Generate on the review page. Do not claim results.",
+              }),
+            });
+          }
+        }
+      } catch (error) {
+        console.error("[run_tools] create_tabular_review failed", safeError(error));
+        fail("The review could not be created. Try again.");
       }
     } else if (tc.function.name === "list_workflows") {
       const list = workflowStore
@@ -1765,6 +1862,15 @@ export async function runToolCalls(
       ) {
         const err =
           "Templates and workflow assets cannot be edited directly. Call replicate_document with a new_filename, then edit the returned copy.";
+        emitEditError(docInfo.filename, indexed?.document_id ?? "", err);
+        toolResults.push({
+          role: "tool",
+          tool_call_id: tc.id,
+          content: JSON.stringify({ error: err }),
+        });
+      } else if (docInfo?.read_only) {
+        const err =
+          "That document belongs to another matter and is read-only here. Call replicate_document to work on a copy.";
         emitEditError(docInfo.filename, indexed?.document_id ?? "", err);
         toolResults.push({
           role: "tool",

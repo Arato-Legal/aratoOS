@@ -15,6 +15,7 @@ import { notifyError } from "@/app/lib/userFacingError";
 import { PERSONAL_WORKSPACE } from "@/app/contexts/WorkspaceContext";
 import { PageHeader } from "@/app/components/shared/PageHeader";
 import { ConfirmPopup } from "@/app/components/popups/ConfirmPopup";
+import { ClientChatsSection } from "./ClientChatsSection";
 import { ClientDriveFolder } from "./ClientDriveFolder";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { FORM_CONTROL_GLASS_CLASS } from "@/app/components/ui/form-field";
@@ -186,6 +187,8 @@ export function ClientDashboard({ clientId }: { clientId: string }) {
                 />
 
                 <MattersSection client={client} onChanged={reload} />
+
+                <ClientChatsSection clientId={client.id} />
 
                 <ClientDriveFolder
                     clientId={client.id}

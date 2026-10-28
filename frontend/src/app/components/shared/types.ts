@@ -390,8 +390,12 @@ export type CaseCitationQuote = {
   verification?: QuoteVerification;
 };
 
+export type AssistantMode = "chat" | "workflow" | "playbook" | "tabular" | "library";
+
 export interface Message {
   id?: string;
+  /** What this message was sent to do; plain chat when absent. */
+  mode?: AssistantMode;
   role: "user" | "assistant";
   content: string;
   files?: MessageFile[];

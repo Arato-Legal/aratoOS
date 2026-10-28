@@ -6,6 +6,7 @@
 // only here.
 
 export { loadReviewRow } from "./tabular.rows";
+export { createTabularReview } from "./tabular.reviews";
 export { extractRowColumns, finalizeCell } from "./tabular.extractRow";
 export {
     finishGenerationIfIdle,

@@ -490,8 +490,10 @@ export {
 export {
   createMatterDriveFolder,
   getClientFiles,
+  listClientChats,
   setClientDriveFolder,
   setMatterSharing,
+  type ClientChatSummary,
   type ClientFiles,
 } from "./clients.sharing";
 

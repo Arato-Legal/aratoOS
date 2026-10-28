@@ -54,6 +54,8 @@ interface UseAssistantChatOptions {
   initialMessages?: Message[];
   chatId?: string;
   projectId?: string;
+  /** Run the chat at a client's level (no matter). */
+  clientId?: string;
   /** Adopts the server id as soon as it arrives, without navigation. */
   onChatCreated?: (chatId: string) => void;
   /**
@@ -68,6 +70,7 @@ export function useAssistantChat({
   initialMessages = [],
   chatId: initialChatId,
   projectId,
+  clientId,
   onChatCreated,
   tracksCurrentChat = true,
 }: UseAssistantChatOptions = {}) {
@@ -197,7 +200,7 @@ export function useAssistantChat({
   // ignores a superseded request the turn stalled on its empty placeholder with
   // no error. A layout effect still runs inside the switching commit, so no
   // async continuation from the old request can land in the new thread first.
-  const threadKey = `${workspaceIdentity}:${projectId ?? ""}:${initialChatId ?? ""}`;
+  const threadKey = `${workspaceIdentity}:${projectId ?? clientId ?? ""}:${initialChatId ?? ""}`;
   const threadKeyRef = useRef(threadKey);
   const adoptedThreadKeyRef = useRef<string | null>(null);
   useLayoutEffect(() => {
@@ -572,9 +575,12 @@ export function useAssistantChat({
               attached_documents:
                 attachedDocs.length > 0 ? attachedDocs : undefined,
               ask_inputs_response: opts?.askInputsResponse,
+              mode: message.mode,
               signal: controller.signal,
             })
           : streamChat({
+              client_id: clientId,
+              mode: message.mode,
               messages: apiMessages,
               chat_id: sendChatId,
               // Where a new chat is filed: the workspace it is started in.
@@ -665,7 +671,9 @@ export function useAssistantChat({
         if (!onChatCreated) {
           const chatBasePath = projectId
             ? `/matters/${projectId}/assistant/chat`
-            : `/assistant/chat`;
+            : clientId
+              ? `/clients/${clientId}/assistant/chat`
+              : `/assistant/chat`;
           router.replace(`${chatBasePath}/${finalChatId}`);
         }
       }

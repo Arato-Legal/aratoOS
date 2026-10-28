@@ -8,6 +8,7 @@
 // handling, assistant-message persistence) stays in the route — its ordering
 // is delicate. Only the pre-stream preparation lives here.
 
+import { modeDirective, type AssistantMode } from "../../lib/assistantModes";
 import type { Db } from "../../lib/supabase";
 import {
     webSearchPlanFor,
@@ -172,6 +173,8 @@ export async function prepareProjectChatStream(
             | undefined;
         /** The browser's IANA time zone; unvalidated request input. */
         requestedTimeZone?: unknown;
+        /** What the session was started to do; plain chat when absent. */
+        mode?: AssistantMode;
     },
 ): Promise<
     | { ok: true; prepared: PreparedProjectChatStream }
@@ -552,6 +555,8 @@ export async function prepareProjectChatStream(
         if (personalisationPrompt) {
             systemPromptExtra += `\n\n${personalisationPrompt}`;
         }
+        const directive = modeDirective(args.mode);
+        if (directive) systemPromptExtra += `\n\n${directive}`;
         const userSentAt = await loadUserMessageSentTimes(
             db,
             "chat_messages",

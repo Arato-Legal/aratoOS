@@ -8,6 +8,12 @@ vi.mock("../files", () => ({
   getMemoryCurrent: (...args: unknown[]) => getMemoryCurrent(...args),
 }));
 
+const clientSharing = vi.hoisted(() => ({
+  listSharedSiblingMatters: vi.fn(async () => [] as { id: string; name: string }[]),
+  listReadableClientMatters: vi.fn(async () => [] as { id: string; name: string }[]),
+}));
+vi.mock("../../clientSharing", () => clientSharing);
+
 // Which organizations are team ones is the database's to say.
 const teamOrgIdOf = vi.hoisted(() => vi.fn());
 vi.mock("../../personalOrgs", () => ({
@@ -315,5 +321,62 @@ describe("buildMemoryTurn", () => {
       { scope: "app" },
     );
     warn.mockRestore();
+  });
+});
+
+// Matter memory flows up by being read: a matter session sees the sharing-on
+// siblings', a client session the readable matters', and nothing is written.
+describe("shared matter memory (read-through)", () => {
+  const memory = (content: string) => ({ current: { enabled: true, content } });
+
+  beforeEach(() => {
+    clientSharing.listSharedSiblingMatters.mockReset();
+    clientSharing.listReadableClientMatters.mockReset();
+    clientSharing.listSharedSiblingMatters.mockResolvedValue([]);
+    clientSharing.listReadableClientMatters.mockResolvedValue([]);
+  });
+
+  it("gives a matter session its own memory plus the siblings' that share", async () => {
+    clientSharing.listSharedSiblingMatters.mockResolvedValue([{ id: "m2", name: "Other deal" }]);
+    getMemoryCurrent.mockImplementation(async (_db: unknown, scope: string, owner: string) =>
+      scope === "project" ? memory(owner === "m1" ? "OWN NOTES" : "SIBLING NOTES") : memory(""),
+    );
+    const turn = await buildMemoryTurn({
+      db: {} as never,
+      systemPrompt: "BASE",
+      userId: "u",
+      projectId: "m1",
+    });
+    expect(turn.message?.content).toContain("OWN NOTES");
+    expect(turn.message?.content).toContain("SIBLING NOTES");
+    expect(turn.message?.content).toContain('matter "Other deal"');
+    expect(clientSharing.listSharedSiblingMatters).toHaveBeenCalledWith({}, "m1");
+  });
+
+  it("gives a client session the readable matters' memory, for that caller", async () => {
+    clientSharing.listReadableClientMatters.mockResolvedValue([{ id: "m2", name: "Deal" }]);
+    getMemoryCurrent.mockImplementation(async (_db: unknown, scope: string) =>
+      scope === "project" ? memory("DEAL NOTES") : memory(""),
+    );
+    const turn = await buildMemoryTurn({
+      db: {} as never,
+      systemPrompt: "BASE",
+      userId: "u",
+      clientId: "c1",
+      userEmail: "u@example.com",
+    });
+    expect(turn.message?.content).toContain("DEAL NOTES");
+    expect(clientSharing.listReadableClientMatters).toHaveBeenCalledWith({}, "c1", "u", "u@example.com");
+  });
+
+  it("adds nothing when no matter shares", async () => {
+    getMemoryCurrent.mockResolvedValue(memory(""));
+    const turn = await buildMemoryTurn({
+      db: {} as never,
+      systemPrompt: "BASE",
+      userId: "u",
+      clientId: "c1",
+    });
+    expect(turn.message).toBeNull();
   });
 });
