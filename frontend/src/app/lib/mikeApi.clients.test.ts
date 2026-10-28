@@ -12,6 +12,7 @@ import {
   deleteClient,
   deleteClientContact,
   getClient,
+  startGoogleDriveOAuth,
   getClientMemory,
   saveClientMemory,
   setClientMemoryEnabled,
@@ -316,6 +317,13 @@ describe("Clients API requests", () => {
       call: () => listLibraryDriveFiles("matters", { folder: "sub", workspace: "org/a" }),
       url: "/api/clients/library-drive/matters/files?folder=sub&workspace=org%2Fa",
       method: "GET",
+    },
+    {
+      name: "start Google Drive OAuth with a chosen access level",
+      call: () => startGoogleDriveOAuth(undefined, "full"),
+      url: "/api/user/integrations/google-drive/oauth/start",
+      method: "POST",
+      body: { access: "full" },
     },
   ])("$name", async ({ call, url, method, body }) => {
     await call();

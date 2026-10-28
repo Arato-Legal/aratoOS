@@ -4864,10 +4864,10 @@ type ContactPayload = Partial<
     Pick<ClientContact, "name" | "role" | "email" | "phone" | "notes">
 >;
 
-const jsonInit = (method: string, payload?: unknown): RequestInit => ({
+const jsonInit = (method: string, payload: unknown): RequestInit => ({
     method,
     headers: { "Content-Type": "application/json" },
-    ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+    body: JSON.stringify(payload),
 });
 
 export async function listClients(options?: {
