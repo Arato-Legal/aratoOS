@@ -81,7 +81,24 @@ export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
  * access, which is what lets Mike browse a folder it did not create (a
  * matter's "Work in progress" folder). The default stays per-file.
  */
-export function googleDriveRequestedScope(): string {
+export type GoogleDriveAccessMode = "file" | "full" | "readonly";
+
+export function parseGoogleDriveAccessMode(
+    value: unknown,
+): GoogleDriveAccessMode | null {
+    return value === "file" || value === "full" || value === "readonly"
+        ? value
+        : null;
+}
+
+/**
+ * `mode` is the access the user picked for this one connection; without it
+ * the server-wide default applies.
+ */
+export function googleDriveRequestedScope(mode?: GoogleDriveAccessMode): string {
+    if (mode === "full") return GOOGLE_DRIVE_FULL_SCOPE;
+    if (mode === "readonly") return GOOGLE_DRIVE_READONLY_SCOPE;
+    if (mode === "file") return GOOGLE_DRIVE_SCOPE;
     return process.env.GOOGLE_DRIVE_SCOPE_MODE?.trim().toLowerCase() === "full"
         ? GOOGLE_DRIVE_FULL_SCOPE
         : GOOGLE_DRIVE_SCOPE;
@@ -211,6 +228,7 @@ export async function startGoogleDriveOAuth(
     owner: ConnectorOwner,
     redirectUri: string,
     db: Db = createServerSupabase(),
+    accessMode?: GoogleDriveAccessMode,
 ): Promise<{ authorizationUrl: string }> {
     assertGoogleDriveAvailable();
     const env = googleDriveOAuthEnv();
@@ -256,7 +274,7 @@ export async function startGoogleDriveOAuth(
     // OpenID/email only identifies the chosen account for the Manage dialog.
     url.searchParams.set(
         "scope",
-        `openid email ${googleDriveRequestedScope()}`,
+        `openid email ${googleDriveRequestedScope(accessMode)}`,
     );
     url.searchParams.set("state", stateToken);
     url.searchParams.set("code_challenge", codeChallenge);
@@ -1502,6 +1520,38 @@ export async function getDriveFolder(
     return item?.isFolder ? item : null;
 }
 
+/**
+ * Whether `folderId` is `rootId` or sits somewhere below it. Walks up the
+ * first parent at each level, so a Library tab can only open folders under
+ * the one an admin chose, even through a shared connection.
+ */
+export async function driveFolderIsWithin(
+    owner: ConnectorOwner,
+    db: Db,
+    folderId: string,
+    rootId: string,
+): Promise<boolean> {
+    if (!isDriveId(folderId) || !isDriveId(rootId)) return false;
+    if (folderId === rootId) return true;
+    const token = await browseToken(owner, db);
+    let current = folderId;
+    for (let depth = 0; depth < 12; depth++) {
+        const response = await driveFetch(
+            token,
+            `/files/${encodeURIComponent(current)}`,
+            { fields: "parents", supportsAllDrives: "true" },
+        );
+        if (response.status === 404 || response.status === 403) return false;
+        if (!response.ok) throw googleDriveHttpError(response.status);
+        const body = (await response.json()) as { parents?: string[] };
+        const parents = body.parents ?? [];
+        if (parents.includes(rootId)) return true;
+        if (parents.length === 0) return false;
+        current = parents[0];
+    }
+    return false;
+}
+
 /** The matter folder's "Work in progress" subfolder, matched without case. */
 export async function findWorkInProgressFolder(
     owner: ConnectorOwner,
@@ -1761,4 +1811,125 @@ export async function uploadDocxToDriveFile(
         modifiedTime: saved.modifiedTime ?? null,
         file: { ...current, modifiedTime: saved.modifiedTime ?? current.modifiedTime },
     };
+}
+
+// ---------------------------------------------------------------------------
+// Finding files by description (assistant)
+// ---------------------------------------------------------------------------
+// The assistant describes a file in words; this turns the words into a Drive
+// search over Word files and Google Docs (the formats that can be imported),
+// optionally limited to one folder and everything below it. Drive's query
+// language cannot say "anywhere under this folder", so the folder tree is
+// listed first, within fixed bounds, and the files are searched by parent.
+
+const SEARCH_MAX_FOLDERS = 80;
+const SEARCH_MAX_DEPTH = 5;
+const SEARCH_PARENTS_PER_QUERY = 15;
+const SEARCH_MAX_TERMS = 6;
+
+export type DriveSearchHit = DriveBrowseItem & { matchedName: number };
+
+export function driveSearchTerms(query: string): string[] {
+    const seen = new Set<string>();
+    for (const word of query.toLowerCase().split(/[^\p{L}\p{N}]+/u)) {
+        if (word.length >= 2) seen.add(word);
+        if (seen.size >= SEARCH_MAX_TERMS) break;
+    }
+    return [...seen];
+}
+
+async function collectFolderTree(
+    owner: ConnectorOwner,
+    db: Db,
+    rootId: string,
+): Promise<string[]> {
+    const ids = [rootId];
+    let frontier = [rootId];
+    for (let depth = 0; depth < SEARCH_MAX_DEPTH && frontier.length; depth++) {
+        const next: string[] = [];
+        for (const parentId of frontier) {
+            if (ids.length >= SEARCH_MAX_FOLDERS) return ids;
+            const children = await listDriveFolderChildren(owner, db, {
+                parentId,
+                foldersOnly: true,
+            });
+            for (const child of children) {
+                if (ids.length >= SEARCH_MAX_FOLDERS) break;
+                ids.push(child.id);
+                next.push(child.id);
+            }
+        }
+        frontier = next;
+    }
+    return ids;
+}
+
+/**
+ * Word files and Google Docs matching `query` (by name or content), best name
+ * matches first. With `rootFolderId`, only files at or below that folder.
+ */
+export async function searchDriveFiles(
+    owner: ConnectorOwner,
+    db: Db,
+    args: { query: string; rootFolderId?: string; limit?: number },
+): Promise<DriveSearchHit[]> {
+    const terms = driveSearchTerms(args.query);
+    if (terms.length === 0)
+        throw new GoogleDriveUserError("Describe the file to look for.");
+    if (args.rootFolderId !== undefined && !isDriveId(args.rootFolderId))
+        throw new GoogleDriveUserError("That Google Drive folder is not valid.");
+    const limit = Math.min(Math.max(Math.floor(args.limit ?? 10), 1), 25);
+    const token = await browseToken(owner, db);
+
+    const match = terms
+        .map((t) => `name contains '${escapeQuery(t)}' or fullText contains '${escapeQuery(t)}'`)
+        .join(" or ");
+    const types =
+        `(mimeType = '${GOOGLE_DOC_MIME}' or mimeType = '${DOCX_MIME}')`;
+    const base = `trashed = false and ${types} and (${match})`;
+
+    const scopes: (string | null)[] = [];
+    if (args.rootFolderId) {
+        const folders = await collectFolderTree(owner, db, args.rootFolderId);
+        for (let i = 0; i < folders.length; i += SEARCH_PARENTS_PER_QUERY) {
+            scopes.push(
+                folders
+                    .slice(i, i + SEARCH_PARENTS_PER_QUERY)
+                    .map((id) => `'${escapeQuery(id)}' in parents`)
+                    .join(" or "),
+            );
+        }
+    } else {
+        scopes.push(null);
+    }
+
+    const found = new Map<string, DriveSearchHit>();
+    for (const scope of scopes) {
+        const response = await driveFetch(token, "/files", {
+            q: scope ? `${base} and (${scope})` : base,
+            orderBy: "modifiedTime desc",
+            pageSize: String(Math.min(limit * 2, 50)),
+            fields: `files(${BROWSE_FIELDS})`,
+            includeItemsFromAllDrives: "true",
+            supportsAllDrives: "true",
+        });
+        if (!response.ok) throw googleDriveHttpError(response.status);
+        const body = (await response.json()) as { files?: DriveFile[] };
+        for (const file of body.files ?? []) {
+            const item = toBrowseItem(file);
+            if (!item || found.has(item.id)) continue;
+            const lower = item.name.toLowerCase();
+            found.set(item.id, {
+                ...item,
+                matchedName: terms.filter((t) => lower.includes(t)).length,
+            });
+        }
+    }
+    return [...found.values()]
+        .sort(
+            (a, b) =>
+                b.matchedName - a.matchedName ||
+                (b.modifiedTime ?? "").localeCompare(a.modifiedTime ?? ""),
+        )
+        .slice(0, limit);
 }

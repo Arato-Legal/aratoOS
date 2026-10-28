@@ -54,6 +54,7 @@ import {
 } from "@/app/contexts/WorkspaceContext";
 import { useHasMultipleWorkspaces } from "@/app/hooks/useHasMultipleWorkspaces";
 import {
+  type GoogleDriveAccessMode,
   type McpConnectorSummary,
   MikeApiError,
   isConnectorSetupError,
@@ -447,6 +448,7 @@ function WorkspaceConnectors({
   const [addStep, setAddStep] = useState<AddStep>("form");
   const [addResult, setAddResult] = useState<McpConnectorSummary | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
+  const [driveAccess, setDriveAccess] = useState<GoogleDriveAccessMode>("file");
   const [addErrorGuideUrl, setAddErrorGuideUrl] = useState<string | null>(null);
   const [addAuthMessage, setAddAuthMessage] = useState<string | null>(null);
   const [installingPresetUrl, setInstallingPresetUrl] = useState<string | null>(
@@ -704,7 +706,9 @@ function WorkspaceConnectors({
     }
     await runSensitiveAction({ type: "google-add", provider }, async () => {
       try {
-        await connector.connect();
+        await connector.connect(
+          provider === "google-drive" ? driveAccess : undefined,
+        );
       } catch (err) {
         if (err instanceof GoogleAuthorizationCancelledError) return;
         if (err instanceof GoogleConnectorFlowError) {
@@ -1522,6 +1526,23 @@ function WorkspaceConnectors({
               }
               onAdd={() => void handleAddGoogle(connector.provider)}
               onCancel={connector.cancel}
+              accessControl={
+                connector.provider === "google-drive" ? (
+                  <select
+                    aria-label="Google Drive access"
+                    value={driveAccess}
+                    disabled={connector.phase !== "idle"}
+                    onChange={(event) =>
+                      setDriveAccess(event.target.value as GoogleDriveAccessMode)
+                    }
+                    className="h-8 rounded-md bg-app-surface px-2 text-xs text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  >
+                    <option value="file">Chosen files only</option>
+                    <option value="full">Whole Drive</option>
+                    <option value="readonly">Whole Drive, read-only</option>
+                  </select>
+                ) : undefined
+              }
             />
           ))}
           {!initialLoading && discoverCourtListener && (
@@ -1834,7 +1855,9 @@ function DiscoverCard({
   disabled,
   onAdd,
   onCancel,
+  accessControl,
 }: {
+  accessControl?: ReactNode;
   name: string;
   icon: ReactNode;
   adding: boolean;
@@ -1849,6 +1872,9 @@ function DiscoverCard({
       name={name}
       icon={icon}
       action={
+        accessControl ? (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {accessControl}
         <PillButtonUI
           tone="blue"
           size="sm"
@@ -1863,6 +1889,23 @@ function DiscoverCard({
         >
           {authorizing ? "Cancel" : adding ? "Adding..." : "Add"}
         </PillButtonUI>
+          </div>
+        ) : (
+        <PillButtonUI
+          tone="blue"
+          size="sm"
+          onClick={authorizing ? onCancel : onAdd}
+          disabled={loading || (!authorizing && (adding || disabled))}
+          loading={adding}
+          aria-label={
+            authorizing
+              ? `Cancel ${name} authorization`
+              : `Add ${name} connector`
+          }
+        >
+          {authorizing ? "Cancel" : adding ? "Adding..." : "Add"}
+        </PillButtonUI>
+        )
       }
     />
   );

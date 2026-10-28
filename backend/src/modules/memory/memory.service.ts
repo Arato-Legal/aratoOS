@@ -153,3 +153,17 @@ export async function wipeMemory(
 }
 
 export { handleMemoryConsolidation, markMemoryConsolidationFailed } from "./memory.curator";
+
+export {
+  CLIENT_MEMORY_JOB,
+  handleClientMemory,
+  scheduleClientMemory,
+} from "./memory.clientCurator";
+
+export {
+  readClientMemory,
+  resolveClientMemoryAccess,
+  saveClientMemory,
+  switchClientMemory,
+  type ClientMemoryView,
+} from "./memory.client";

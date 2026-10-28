@@ -1,14 +1,14 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7AB8FF" stop-opacity="0.96"/>
-      <stop offset="0.45" stop-color="#4F92F7" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#2563EB" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#AFD3A6" stop-opacity="0.96"/>
+      <stop offset="0.45" stop-color="#90C284" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#70B060" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.75"/>
       <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.12"/>
-      <stop offset="1" stop-color="#172554" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#2C4526" stop-opacity="0.45"/>
     </linearGradient>
     <radialGradient id="sheen">
       <stop offset="0" stop-color="#FFFFFF"/>

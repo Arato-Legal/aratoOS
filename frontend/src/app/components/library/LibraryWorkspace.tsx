@@ -88,10 +88,21 @@ type LibraryWorkspaceContextValue = {
     ) => void;
 };
 
-const LIBRARY_TABS: { id: LibraryKind; label: string }[] = [
+export type LibraryTabId = LibraryKind | "drive-matters" | "drive-precedents";
+
+export const LIBRARY_TABS: { id: LibraryTabId; label: string }[] = [
     { id: "files", label: "Documents" },
     { id: "templates", label: "Templates" },
+    { id: "drive-matters", label: "Drive matters" },
+    { id: "drive-precedents", label: "Drive precedents" },
 ];
+
+export const LIBRARY_TAB_PATHS: Record<LibraryTabId, string> = {
+    files: "/library",
+    templates: "/library/templates",
+    "drive-matters": "/library/drive-matters",
+    "drive-precedents": "/library/drive-precedents",
+};
 
 const EMPTY_COLLECTION: LibraryViewCollection = {
     documents: [],
@@ -1071,11 +1082,7 @@ export function LibraryCollectionPage({
                 <TableToolbar
                     items={folderBackAction ? [] : LIBRARY_TABS}
                     active={kind}
-                    onChange={(next) =>
-                        router.push(
-                            next === "files" ? "/library" : "/library/templates",
-                        )
-                    }
+                    onChange={(next) => router.push(LIBRARY_TAB_PATHS[next])}
                     leading={
                         folderBackAction ? (
                             <TabPillButtonUI onClick={folderBackAction} className="pl-2">

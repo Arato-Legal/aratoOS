@@ -31,11 +31,20 @@ for (const width of [390, 1280]) {
     const slack = discover.getByRole("region", { name: "Slack connector", exact: true });
     await expect(slack.getByRole("button", { name: "Add Slack connector" })).toBeEnabled();
     const slackHeight = await slack.evaluate((element) => element.getBoundingClientRect().height);
+    let driveHeight = 0;
     for (const name of ["Google Drive", "Gmail", "Google Calendar"]) {
       const card = discover.getByRole("region", { name: `${name} connector`, exact: true });
       const add = card.getByRole("button", { name: `Add ${name} connector`, exact: true });
       await expect(add).toBeEnabled();
-      expect(await card.evaluate((element) => element.getBoundingClientRect().height)).toBe(slackHeight);
+      const cardHeight = await card.evaluate((element) => element.getBoundingClientRect().height);
+      // Google Drive carries an access-mode picker the others lack, so it is
+      // taller than Slack's tile, and beside it in a two-column grid the other
+      // Google tiles stretch to the same row. Every tile is at least Slack's
+      // height; the others are never taller than Drive's.
+      expect(cardHeight).toBeGreaterThanOrEqual(slackHeight);
+      if (name === "Google Drive") driveHeight = cardHeight;
+      else expect(cardHeight).toBeLessThanOrEqual(driveHeight);
+      expect(await card.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
       await add.click();
       const warning = page.getByRole("alert").filter({ hasText: "Could not add connector" });
       await expect(warning).toContainText("needs an OAuth client");

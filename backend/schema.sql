@@ -1177,6 +1177,29 @@ create table if not exists public.org_integration_settings (
 alter table public.org_integration_settings enable row level security;
 revoke all on public.org_integration_settings from anon, authenticated;
 
+create table if not exists public.workspace_drive_folders (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid references public.organizations(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  kind text not null,
+  drive_folder_id text not null,
+  drive_folder_name text not null,
+  updated_at timestamptz not null default now(),
+  constraint workspace_drive_folders_kind_check check (kind in ('matters', 'precedents')),
+  constraint workspace_drive_folders_owner_check check ((org_id is null) <> (user_id is null)),
+  constraint workspace_drive_folders_folder_check check (
+    drive_folder_id ~ '^[A-Za-z0-9_-]{1,200}$' and char_length(drive_folder_name) <= 500
+  )
+);
+
+create unique index if not exists workspace_drive_folders_org_kind_idx
+  on public.workspace_drive_folders (org_id, kind) where org_id is not null;
+create unique index if not exists workspace_drive_folders_user_kind_idx
+  on public.workspace_drive_folders (user_id, kind) where user_id is not null;
+
+alter table public.workspace_drive_folders enable row level security;
+revoke all on public.workspace_drive_folders from anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- project_access_grants — direct, role-aware sharing
 -- ---------------------------------------------------------------------------
@@ -2875,6 +2898,64 @@ alter table public.chats
 
 create index if not exists idx_chats_client
   on public.chats(client_id) where client_id is not null;
+
+-- Client-level memory (backend/migrations/20261026_08_client_memory.sql)
+create table if not exists public.client_memory_files (
+  client_id uuid primary key references public.clients(id) on delete cascade,
+  enabled boolean not null default true,
+  -- Compare-and-swap token: has this row moved since you read it?
+  revision bigint not null default 0 check (revision >= 0),
+  content text not null default '',
+  size_bytes integer not null default 0
+    check (size_bytes >= 0 and size_bytes <= 16384),
+  -- The curator job that last applied a write, so a retried job is a no-op.
+  last_source_job_id uuid,
+  updated_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists client_memory_files_updated_by_idx
+  on public.client_memory_files(updated_by) where updated_by is not null;
+
+alter table public.client_memory_files enable row level security;
+revoke all on public.client_memory_files from anon, authenticated;
+
+create table if not exists public.client_memory_cursors (
+  client_id uuid not null references public.clients(id) on delete cascade,
+  chat_id uuid not null references public.chats(id) on delete cascade,
+  -- Messages up to here have been considered for this client's memory.
+  last_message_at timestamptz not null,
+  primary key (client_id, chat_id)
+);
+
+create index if not exists client_memory_cursors_chat_idx
+  on public.client_memory_cursors(chat_id);
+
+alter table public.client_memory_cursors enable row level security;
+revoke all on public.client_memory_cursors from anon, authenticated;
+
+-- Per-matter notes under a client's memory (backend/migrations/20261026_09_client_memory_matter_notes.sql)
+create table if not exists public.client_memory_notes (
+  client_id uuid not null references public.clients(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  revision bigint not null default 0 check (revision >= 0),
+  content text not null default '',
+  size_bytes integer not null default 0
+    check (size_bytes >= 0 and size_bytes <= 16384),
+  last_source_job_id uuid,
+  updated_by uuid references auth.users(id) on delete set null,
+  updated_at timestamptz not null default now(),
+  primary key (client_id, project_id)
+);
+
+create index if not exists client_memory_notes_project_idx
+  on public.client_memory_notes(project_id);
+create index if not exists client_memory_notes_updated_by_idx
+  on public.client_memory_notes(updated_by) where updated_by is not null;
+
+alter table public.client_memory_notes enable row level security;
+revoke all on public.client_memory_notes from anon, authenticated;
 
 
 create index if not exists idx_chats_user
@@ -11465,5 +11546,8 @@ insert into public.schema_migrations (filename) values
   ('20261026_04_crm_sync.sql'),
   ('20261026_05_client_matter_sharing.sql'),
   ('20261026_06_hubflo_links_org_drive.sql'),
-  ('20261026_07_client_chats.sql')
+  ('20261026_07_client_chats.sql'),
+  ('20261026_08_client_memory.sql'),
+  ('20261026_09_client_memory_matter_notes.sql'),
+  ('20261027_01_workspace_drive_folders.sql')
 on conflict (filename) do nothing;

@@ -6,8 +6,8 @@ import { SidebarLogo } from "./SidebarLogo";
 const mocks = vi.hoisted(() => ({ getOrgLogo: vi.fn() }));
 
 vi.mock("@/app/lib/mikeApi", () => ({ getOrgLogo: mocks.getOrgLogo }));
-vi.mock("@/shared/ui/MikeIconUI", () => ({
-    MikeIcon: () => <span data-testid="mike-icon" />,
+vi.mock("@/shared/ui/AratoEmblemUI", () => ({
+    AratoEmblem: () => <span data-testid="mike-icon" />,
 }));
 
 const LOGO = "data:image/png;base64,AAAA";

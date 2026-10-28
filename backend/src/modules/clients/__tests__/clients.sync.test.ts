@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../projects/projects.service", () => ({ createProject: vi.fn() }));
+vi.mock("../../../lib/memory/clientMemory", () => ({ deleteClientNotes: vi.fn() }));
 
 import { createProject } from "../../projects/projects.service";
+import { deleteClientNotes } from "../../../lib/memory/clientMemory";
 import { upsertExternalClient, upsertExternalMatter, type SyncScope } from "../clients.sync";
 
 type Scripted = { data: unknown; error?: unknown };
@@ -212,5 +214,14 @@ describe("upsertExternalMatter", () => {
     const { db, calls } = fakeDb({ projects: [{ data: existing }, { data: null }] });
     await upsertExternalMatter(db, scope, { external_id: "M1", client_external_id: null });
     expect(calls[0].payload).toMatchObject({ client_id: null });
+    // What the matter taught its old client's memory goes with it.
+    expect(deleteClientNotes).toHaveBeenCalledWith(expect.anything(), { projectId: "p1" });
+  });
+
+  it("keeps the matter's client-memory notes when its client does not change", async () => {
+    const existing = { id: "p1", name: "Deal", cm_number: null, practice: null, client_id: "c1", archived_at: null, external_synced_at: null };
+    const { db } = fakeDb({ projects: [{ data: existing }, { data: null }] });
+    await upsertExternalMatter(db, scope, { external_id: "M1", practice: "Corporate" });
+    expect(deleteClientNotes).not.toHaveBeenCalled();
   });
 });

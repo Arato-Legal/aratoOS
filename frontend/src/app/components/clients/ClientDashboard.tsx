@@ -17,6 +17,7 @@ import { PageHeader } from "@/app/components/shared/PageHeader";
 import { ConfirmPopup } from "@/app/components/popups/ConfirmPopup";
 import { ClientChatsSection } from "./ClientChatsSection";
 import { ClientDriveFolder } from "./ClientDriveFolder";
+import { ClientMemorySection } from "./ClientMemorySection";
 import { PillButtonUI } from "@/shared/ui/PillButtonUI";
 import { FORM_CONTROL_GLASS_CLASS } from "@/app/components/ui/form-field";
 import { cn } from "@/app/lib/utils";
@@ -189,6 +190,8 @@ export function ClientDashboard({ clientId }: { clientId: string }) {
                 <MattersSection client={client} onChanged={reload} />
 
                 <ClientChatsSection clientId={client.id} />
+
+                <ClientMemorySection clientId={client.id} />
 
                 <ClientDriveFolder
                     clientId={client.id}

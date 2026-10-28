@@ -1,4 +1,5 @@
 import { parseAssistantMode } from "../../lib/assistantModes";
+import { scheduleClientMemory } from "../memory/memory.service";
 import { abortable } from "../../lib/abortable";
 import {
     attachAssistantTurnSse,
@@ -375,6 +376,9 @@ projectChatRouter.post("/", requireAuth, asyncRoute(async (req, res) => {
                         turn: memoryTurn,
                     });
                     memoryTurnScheduled = scheduled != null;
+                    // A matter chat whose matter shares with its client also
+                    // teaches the client's own memory.
+                    void scheduleClientMemory(db, { chatId, actorUserId: userId });
                 }
             }
 

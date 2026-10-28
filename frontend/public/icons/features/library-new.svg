@@ -1,14 +1,14 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="leatherBlue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4C86C4"/>
-      <stop offset="0.4" stop-color="#1F5B9D"/>
-      <stop offset="1" stop-color="#143259"/>
+      <stop offset="0" stop-color="#76A66A"/>
+      <stop offset="0.4" stop-color="#4B7E3E"/>
+      <stop offset="1" stop-color="#2C4825"/>
     </linearGradient>
     <linearGradient id="leatherRed" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#C45A5F"/>
-      <stop offset="0.4" stop-color="#A0232C"/>
-      <stop offset="1" stop-color="#5E1921"/>
+      <stop offset="0" stop-color="#C4AB5A"/>
+      <stop offset="0.4" stop-color="#977E2C"/>
+      <stop offset="1" stop-color="#5C4D1B"/>
     </linearGradient>
     <linearGradient id="leatherGreen" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#3FA578"/>
@@ -16,23 +16,23 @@
       <stop offset="1" stop-color="#173F31"/>
     </linearGradient>
     <linearGradient id="pages" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFBF0"/>
-      <stop offset="0.55" stop-color="#F4EAD2"/>
-      <stop offset="1" stop-color="#DCCBA4"/>
+      <stop offset="0" stop-color="#FCFAF3"/>
+      <stop offset="0.55" stop-color="#F2EBD4"/>
+      <stop offset="1" stop-color="#DCCFA4"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.7"/>
       <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.1"/>
-      <stop offset="1" stop-color="#1A0D05" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#181407" stop-opacity="0.6"/>
     </linearGradient>
     <linearGradient id="gilt" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#F7DE9C"/>
-      <stop offset="0.5" stop-color="#D9A94E"/>
-      <stop offset="1" stop-color="#B07E2C"/>
+      <stop offset="0" stop-color="#E7D9AC"/>
+      <stop offset="0.5" stop-color="#CFB358"/>
+      <stop offset="1" stop-color="#AB8E31"/>
     </linearGradient>
     <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#F59E0B"/>
-      <stop offset="1" stop-color="#B45309"/>
+      <stop offset="0" stop-color="#C6A53A"/>
+      <stop offset="1" stop-color="#927A2B"/>
     </linearGradient>
     <radialGradient id="sheen">
       <stop offset="0" stop-color="#FFFFFF"/>
@@ -45,7 +45,7 @@
   <g>
     <rect x="5" y="44" width="54" height="14" rx="3" fill="url(#leatherBlue)" stroke="url(#rim)" stroke-width="1.4"/>
     <rect x="15" y="47.75" width="42" height="6.5" rx="1.2" fill="url(#pages)"/>
-    <g stroke="#C9B48A" stroke-width="0.5" opacity="0.8">
+    <g stroke="#C9BA8A" stroke-width="0.5" opacity="0.8">
       <path d="M16 50 H56"/><path d="M16 52 H56"/>
     </g>
     <rect x="8.2" y="46.5" width="1.4" height="9" rx="0.7" fill="url(#gilt)"/>
@@ -58,7 +58,7 @@
   <g transform="rotate(-3 32 44)">
     <rect x="8" y="30" width="49" height="14" rx="3" fill="url(#leatherRed)" stroke="url(#rim)" stroke-width="1.4"/>
     <rect x="10" y="33.75" width="36" height="6.5" rx="1.2" fill="url(#pages)"/>
-    <g stroke="#C9B48A" stroke-width="0.5" opacity="0.8">
+    <g stroke="#C9BA8A" stroke-width="0.5" opacity="0.8">
       <path d="M11 36 H45"/><path d="M11 38 H45"/>
     </g>
     <rect x="49.2" y="32.5" width="1.4" height="9" rx="0.7" fill="url(#gilt)"/>
@@ -70,7 +70,7 @@
   <g transform="rotate(2.5 31 30)">
     <rect x="9" y="16" width="44" height="14" rx="3" fill="url(#leatherGreen)" stroke="url(#rim)" stroke-width="1.4"/>
     <rect x="18" y="19.75" width="33" height="6.5" rx="1.2" fill="url(#pages)"/>
-    <g stroke="#C9B48A" stroke-width="0.5" opacity="0.8">
+    <g stroke="#C9BA8A" stroke-width="0.5" opacity="0.8">
       <path d="M19 22 H50"/><path d="M19 24 H50"/>
     </g>
     <rect x="12.2" y="18.5" width="1.4" height="9" rx="0.7" fill="url(#gilt)"/>

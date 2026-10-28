@@ -1,17 +1,17 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="settingsBody" x1="32" y1="4" x2="32" y2="60" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#A2AEBC"/>
-      <stop offset="0.22" stop-color="#8895A6"/>
-      <stop offset="0.48" stop-color="#6E7C8E"/>
-      <stop offset="0.70" stop-color="#556274"/>
-      <stop offset="0.86" stop-color="#46525F"/>
-      <stop offset="1" stop-color="#7A8695"/>
+      <stop offset="0" stop-color="#ABB6A8"/>
+      <stop offset="0.22" stop-color="#929E90"/>
+      <stop offset="0.48" stop-color="#8B8471"/>
+      <stop offset="0.70" stop-color="#606C5D"/>
+      <stop offset="0.86" stop-color="#4F594C"/>
+      <stop offset="1" stop-color="#938D7C"/>
     </linearGradient>
     <linearGradient id="settingsRim" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
       <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.15"/>
-      <stop offset="1" stop-color="#0F172A" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#182316" stop-opacity="0.45"/>
     </linearGradient>
   </defs>
   <g fill="none" stroke="url(#settingsBody)" stroke-width="9.5" stroke-linecap="round">

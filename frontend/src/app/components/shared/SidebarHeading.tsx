@@ -3,13 +3,13 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/app/lib/utils";
 
-const HEADING_FONT_CLASS = "font-light font-serif";
+const HEADING_FONT_CLASS = "font-medium font-heading";
 
 /**
- * The name at the top of the sidebar: "Mike" for personal work, or the
+ * The name at the top of the sidebar: "Arato Legal" for personal work, or the
  * active organization's name.
  *
- * Every name is set at the size "Mike" is, so switching workspace does not
+ * Every name is set at the size "Arato Legal" is, so switching workspace does not
  * change the look of the header. Only a name too long for one line at that
  * size drops to the smaller two-line setting, because the header row keeps a
  * fixed height. Whether it fits is measured rather than guessed from the

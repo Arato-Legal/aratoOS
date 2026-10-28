@@ -11,6 +11,7 @@
 // nothing here checks a person's access, because the endpoint's owner has
 // already authorized the workspace.
 
+import { deleteClientNotes } from "../../lib/memory/clientMemory";
 import type { Db } from "../../lib/supabase";
 import { failure, internalFailure, ok, type ServiceResult } from "../../lib/serviceResult";
 import { createProject } from "../projects/projects.service";
@@ -281,6 +282,10 @@ export async function upsertExternalMatter(
     if (isStale(at.value, existing.external_synced_at))
       return ok({ outcome: "stale", id: existing.id });
     const changed = differs(existing as unknown as Record<string, unknown>, patch);
+    // Moved to another client (or unlinked): what it taught the old client's
+    // memory goes with it.
+    if (clientId !== undefined && clientId !== (existing.client_id ?? null))
+      await deleteClientNotes(db, { projectId: existing.id });
     const { error } = await db
       .from("projects")
       .update({

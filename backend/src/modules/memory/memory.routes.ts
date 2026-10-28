@@ -23,6 +23,10 @@ import { requireAuth } from "../../middleware/auth";
 import { asyncRoute, routerErrorHandler } from "../../middleware/asyncRoute";
 import {
   currentMemory,
+  readClientMemory,
+  resolveClientMemoryAccess,
+  saveClientMemory,
+  switchClientMemory,
   MemoryDisabledError,
   MemoryRevisionConflictError,
   MemoryValidationError,
@@ -36,15 +40,18 @@ import {
 
 export const userMemoryRouter = Router();
 export const projectMemoryRouter = Router({ mergeParams: true });
+export const clientMemoryRouter = Router({ mergeParams: true });
 
 userMemoryRouter.use(requireAuth);
 projectMemoryRouter.use(requireAuth);
+clientMemoryRouter.use(requireAuth);
 const privateNoStore = (_req: Request, res: Response, next: NextFunction) => {
   res.setHeader("Cache-Control", "private, no-store");
   next();
 };
 userMemoryRouter.use(privateNoStore);
 projectMemoryRouter.use(privateNoStore);
+clientMemoryRouter.use(privateNoStore);
 
 type ContextResolver = (
   req: Request<ParamsFlatDictionary>,
@@ -224,5 +231,110 @@ installMemoryRoutes(
   projectContext("access.manage"),
 );
 
+// A client's memory: read by anyone who can open the client, changed only by
+// its creator or an organization admin.
+async function clientAccess(
+  req: Request<ParamsFlatDictionary>,
+  res: Response,
+  requireEdit: boolean,
+) {
+  const access = await resolveClientMemoryAccess(createServerSupabase(), {
+    clientId: req.params.clientId,
+    userId: res.locals.userId as string,
+    requireEdit,
+  });
+  if (!access.ok) {
+    res.status(access.status).json({
+      detail:
+        access.status === 404
+          ? "Client not found"
+          : "Only the client's creator or an organization admin can change its memory.",
+    });
+    return null;
+  }
+  return access;
+}
+
+function sendClientMemoryError(res: Response, error: unknown, clientId?: string) {
+  if (error instanceof MemoryRevisionConflictError) {
+    res.status(409).json({
+      code: "memory_revision_conflict",
+      detail: "Memory changed since it was loaded. Review what is saved now and try again.",
+      ...(clientId ? { client_id: clientId } : {}),
+    });
+    return;
+  }
+  if (error instanceof MemoryDisabledError) {
+    res.status(409).json({ code: "memory_disabled", detail: "Enable memory before editing it." });
+    return;
+  }
+  if (error instanceof MemoryValidationError) {
+    res.status(400).json({ detail: error.message });
+    return;
+  }
+  sendInternalError(res, error);
+}
+
+clientMemoryRouter.get("/", asyncRoute(async (req, res) => {
+  try {
+    const access = await clientAccess(req, res, false);
+    if (!access) return;
+    res.json(
+      await readClientMemory(createServerSupabase(), {
+        ...access,
+        userId: res.locals.userId as string,
+        userEmail: res.locals.userEmail as string | undefined,
+      }),
+    );
+  } catch (error) {
+    sendClientMemoryError(res, error);
+  }
+}));
+
+clientMemoryRouter.put("/", asyncRoute(async (req, res) => {
+  try {
+    const revision = expectedRevision(req.body?.expected_revision);
+    if (revision == null || typeof req.body?.content !== "string") {
+      return void res.status(400).json({
+        detail: "content and a non-negative integer expected_revision are required",
+      });
+    }
+    const access = await clientAccess(req, res, true);
+    if (!access) return;
+    res.json(
+      await saveClientMemory(createServerSupabase(), {
+        clientId: access.clientId,
+        canEdit: access.canEdit,
+        content: req.body.content,
+        expectedRevision: revision,
+        userId: res.locals.userId as string,
+      }),
+    );
+  } catch (error) {
+    sendClientMemoryError(res, error, req.params.clientId);
+  }
+}));
+
+clientMemoryRouter.patch("/settings", asyncRoute(async (req, res) => {
+  try {
+    if (typeof req.body?.enabled !== "boolean") {
+      return void res.status(400).json({ detail: "enabled must be a boolean" });
+    }
+    const access = await clientAccess(req, res, true);
+    if (!access) return;
+    res.json(
+      await switchClientMemory(createServerSupabase(), {
+        clientId: access.clientId,
+        canEdit: access.canEdit,
+        enabled: req.body.enabled,
+        userId: res.locals.userId as string,
+      }),
+    );
+  } catch (error) {
+    sendClientMemoryError(res, error);
+  }
+}));
+
 userMemoryRouter.use(routerErrorHandler("[user-memory]"));
 projectMemoryRouter.use(routerErrorHandler("[project-memory]"));
+clientMemoryRouter.use(routerErrorHandler("[client-memory]"));

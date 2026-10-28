@@ -67,6 +67,7 @@ import {
 import {
   PLAYBOOK_TOOLS,
   TABULAR_CREATE_TOOLS,
+  DRIVE_IMPORT_TOOLS,
   TOOLS,
   WORKFLOW_TOOLS,
   isDocumentMutatingTool,
@@ -419,7 +420,7 @@ export async function runLLMStream(params: {
     ...researchTools,
     ...WORKFLOW_TOOLS,
     ...PLAYBOOK_TOOLS,
-    ...(includeTabularCreate ? TABULAR_CREATE_TOOLS : []),
+    ...(includeTabularCreate ? [...DRIVE_IMPORT_TOOLS, ...TABULAR_CREATE_TOOLS] : []),
     ...webTools,
     ...(subagentRuns && chatModel
       ? [delegateTool(chatModel, sameProviderModels(chatModel, apiKeys ?? {}))]

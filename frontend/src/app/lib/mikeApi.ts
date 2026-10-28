@@ -79,6 +79,7 @@ import type {
     ClientDetail,
     MatterDashboard,
     AssistantMode,
+    ClientMemory,
     ClientFiles,
     IntegrationSettings,
     MatterWorkspace,
@@ -1511,12 +1512,25 @@ export async function getGoogleDriveStatus(
     );
 }
 
-export async function startGoogleDriveOAuth(workspace?: string): Promise<{
+export type GoogleDriveAccessMode = "file" | "full" | "readonly";
+
+export async function startGoogleDriveOAuth(
+    workspace?: string,
+    access?: GoogleDriveAccessMode,
+): Promise<{
     authorizationUrl: string;
 }> {
     return apiRequest<{ authorizationUrl: string }>(
         connectorPath("/user/integrations/google-drive/oauth/start", workspace),
-        { method: "POST" },
+        {
+            method: "POST",
+            ...(access
+                ? {
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ access }),
+                  }
+                : {}),
+        },
     );
 }
 
@@ -4850,10 +4864,10 @@ type ContactPayload = Partial<
     Pick<ClientContact, "name" | "role" | "email" | "phone" | "notes">
 >;
 
-const jsonInit = (method: string, payload?: unknown): RequestInit => ({
+const jsonInit = (method: string, payload: unknown): RequestInit => ({
     method,
     headers: { "Content-Type": "application/json" },
-    ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+    body: JSON.stringify(payload),
 });
 
 export async function listClients(options?: {
@@ -4970,6 +4984,34 @@ export async function setClientDriveFolder(
     );
 }
 
+/** The client's memory.md: read by anyone who can open the client. */
+export async function getClientMemory(clientId: string): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(`/clients/${clientId}/memory`);
+}
+
+/** Replace the client's memory (creator or organization admin). */
+export async function saveClientMemory(
+    clientId: string,
+    content: string,
+    expectedRevision: number,
+): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(
+        `/clients/${clientId}/memory`,
+        jsonInit("PUT", { content, expected_revision: expectedRevision }),
+    );
+}
+
+/** Switch client memory on or off. Off deletes what was learned. */
+export async function setClientMemoryEnabled(
+    clientId: string,
+    enabled: boolean,
+): Promise<ClientMemory> {
+    return apiRequest<ClientMemory>(
+        `/clients/${clientId}/memory/settings`,
+        jsonInit("PATCH", { enabled }),
+    );
+}
+
 /** The caller's own assistant chats run at a client's level. */
 export async function listClientChats(
     clientId: string,
@@ -5026,6 +5068,60 @@ export async function browseDriveFolders(options?: {
     if (options?.workspace) params.set("workspace", options.workspace);
     const qs = params.toString();
     return apiRequest(`/clients/drive/folders${qs ? `?${qs}` : ""}`);
+}
+
+// ---------------------------------------------------------------------------
+// Library Drive tabs
+// ---------------------------------------------------------------------------
+
+export type LibraryDriveKind = "matters" | "precedents";
+export type LibraryDriveFolder = { id: string; name: string };
+export type LibraryDriveSettings = {
+    matters: LibraryDriveFolder | null;
+    precedents: LibraryDriveFolder | null;
+    can_configure: boolean;
+};
+export type LibraryDriveListing = {
+    root: LibraryDriveFolder | null;
+    folder: LibraryDriveFolder | null;
+    files: WorkspaceFile[];
+    drive_error: MatterWorkspace["drive_error"];
+};
+
+function libraryDriveQuery(workspace?: string, extra?: Record<string, string>) {
+    const params = new URLSearchParams(extra);
+    if (workspace) params.set("workspace", workspace);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "";
+}
+
+export async function getLibraryDriveSettings(
+    workspace?: string,
+): Promise<LibraryDriveSettings> {
+    return apiRequest(`/clients/library-drive${libraryDriveQuery(workspace)}`);
+}
+
+export async function setLibraryDriveFolder(
+    kind: LibraryDriveKind,
+    folderId: string | null,
+    workspace?: string,
+): Promise<LibraryDriveSettings> {
+    return apiRequest(
+        `/clients/library-drive/${kind}${libraryDriveQuery(workspace)}`,
+        jsonInit("PUT", { folder_id: folderId }),
+    );
+}
+
+export async function listLibraryDriveFiles(
+    kind: LibraryDriveKind,
+    options?: { folder?: string; workspace?: string },
+): Promise<LibraryDriveListing> {
+    return apiRequest(
+        `/clients/library-drive/${kind}/files${libraryDriveQuery(
+            options?.workspace,
+            options?.folder ? { folder: options.folder } : undefined,
+        )}`,
+    );
 }
 
 // ---------------------------------------------------------------------------

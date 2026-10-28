@@ -106,6 +106,64 @@ export const TABULAR_TOOLS = [
   },
 ];
 
+// Pulls Google Drive files (Word or Google Docs) into a matter as Mike
+// documents, so tabular review, compare and workflows can run on them.
+export const DRIVE_IMPORT_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "find_drive_files",
+      description:
+        "Find Word files and Google Docs in Google Drive from a plain-language description (names, parties, document types, topics). Searches the matter's (or client's) Drive folder, the workspace precedents folder, or all of Drive. Returns file_ids to pass to import_drive_files. Run several searches with different wording if the first finds nothing, and ask the user to choose when results are ambiguous.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description:
+              "Key words describing the file, e.g. 'commercial lease amendment Acme'. Use distinctive words, not a full sentence.",
+          },
+          scope: {
+            type: "string",
+            enum: ["matter", "precedents", "drive"],
+            description:
+              "matter = this matter's Drive folder (the client's folder in a client session); precedents = the workspace precedents/research folder; drive = all of Drive.",
+          },
+          limit: {
+            type: "number",
+            description: "Maximum results (default 10, at most 25).",
+          },
+        },
+        required: ["query", "scope"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "import_drive_files",
+      description:
+        "Import Google Drive files (Word files and Google Docs) into the matter as Mike documents. Find the files first with find_drive_files (or google_drive_search) and pass their file_ids. Returns a doc id for each imported file that can be passed straight to create_tabular_review or read like any other document. Files already imported into the matter are reused, not duplicated.",
+      parameters: {
+        type: "object",
+        properties: {
+          file_ids: {
+            type: "array",
+            items: { type: "string" },
+            description: "Drive file ids to import (at most 20).",
+          },
+          matter_name: {
+            type: "string",
+            description:
+              "In a client session only: the matter to import into. Ignored inside a matter.",
+          },
+        },
+        required: ["file_ids"],
+      },
+    },
+  },
+];
+
 // A tabular review asks the same questions of a set of documents. Created in a
 // matter (the current one, or one of the client's in a client session) and
 // started by the user from the review itself.

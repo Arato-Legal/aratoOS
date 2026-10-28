@@ -1,24 +1,24 @@
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="nBlue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#93C5FD" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#3B82F6" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#1D4ED8" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#BDDBB5" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#84BB76" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#62A451" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="nPurple" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#C4B5FD" stop-opacity="0.96"/>
-      <stop offset="0.5" stop-color="#8B5CF6" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#6D28D9" stop-opacity="0.97"/>
+      <stop offset="0" stop-color="#D1E6CC" stop-opacity="0.96"/>
+      <stop offset="0.5" stop-color="#97C68C" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#67AC55" stop-opacity="0.97"/>
     </linearGradient>
     <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
       <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.15"/>
-      <stop offset="1" stop-color="#1F2937" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#273125" stop-opacity="0.45"/>
     </linearGradient>
     <linearGradient id="cord" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#94A3B8"/>
-      <stop offset="0.5" stop-color="#64748B"/>
-      <stop offset="1" stop-color="#475569"/>
+      <stop offset="0" stop-color="#A1AF9D"/>
+      <stop offset="0.5" stop-color="#72816E"/>
+      <stop offset="1" stop-color="#53614F"/>
     </linearGradient>
     <radialGradient id="sheen">
       <stop offset="0" stop-color="#FFFFFF"/>
@@ -30,7 +30,7 @@
   <!-- rubber cord -->
   <g fill="none" stroke-linecap="round">
     <path d="M49.5 48V18.25a8.75 8.75 0 0 0-17.5 0v27.5a8.75 8.75 0 0 1-17.5 0V16"
-          stroke="#1E293B" stroke-opacity="0.45" stroke-width="6.6"/>
+          stroke="#283425" stroke-opacity="0.45" stroke-width="6.6"/>
     <path d="M49.5 48V18.25a8.75 8.75 0 0 0-17.5 0v27.5a8.75 8.75 0 0 1-17.5 0V16"
           stroke="url(#cord)" stroke-width="5.2"/>
     <path d="M48.3 35V18.25a7.55 7.55 0 0 0-15.1 0"

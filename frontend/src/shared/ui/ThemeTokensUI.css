@@ -1,19 +1,19 @@
 :root {
     /* Color roles shared by the web app and Word add-in. These describe what a
        color does; liquid-glass classes separately describe surface depth. */
-    --document-canvas-background: var(--color-gray-100, #f3f4f6);
-    --document-tab-active-background: var(--app-surface, #fdfdfe);
-    --document-tab-inactive-background: #f3f4f6;
-    --document-tab-active-text: #1f2937;
-    --document-tab-inactive-text: #4b5563;
+    --document-canvas-background: var(--color-gray-100, #EAEBDD);
+    --document-tab-active-background: var(--app-surface, #FEFAF1);
+    --document-tab-inactive-background: #EAEBDD;
+    --document-tab-active-text: #24291F;
+    --document-tab-inactive-text: #55544A;
 
-    --editor-text: #374151;
-    --editor-heading: #111827;
-    --editor-strong-text: #1f2937;
-    --editor-muted-text: #4b5563;
-    --editor-border: #e5e7eb;
-    --editor-grid-line: #f3f4f6;
-    --editor-table-header: #f9fafb;
+    --editor-text: #4A443C;
+    --editor-heading: #1D2F1A;
+    --editor-strong-text: #24291F;
+    --editor-muted-text: #55544A;
+    --editor-border: #DCDECF;
+    --editor-grid-line: #EAEBDD;
+    --editor-table-header: #F6F6EE;
 
     --pdf-highlight-background: rgba(37, 99, 235, 0.2);
     --pdf-selection-background: rgba(0, 136, 255, 0.25);
@@ -24,11 +24,11 @@
     --citation-selected-text: #172554;
     --citation-selected-muted-text: #1e3a8a;
 
-    --dropdown-input-background: var(--color-gray-100, #f3f4f6);
-    --liquid-glass-hover-background: #f5f6f8;
-    --liquid-glass-selected-background: var(--app-surface-active, #eff0f3);
-    --liquid-glass-modal-row-hover-background: #f3f4f6;
-    --liquid-glass-modal-row-selected-background: #e5e7eb;
+    --dropdown-input-background: var(--color-gray-100, #EAEBDD);
+    --liquid-glass-hover-background: #F1F1E6;
+    --liquid-glass-selected-background: var(--app-surface-active, #EAEBDD);
+    --liquid-glass-modal-row-hover-background: #EAEBDD;
+    --liquid-glass-modal-row-selected-background: #DCDECF;
     /* Matches Tailwind's `ring-blue-500/40`, the ring every primitive uses. */
     --focus-ring-color: color-mix(
         in oklab,
@@ -36,14 +36,14 @@
         transparent
     );
 
-    --content-fade-color: var(--app-surface, #fdfdfe);
-    --shimmer-edge: #e5e7eb;
-    --shimmer-middle: #d1d5db;
+    --content-fade-color: var(--app-surface, #FEFAF1);
+    --shimmer-edge: #DCDECF;
+    --shimmer-middle: #C5C7B5;
 
-    --spreadsheet-header-tint: rgba(148, 163, 184, 0.18);
-    --spreadsheet-header-corner: #eceef2;
-    --spreadsheet-header-hover: rgba(209, 213, 219, 0.65);
-    --spreadsheet-header-selected: rgba(156, 163, 175, 0.28);
+    --spreadsheet-header-tint: rgba(110, 111, 96, 0.14);
+    --spreadsheet-header-corner: #E3E4D4;
+    --spreadsheet-header-hover: rgba(197, 199, 181, 0.65);
+    --spreadsheet-header-selected: rgba(154, 156, 138, 0.28);
     --spreadsheet-highlight-background: rgba(59, 130, 246, 0.16);
     --spreadsheet-highlight-outline: #3b82f6;
 }
