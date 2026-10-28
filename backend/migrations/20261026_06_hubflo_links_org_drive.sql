@@ -32,3 +32,7 @@ create table if not exists public.org_integration_settings (
 
 alter table public.org_integration_settings enable row level security;
 revoke all on public.org_integration_settings from anon, authenticated;
+
+-- The backend reaches this table as service_role. A fresh install gets that
+-- from the grant block in schema.sql; an upgraded database needs it here.
+grant select, insert, update, delete on public.org_integration_settings to service_role;

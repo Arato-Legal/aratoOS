@@ -26,17 +26,17 @@ test("matter document: read uploaded PDF and reload the saved answer", async ({ 
     test.skip(!hasLlmKey, LLM_SKIP_REASON);
     test.setTimeout(120_000);
     await createProject(page, `E2E document ${Date.now()}`, PDF_FIXTURE);
-    await page.goto(`${page.url().split("?")[0]}/assistant`);
+    await page.goto(`${page.url().split("?")[0].replace(/\/documents$/, "")}/assistant`);
     await page.getByRole("button", { name: "Create", exact: true }).click();
     // Opening the composer must not persist an empty chat; first send creates it.
     // This dynamic composer route is compiled on first use in the development
     // stress job; navigation must settle before we interact with its controls.
-    await expect(page).toHaveURL(/\/projects\/[^/]+\/assistant\/chat$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/(?:projects|matters)\/[^/]+\/assistant\/chat$/, { timeout: 30_000 });
     await selectClaudeModel(page);
     const input = page.getByPlaceholder("How can I help?");
     await input.fill("Read test.pdf and quote its first line.");
     await input.press("Enter");
-    await expect(page).toHaveURL(/\/projects\/[^/]+\/assistant\/chat\/[^/]+$/);
+    await expect(page).toHaveURL(/\/(?:projects|matters)\/[^/]+\/assistant\/chat\/[^/]+$/);
     // This text exists only in the PDF, never in the question. The fixture must
     // request read_document and receive the real extracted text before answering.
     await expectSavedAnswer(page, "Test PDF Document");
