@@ -177,3 +177,24 @@ export function SelectField<T extends string>({
         </div>
     );
 }
+
+/** A link out to the record in Hubflo; renders nothing without a URL. */
+export function HubfloLink({
+    href,
+    label = "Open in Hubflo",
+}: {
+    href: string | null | undefined;
+    label?: string;
+}) {
+    if (!href) return null;
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded text-xs text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40"
+        >
+            {label}
+        </a>
+    );
+}

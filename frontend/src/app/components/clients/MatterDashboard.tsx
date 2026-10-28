@@ -13,6 +13,7 @@ import {
     DashboardPage,
     DashboardSection,
     DashboardSkeleton,
+    HubfloLink,
     STATUS_LABELS,
     formatDate,
 } from "./DashboardPrimitives";
@@ -91,8 +92,9 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                     <h1 className="break-words font-serif text-3xl text-gray-900">
                         {project.name}
                     </h1>
-                    <p className="mt-1 text-xs text-gray-500">
-                        Updated {formatDate(project.updated_at)}
+                    <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-gray-500">
+                        <span>Updated {formatDate(project.updated_at)}</span>
+                        <HubfloLink href={project.hubflo_url} label="Open matter in Hubflo" />
                     </p>
                 </div>
 
@@ -162,6 +164,7 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                     <DashboardSection title="Client">
                         <div className="flex flex-col gap-3">
                             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <Fact label="Client number" value={client.client_number} />
                                 <Fact label="Status" value={STATUS_LABELS[client.status]} />
                                 <Fact label="Email" value={client.email} />
                                 <Fact label="Phone" value={client.phone} />
@@ -187,11 +190,12 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                                                     {c.phone}
                                                 </span>
                                             )}
+                                            <HubfloLink href={c.hubflo_url} label="Contact in Hubflo" />
                                         </li>
                                     ))}
                                 </ul>
                             )}
-                            <div>
+                            <div className="flex flex-wrap items-center gap-3">
                                 <PillButtonUI
                                     tone="white"
                                     size="sm"
@@ -199,6 +203,7 @@ export function MatterDashboard({ projectId }: { projectId: string }) {
                                 >
                                     Open client page
                                 </PillButtonUI>
+                                <HubfloLink href={client.hubflo_url} label="Client in Hubflo" />
                             </div>
                         </div>
                     </DashboardSection>

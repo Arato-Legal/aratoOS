@@ -16,6 +16,8 @@ import {
   createClient,
   createMatterDriveFolder,
   getClientFiles,
+  getIntegrationSettings,
+  updateIntegrationSettings,
   setClientDriveFolder,
   setMatterSharing,
   deleteClient,
@@ -173,6 +175,40 @@ clientsRouter.put(
       ...caller(res),
       projectId: req.params.projectId,
       folderId: req.body?.folder_id ?? null,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+// Registered ahead of "/:clientId" so "integrations" is never read as a client id.
+clientsRouter.get(
+  "/integrations",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const db = createServerSupabase();
+    const workspace = await resolveWorkspaceFilter(db, caller(res).userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const result = await getIntegrationSettings(db, {
+      userId: caller(res).userId,
+      workspace: workspace.workspace,
+    });
+    if (!result.ok) return void sendServiceFailure(res, result);
+    res.json(result.data);
+  }),
+);
+
+clientsRouter.put(
+  "/integrations",
+  requireAuth,
+  asyncRoute(async (req, res) => {
+    const db = createServerSupabase();
+    const workspace = await resolveWorkspaceFilter(db, caller(res).userId, req.query.workspace);
+    if (!workspace.ok) return void sendWorkspaceFailure(res, workspace);
+    const result = await updateIntegrationSettings(db, {
+      userId: caller(res).userId,
+      workspace: workspace.workspace,
+      body: (req.body && typeof req.body === "object" ? req.body : {}) as Record<string, unknown>,
     });
     if (!result.ok) return void sendServiceFailure(res, result);
     res.json(result.data);

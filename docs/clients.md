@@ -113,7 +113,7 @@ request, body up to 512 kB.
 
 | Event | `data` fields |
 | --- | --- |
-| `client.upsert` | `external_id` (required), `name` (required to create), `kind`, `status`, `email`, `phone`, `address`, `source`, `notes`, `custom_fields`, `contacts` (each with its own `external_id`), `updated_at` |
+| `client.upsert` | `external_id` (required), `name` (required to create), `client_number`, `kind`, `status`, `email`, `phone`, `address`, `source`, `notes`, `custom_fields`, `contacts` (each with its own `external_id`), `updated_at` |
 | `matter.upsert` | `external_id` (required), `name` (required to create), `cm_number`, `practice`, `client_external_id` (null unlinks), `archived`, `updated_at` |
 
 - Rows are matched by the endpoint's provider and `external_id` inside its
@@ -178,6 +178,29 @@ refused when the matter already has a folder. Existing deployments must apply
 | `GET /clients/matters/:projectId/client-files` | What sibling matters share with this one |
 | `POST /clients/matters/:projectId/drive-folder/create` | Create and link the matter's Drive folder |
 | `PUT /clients/:clientId/drive-folder` | Link or unlink the client's Drive folder (`folder_id`) |
+
+## Hubflo links and workspace-wide Drive
+
+An organization admin sets these at `/clients/sync` (**Links back to Hubflo**,
+**Google Drive for everyone**); they are stored in `org_integration_settings`
+(`backend/migrations/20261026_06_hubflo_links_org_drive.sql`).
+
+- **Links.** One https URL template per record type with an `{id}` placeholder,
+  filled with the record's Hubflo id (`external_id`). Clients, matters and
+  contacts show an "Open in Hubflo" link only when they were synced from Hubflo
+  and a template is set. Hubflo's own URL format is not assumed.
+- **Numbers.** `matter.upsert` carries `cm_number` (the matter number) and
+  `client.upsert` carries `client_number`; both are shown on the pages and used
+  in Drive folder names.
+- **Drive.** An admin with a connected Google Drive can share it with the
+  workspace. Browsing, creating and editing matter folders then use that
+  account for every member, so nobody connects Google themselves. Everyone
+  reaches Drive as that account, so pick one that can see the matter folders.
+  Stopping sharing returns members to their own connections.
+
+| Route | Purpose |
+| --- | --- |
+| `GET/PUT /clients/integrations?workspace=` | Read or change the templates and Drive sharing (admins) |
 
 ## URLs
 

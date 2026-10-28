@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock("./IntegrationSettingsSection", () => ({ IntegrationSettingsSection: () => null }));
 vi.mock("@/app/lib/userFacingError", () => ({ notifyError: vi.fn() }));
 vi.mock("@/app/contexts/AuthContext", () => ({
     useAuth: () => ({ isAuthenticated: true, authLoading: false }),

@@ -11,6 +11,7 @@ export type ClientRow = {
   user_id: string | null;
   org_id: string | null;
   name: string;
+  client_number: string | null;
   kind: ClientKind;
   status: ClientStatus;
   email: string | null;
@@ -27,6 +28,7 @@ export type ClientRow = {
 
 export type ClientContactRow = {
   id: string;
+  hubflo_url?: string | null;
   client_id: string;
   name: string;
   role: string | null;
@@ -39,6 +41,7 @@ export type ClientContactRow = {
 
 export type ClientMatter = {
   id: string;
+  hubflo_url?: string | null;
   name: string;
   cm_number: string | null;
   practice: string | null;
@@ -47,12 +50,13 @@ export type ClientMatter = {
 };
 
 export type ClientDetail = ClientRow & {
+  hubflo_url?: string | null;
   contacts: ClientContactRow[];
   matters: ClientMatter[];
 };
 
 export const CLIENT_COLUMNS =
-  "id, user_id, org_id, name, kind, status, email, phone, address, source, notes, custom_fields, drive_folder_id, drive_folder_name, created_at, updated_at";
+  "id, user_id, org_id, name, client_number, kind, status, email, phone, address, source, notes, custom_fields, drive_folder_id, drive_folder_name, created_at, updated_at";
 export const CONTACT_COLUMNS =
   "id, client_id, name, role, email, phone, notes, created_at, updated_at";
 
@@ -115,6 +119,7 @@ export function parseFields(
   }
 
   for (const [key, max] of [
+    ["client_number", 100],
     ["email", 320],
     ["phone", 100],
     ["address", MAX_FIELD],

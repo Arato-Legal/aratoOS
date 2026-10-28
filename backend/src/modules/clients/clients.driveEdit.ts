@@ -23,7 +23,7 @@ import {
 import { GoogleDriveUserError } from "../../lib/integrations/googleDriveHttp";
 import type { ConnectorOwner } from "../../lib/connectorOwner";
 import { can } from "../../lib/permissions";
-import { teamOrgIdOf } from "../../lib/personalOrgs";
+import { driveOwnerFor } from "./clients.integrations";
 import type { Db } from "../../lib/supabase";
 import {
   failure,
@@ -79,9 +79,7 @@ function driveFailure(error: unknown): ServiceFailure | null {
   return failure("conflict", error.message, error.code ?? "google_drive_error");
 }
 
-async function ownerFor(db: Db, userId: string, orgId: string | null | undefined): Promise<ConnectorOwner> {
-  return { userId, orgId: await teamOrgIdOf(db, orgId ?? null) };
-}
+const ownerFor = driveOwnerFor;
 
 type EditContext = { owner: ConnectorOwner; projectId: string };
 
