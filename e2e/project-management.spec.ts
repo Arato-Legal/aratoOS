@@ -223,7 +223,7 @@ test("file upload type validation — .txt file is rejected", async ({ page }) =
 
     /* (b) Server-side rejection on the active protocol — REGRESSION: fails if
        type validation is removed from upload-session manifest parsing. */
-    const projectId = page.url().match(/\/projects\/([0-9a-f-]{36})/)?.[1];
+    const projectId = page.url().match(/\/(?:projects|matters)\/([0-9a-f-]{36})/)?.[1];
     expect(projectId, "expected to be on a /projects/<id> page").toBeTruthy();
     const uploadResponses = await page.evaluate(async (id) => {
         const sessionResponse = await fetch("/api/upload-sessions", {
@@ -256,7 +256,7 @@ test("file upload type validation — .txt file is rejected", async ({ page }) =
             ),
             "test.txt",
         );
-        const legacyResponse = await fetch(`/api/matters/${id}/documents/documents`, {
+        const legacyResponse = await fetch(`/api/projects/${id}/documents`, {
             method: "POST",
             credentials: "include",
             body,
