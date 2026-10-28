@@ -12,6 +12,7 @@ import {
   deleteClient,
   deleteClientContact,
   getClient,
+  listClientChats,
   getIntegrationSettings,
   updateIntegrationSettings,
   getDriveSyncStatus,
@@ -257,6 +258,12 @@ describe("Clients API requests", () => {
       url: "/api/clients/integrations?workspace=org%2Fa",
       method: "PUT",
       body: { drive_shared: true },
+    },
+    {
+      name: "list client chats",
+      call: () => listClientChats("c1"),
+      url: "/api/clients/c1/chats",
+      method: "GET",
     },
   ])("$name", async ({ call, url, method, body }) => {
     await call();
