@@ -26,3 +26,7 @@ create index if not exists client_memory_notes_updated_by_idx
 
 alter table public.client_memory_notes enable row level security;
 revoke all on public.client_memory_notes from anon, authenticated;
+
+-- The backend reaches these tables as service_role. A fresh install gets that
+-- from schema.sql's blanket grant; an upgraded database needs it spelled out.
+grant select, insert, update, delete on public.client_memory_notes to service_role;

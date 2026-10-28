@@ -29,3 +29,7 @@ create unique index workspace_drive_folders_user_kind_idx
 
 alter table public.workspace_drive_folders enable row level security;
 revoke all on public.workspace_drive_folders from anon, authenticated;
+
+-- The backend reaches these tables as service_role. A fresh install gets that
+-- from schema.sql's blanket grant; an upgraded database needs it spelled out.
+grant select, insert, update, delete on public.workspace_drive_folders to service_role;
