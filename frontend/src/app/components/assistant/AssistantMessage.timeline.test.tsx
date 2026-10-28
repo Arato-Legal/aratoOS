@@ -393,7 +393,7 @@ describe("AssistantMessage timeline", () => {
             [{ status: "incomplete" as const }, "Stopped at its limit · partial brief · 1 step"],
             [{ status: "cancelled" as const }, "Stopped · 1 step"],
             [{ status: "failed" as const }, "Couldn't finish"],
-            [{ status: "needs_input" as const, question: "Which lease?" }, "Asked Mike a question · 1 step"],
+            [{ status: "needs_input" as const, question: "Which lease?" }, "Asked Arato a question · 1 step"],
             [{ status: "needs_input" as const, approval_ids: ["approve-1"] }, "Waiting for your approval · 1 step"],
             [{ continued_from: "d0" }, "Resumed · Completed in 1 step"],
         ])("reports how the subagent ended, with its pill and in its details", (overrides, status) => {
@@ -424,7 +424,7 @@ describe("AssistantMessage timeline", () => {
             );
             openTimeline();
             fireEvent.click(pill("Review the lease"));
-            expect(screen.getByText("Asked Mike")).toBeVisible();
+            expect(screen.getByText("Asked Arato")).toBeVisible();
             expect(screen.getByText("Which lease, the 2019 or the 2021 one?")).toBeVisible();
         });
 
