@@ -58,7 +58,7 @@ export function MatterSharingToggle({
                         When on, this client&apos;s other matters can read this
                         matter&apos;s documents, chats, tasks and tabular reviews
                         (read-only), and Mike can use its documents when answering. Its chats
-                        also teach the client's memory. Turning this off stops that and
+                        also teach the client&apos;s memory. Turning this off stops that and
                         deletes what this matter taught it.
                         {!canManage && " Only a matter owner can change this."}
                     </span>

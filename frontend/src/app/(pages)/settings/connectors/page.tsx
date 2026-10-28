@@ -1872,8 +1872,9 @@ function DiscoverCard({
       name={name}
       icon={icon}
       action={
-        <div className="flex flex-wrap items-center justify-end gap-2">
-        {accessControl}
+        accessControl ? (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {accessControl}
         <PillButtonUI
           tone="blue"
           size="sm"
@@ -1888,7 +1889,23 @@ function DiscoverCard({
         >
           {authorizing ? "Cancel" : adding ? "Adding..." : "Add"}
         </PillButtonUI>
-        </div>
+          </div>
+        ) : (
+        <PillButtonUI
+          tone="blue"
+          size="sm"
+          onClick={authorizing ? onCancel : onAdd}
+          disabled={loading || (!authorizing && (adding || disabled))}
+          loading={adding}
+          aria-label={
+            authorizing
+              ? `Cancel ${name} authorization`
+              : `Add ${name} connector`
+          }
+        >
+          {authorizing ? "Cancel" : adding ? "Adding..." : "Add"}
+        </PillButtonUI>
+        )
       }
     />
   );
